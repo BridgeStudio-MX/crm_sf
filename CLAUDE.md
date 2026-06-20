@@ -217,23 +217,54 @@ This handles everything: starts Postgres + Redis (auto-detects local services vs
 
 **Note:** CI workflows (GitHub Actions) manage services via Actions service containers and run setup steps individually — they don't use this script.
 
-### Trigger: "Carga los cambios en local"
+### Triggers de carga local — dos caminos independientes
 
-When the user says **"Carga los cambios en local"** (or a clear variant like "levanta el local", "corre la app en local con hot-reload"), Claude must start the local hybrid dev environment so that code changes reflect automatically:
+Hay dos disparadores que pueden ir **solos o juntos**. Lee la frase completa del
+usuario y ejecuta solo lo que corresponda:
+
+| Frase del usuario | Qué ejecuta Claude |
+| --- | --- |
+| **"Carga los cambios en local"** (sola) | **Solo Docker** (imagen de producción de GHCR) |
+| **"Carga la UI"** / **"y carga la UI"** (sola) | **Solo la UI con `yarn`** (hot-reload) |
+| **"Carga los cambios en local y carga la UI"** | **Ambos**: Docker + reinicio de `yarn` |
+
+#### Camino A — "Carga los cambios en local" → Docker (imagen de GHCR)
+
+Baja y levanta la MISMA imagen de producción en local. No compila nada; solo
+hace `pull` de la imagen ya construida por GitHub Actions. Server en
+**http://localhost:3000**.
 
 ```bash
-# 1. Infra (Postgres + Redis) in Docker + .env files + migrations (idempotent)
+docker compose -f deploy/docker-compose.local.yml --env-file deploy/.env.local pull
+docker compose -f deploy/docker-compose.local.yml --env-file deploy/.env.local up -d
+```
+
+- Requiere `docker login ghcr.io` (token con `read:packages`) y `deploy/.env.local` con `ENCRYPTION_KEY`.
+- "Carga los cambios" aquí = traer la imagen más reciente de GHCR (`pull`), NO construirla en local. La imagen solo se construye en CI al hacer push a `main`.
+- Para apagar: `docker compose -f deploy/docker-compose.local.yml --env-file deploy/.env.local down`.
+
+#### Camino B — "Carga la UI" → app con `yarn` (hot-reload)
+
+Para el `yarn` que esté corriendo y vuélvelo a ejecutar en modo watch, así cada
+cambio en el código se refleja automáticamente. Frontend en
+**http://localhost:3001** (server API en `:3000`).
+
+```bash
+# Si ya hay un `yarn start` corriendo, mátalo primero, luego:
+
+# 1. Infra (Postgres + Redis) en Docker + .env + migraciones (idempotente)
 bash packages/twenty-utils/setup-dev-env.sh --docker
 
-# 2. App with hot-reload: frontend + backend + worker in watch mode
+# 2. App con hot-reload: frontend + backend + worker en watch mode
 yarn start
 ```
 
-- Run `yarn start` in the background (it is long-running) and report the URL.
-- App URL: **http://localhost:3001** (frontend); server API on `:3000`.
-- Vite (frontend) and NestJS (backend) recompile on save — no manual rebuild needed.
-- To stop: kill `yarn start`, then `bash packages/twenty-utils/setup-dev-env.sh --down`.
-- This is the documented local flow in `deploy/README.md`. It is unrelated to production deploy (which happens via GitHub Actions on push to `main`).
+- Corre `yarn start` en background (es long-running) y reporta la URL.
+- Vite (frontend) y NestJS (backend) recompilan al guardar — sin rebuild manual.
+- Para detener: mata `yarn start`, luego `bash packages/twenty-utils/setup-dev-env.sh --down`.
+
+Ambos caminos son independientes del deploy de producción (que ocurre via GitHub
+Actions al hacer push a `main`). Flujo documentado en `deploy/README.md`.
 
 ## Important Files
 - `nx.json` - Nx workspace configuration with task definitions

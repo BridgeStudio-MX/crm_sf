@@ -14,7 +14,7 @@ import { type ColorScheme } from '@/workspace-member/types/WorkspaceMember';
 import { enUS } from 'date-fns/locale';
 import { useStore } from 'jotai';
 import { useCallback, useEffect, useState } from 'react';
-import { type APP_LOCALES, SOURCE_LOCALE } from 'twenty-shared/translations';
+import { type APP_LOCALES } from 'twenty-shared/translations';
 import { type ObjectPermissions } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 import { useQuery } from '@apollo/client/react';
@@ -130,7 +130,7 @@ export const UserMetadataProviderInitialEffect = () => {
         ...workspaceMember,
         colorScheme: (workspaceMember.colorScheme as ColorScheme) ?? 'System',
         locale:
-          (workspaceMember.locale as keyof typeof APP_LOCALES) ?? SOURCE_LOCALE,
+          (workspaceMember.locale as keyof typeof APP_LOCALES) ?? 'es-ES',
       };
     };
 
@@ -144,7 +144,7 @@ export const UserMetadataProviderInitialEffect = () => {
       initializeFormatPreferences(updatedWorkspaceMember);
 
       dynamicActivate(
-        (workspaceMember.locale as keyof typeof APP_LOCALES) ?? SOURCE_LOCALE,
+        (workspaceMember.locale as keyof typeof APP_LOCALES) ?? 'es-ES',
       );
     }
 
