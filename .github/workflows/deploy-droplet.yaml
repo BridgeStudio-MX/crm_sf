@@ -103,6 +103,15 @@ jobs:
         working-directory: parks-twenty-service
         run: npm ci
 
+      - name: Verify TWENTY_API_KEY is configured
+        env:
+          TWENTY_API_KEY: ${{ secrets.TWENTY_API_KEY }}
+        run: |
+          if [ -z "$TWENTY_API_KEY" ]; then
+            echo "::error::TWENTY_API_KEY está vacío. Agrégalo en Settings → Secrets → Actions y vuelve a ejecutar el workflow (Re-run jobs)."
+            exit 1
+          fi
+
       - name: Bootstrap Parks metadata + demo seed
         working-directory: parks-twenty-service
         env:

@@ -44,10 +44,10 @@ const main = async (): Promise<void> => {
 
   if (!hasApiKey && apiUrl.includes('bridgehub.mx')) {
     console.error(
-      '[bootstrap] Production requires TWENTY_API_KEY — tim@apple.dev does not exist on prod.',
+      '[bootstrap] TWENTY_API_KEY is missing — required for production.',
     );
     console.error(
-      '[bootstrap] Create one in Twenty → Settings → APIs, then re-run.',
+      '[bootstrap] Add the secret in GitHub (Settings → Secrets → Actions) and re-run the workflow.',
     );
     process.exit(1);
   }
