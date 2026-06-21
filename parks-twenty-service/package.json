@@ -1,0 +1,44 @@
+{
+  "name": "parks-twenty-service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Microservicio Parks Industrial — SLAs, semáforo, holdover, comisiones, PDF, Oracle",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/src/index.js",
+    "build": "tsc",
+    "health": "tsx scripts/health-check.ts",
+    "setup:objects": "tsx scripts/setup-objects.ts",
+    "setup:opportunity": "tsx scripts/setup-opportunity.ts",
+    "setup:pipelines": "tsx scripts/setup-pipelines.ts",
+    "setup:roles": "tsx scripts/setup-roles.ts",
+    "setup:dashboards": "tsx scripts/setup-dashboards.ts",
+    "setup:webhooks": "tsx scripts/setup-webhooks.ts",
+    "seed:demo": "tsx scripts/seed-demo.ts",
+    "pdf:test": "tsx scripts/pdf-test.ts",
+    "services:test": "tsx scripts/services-test.ts",
+    "webhook:test": "tsx scripts/webhook-test.ts",
+    "crons:test": "tsx scripts/crons-test.ts",
+    "e2e:test": "tsx scripts/e2e-test.ts",
+    "oracle:test": "tsx scripts/oracle-test.ts"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "graphql-request": "^7.1.2",
+    "handlebars": "^4.7.8",
+    "node-cron": "^3.0.3",
+    "puppeteer": "^24.2.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.5",
+    "@types/node-cron": "^3.0.11",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

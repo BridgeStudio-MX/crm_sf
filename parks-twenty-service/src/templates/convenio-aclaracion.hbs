@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Convenio de Aclaración — {{inquilino.empresa}}</title>
+  <style>
+    body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.6; color: #111; }
+    .draft-banner { background: #fef2f2; border: 1px solid #dc2626; color: #991b1b; font-weight: bold; text-align: center; padding: 8px; margin-bottom: 24px; }
+    .header { text-align: center; margin-bottom: 2em; }
+    .clausula { margin-bottom: 1.5em; text-align: justify; }
+    .placeholder-block { border: 1px dashed #999; background: #fafafa; padding: 16px; margin: 24px 0; color: #666; font-style: italic; }
+    footer { font-size: 9pt; color: #666; margin-top: 3em; border-top: 1px solid #ddd; padding-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="draft-banner">BORRADOR — NO VÁLIDO PARA FIRMA</div>
+  <div class="header">
+    <h2>CONVENIO DE ACLARACIÓN</h2>
+    <p>Parks Industrial — {{parque.nombre}}</p>
+  </div>
+
+  <p>
+    En relación al contrato de arrendamiento de la nave <strong>{{nave.identificador}}</strong>,
+    celebrado entre Parks Industrial S.A. de C.V. y <strong>{{inquilino.empresa}}</strong>,
+    las partes convienen aclarar los términos siguientes:
+  </p>
+
+  {{#if hojaAcuerdos.condicionesEspeciales}}
+  <div class="clausula">
+    <strong>ACLARACIÓN:</strong> {{hojaAcuerdos.condicionesEspeciales}}
+  </div>
+  {{/if}}
+
+  <!-- INSERTAR CLÁUSULAS ESTÁNDAR DE PARKS INDUSTRIAL -->
+  <div class="placeholder-block">
+    [INSERTAR CLÁUSULAS ESTÁNDAR DE PARKS INDUSTRIAL — Aclaración]
+  </div>
+
+  <footer>
+    Generado el {{fechaGeneracion}} — Versión {{numeroVersion}} — Borrador sujeto a revisión legal
+  </footer>
+</body>
+</html>

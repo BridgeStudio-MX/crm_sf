@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Convenio de Renovación — {{inquilino.empresa}}</title>
+  <style>
+    body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.6; color: #111; }
+    .draft-banner { background: #fef2f2; border: 1px solid #dc2626; color: #991b1b; font-weight: bold; text-align: center; padding: 8px; margin-bottom: 24px; }
+    .header { text-align: center; margin-bottom: 2em; }
+    .clausula { margin-bottom: 1.5em; text-align: justify; }
+    .placeholder-block { border: 1px dashed #999; background: #fafafa; padding: 16px; margin: 24px 0; color: #666; font-style: italic; }
+    .partes { display: flex; justify-content: space-between; margin-top: 4em; gap: 40px; }
+    footer { font-size: 9pt; color: #666; margin-top: 3em; border-top: 1px solid #ddd; padding-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="draft-banner">BORRADOR — NO VÁLIDO PARA FIRMA</div>
+  <div class="header">
+    <h2>CONVENIO DE RENOVACIÓN DE CONTRATO DE ARRENDAMIENTO</h2>
+    <p>Parks Industrial — {{parque.nombre}}</p>
+  </div>
+
+  <p>
+    <strong>ARRENDADOR:</strong> Parks Industrial S.A. de C.V.<br />
+    <strong>ARRENDATARIO:</strong> {{inquilino.empresa}} — {{inquilino.repLegalNombre}}<br />
+    <strong>NAVE:</strong> {{nave.identificador}} — {{parque.ubicacion}}
+  </p>
+
+  <div class="clausula">
+    <strong>PRIMERA — RENOVACIÓN:</strong> Las partes convienen renovar el contrato de arrendamiento
+    sobre la nave <strong>{{nave.identificador}}</strong> por un plazo de
+    <strong>{{hojaAcuerdos.plazoMeses}} meses</strong>{{#if hojaAcuerdos.fechaInicio}},
+    a partir del <strong>{{hojaAcuerdos.fechaInicio}}</strong>{{/if}}.
+  </div>
+
+  <div class="clausula">
+    <strong>SEGUNDA — RENTA RENOVADA:</strong> La renta mensual será de
+    <strong>USD ${{hojaAcuerdos.precioUsdM2}}/m²</strong> sobre
+    <strong>{{hojaAcuerdos.m2Acordados}} m²</strong>, total
+    <strong>USD ${{rentaMensualTotal}}</strong> mensuales.
+  </div>
+
+  {{#if hojaAcuerdos.escalacionAnualPct}}
+  <div class="clausula">
+    <strong>TERCERA — ESCALACIÓN:</strong> Escalación anual del
+    <strong>{{hojaAcuerdos.escalacionAnualPct}}%</strong>.
+  </div>
+  {{/if}}
+
+  <!-- INSERTAR CLÁUSULAS ESTÁNDAR DE PARKS INDUSTRIAL -->
+  <div class="placeholder-block">
+    [INSERTAR CLÁUSULAS ESTÁNDAR DE PARKS INDUSTRIAL — Renovación]
+  </div>
+
+  <div class="partes">
+    <div><p>_______________________</p><p>Parks Industrial S.A. de C.V.</p></div>
+    <div><p>_______________________</p><p>{{inquilino.empresa}}</p></div>
+  </div>
+
+  <footer>
+    Generado el {{fechaGeneracion}} — Versión {{numeroVersion}} — Borrador sujeto a revisión legal
+  </footer>
+</body>
+</html>

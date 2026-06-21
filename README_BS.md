@@ -17,7 +17,11 @@ Para Cargar los cambios de UI pidel a Claude de forma textual
   "Carga los cambios en local y carga la UI"
   Todo va sin " (Comillas dobles)
 
-# Pendientes:
+# Plan Parks Industrial:
 
-- Falta de traducciones en español de algunos objetos (revisarlo)
-- Remover objetos de menu como: Communuty, Documentacion, Panel de adminitracion => Empresa, para cerrar brechas no deseadas, revisar todas las opciones para solo tener las que mejor convenga
+- Blueprint completo: `docs/parks-industrial/parks-industrial-twenty-blueprint.md`
+- **Progreso y punto de retoma:** `docs/parks-industrial/PROGRESS.md` ← actualizar al terminar cada sesión
+
+# Pendientes (fork general):
+
+- Revisar resto de ítems de menú para CRM interno Parks (Community/Documentación/Admin ya ocultos)
