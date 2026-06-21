@@ -1,7 +1,9 @@
 import { UseFilters, UseGuards, UsePipes } from '@nestjs/common';
 import { Args, Context, Mutation, Parent, ResolveField } from '@nestjs/graphql';
 
+import { GraphQLJSON } from 'graphql-type-json';
 import { PermissionFlagType } from 'twenty-shared/constants';
+import { FieldMetadataType } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 
 import { MetadataResolver } from 'src/engine/api/graphql/graphql-config/decorators/metadata-resolver.decorator';
@@ -23,6 +25,7 @@ import { UpdateOneFieldMetadataInput } from 'src/engine/metadata-modules/field-m
 import { FieldMetadataService } from 'src/engine/metadata-modules/field-metadata/services/field-metadata.service';
 import { fieldMetadataGraphqlApiExceptionHandler } from 'src/engine/metadata-modules/field-metadata/utils/field-metadata-graphql-api-exception-handler.util';
 import { resolveFieldMetadataStandardOverride } from 'src/engine/metadata-modules/field-metadata/utils/resolve-field-metadata-standard-override.util';
+import { resolveFieldMetadataOptionsStandardOverride } from 'src/engine/metadata-modules/field-metadata/utils/resolve-field-metadata-options-standard-override.util';
 import { fromFlatFieldMetadataToFieldMetadataDto } from 'src/engine/metadata-modules/flat-field-metadata/utils/from-flat-field-metadata-to-field-metadata-dto.util';
 import { PermissionsGraphqlApiExceptionFilter } from 'src/engine/metadata-modules/permissions/utils/permissions-graphql-api-exception.filter';
 
@@ -31,7 +34,7 @@ import { PermissionsGraphqlApiExceptionFilter } from 'src/engine/metadata-module
 type FieldMetadataStandardOverrideParent = Parameters<
   typeof resolveFieldMetadataStandardOverride
 >[0] &
-  Pick<FieldMetadataDTO, 'applicationId'>;
+  Pick<FieldMetadataDTO, 'applicationId' | 'type' | 'options'>;
 
 @UseGuards(WorkspaceAuthGuard)
 @UsePipes(ResolverValidationPipe)
@@ -116,6 +119,35 @@ export class FieldMetadataResolver {
       context,
       workspaceId,
     );
+  }
+
+  @ResolveField(() => GraphQLJSON, { nullable: true })
+  async options(
+    @Parent() fieldMetadata: FieldMetadataStandardOverrideParent,
+    @Context() context: { loaders: IDataloaders } & I18nContext,
+    @AuthWorkspace() { id: workspaceId }: WorkspaceEntity,
+  ) {
+    const i18n = this.i18nService.getI18nInstance(context.req.locale);
+
+    const standardApplicationId =
+      await context.loaders.standardApplicationIdLoader.load({ workspaceId });
+
+    const isStandardApp =
+      fieldMetadata.applicationId === standardApplicationId;
+
+    if (
+      fieldMetadata.type !== FieldMetadataType.SELECT &&
+      fieldMetadata.type !== FieldMetadataType.MULTI_SELECT
+    ) {
+      return fieldMetadata.options;
+    }
+
+    return resolveFieldMetadataOptionsStandardOverride({
+      options: fieldMetadata.options,
+      locale: context.req.locale,
+      i18nInstance: i18n,
+      isStandardApp,
+    });
   }
 
   @UseGuards(SettingsPermissionGuard(PermissionFlagType.DATA_MODEL))

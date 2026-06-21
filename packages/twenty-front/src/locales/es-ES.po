@@ -711,7 +711,7 @@ msgstr ""
 #. js-lingui-id: 2Lvxm0
 #: src/pages/onboarding/internal/ChooseYourPlanContent.tsx
 msgid "50,000 workflow node executions"
-msgstr ""
+msgstr "50.000 ejecuciones de nodos de flujo de trabajo"
 
 #. js-lingui-id: 4lbHin
 #: src/modules/logic-functions/components/LogicFunctionExecutionResult.tsx
@@ -1652,7 +1652,7 @@ msgstr ""
 #. js-lingui-id: TLbVxH
 #: src/modules/settings/usage/utils/getOperationTypeLabel.ts
 msgid "AI Workflow"
-msgstr ""
+msgstr "Flujo de trabajo de IA"
 
 #. js-lingui-id: BAiyFV
 #: src/pages/settings/admin-panel/SettingsAdminNewAiProvider.tsx
@@ -1722,7 +1722,7 @@ msgstr "Todos los campos"
 #. js-lingui-id: Ynglvj
 #: src/modules/object-record/record-table/record-table-header/components/RecordTableHeaderPlusButtonContent.tsx
 msgid "All fields are already visible"
-msgstr ""
+msgstr "Todos los campos ya son visibles"
 
 #. js-lingui-id: BKoJRa
 #: src/modules/settings/admin-panel/config-variables/components/SettingsAdminConfigVariables.tsx
@@ -1747,7 +1747,7 @@ msgstr "Todos los metadatos"
 #. js-lingui-id: zIk4M6
 #: src/modules/side-panel/components/SidePanelObjectFilterDropdownContent.tsx
 msgid "All objects"
-msgstr ""
+msgstr "Todos los objetos"
 
 #. js-lingui-id: aFE/OW
 #: src/pages/settings/security/event-logs/components/EventLogFilters.tsx
@@ -2274,7 +2274,7 @@ msgstr "Árabe"
 #. js-lingui-id: B495Gs
 #: src/modules/ai/components/AiChatThreadItemMenu.tsx
 msgid "Archive"
-msgstr ""
+msgstr "Archivar"
 
 #. js-lingui-id: i19Zro
 #: src/modules/activities/files/components/DocumentViewer.tsx
@@ -2284,7 +2284,7 @@ msgstr "Los archivos comprimidos no se pueden previsualizar. Descarga el archivo
 #. js-lingui-id: TdfEV7
 #: src/modules/ai/constants/AgentChatThreadFilterStatusLabels.ts
 msgid "Archived"
-msgstr ""
+msgstr "Archivado"
 
 #. js-lingui-id: Yzbh3i
 #. placeholder {0}: emailingDomain.domain
@@ -2429,7 +2429,7 @@ msgstr "Asignable a Claves API"
 #. js-lingui-id: OUbMUU
 #: src/modules/settings/roles/role-settings/components/SettingsRoleApplicability.tsx
 msgid "Assignable to Workspace Members"
-msgstr ""
+msgstr "Asignable a miembros del espacio de trabajo"
 
 #. js-lingui-id: 7qh2Hx
 #: src/modules/settings/roles/role-assignment/components/SettingsRoleAssignmentTable.tsx
@@ -3639,7 +3639,7 @@ msgstr "Columnas no coinciden:"
 #. js-lingui-id: efhuJR
 #: src/pages/settings/layout/SettingsLayoutViewDetail.tsx
 msgid "Columns shown in this view, in display order"
-msgstr ""
+msgstr "Columnas mostradas en esta vista, en orden de visualización"
 
 #. js-lingui-id: pOJNDA
 #: src/pages/settings/applications/SettingsAvailableApplicationDetails.tsx
@@ -3713,12 +3713,12 @@ msgstr ""
 #: src/pages/settings/community/SettingsCommunity.tsx
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 msgid "Community"
-msgstr ""
+msgstr "Comunidad"
 
 #. js-lingui-id: myLjjN
 #: src/utils/title-utils.ts
 msgid "Community - Settings"
-msgstr ""
+msgstr "Comunidad - Configuración"
 
 #. js-lingui-id: NM9bMd
 #: src/modules/object-record/object-options-dropdown/components/ObjectOptionsDropdownLayoutContent.tsx
@@ -3780,7 +3780,7 @@ msgstr "Condiciones"
 #. js-lingui-id: IfvM+Z
 #: src/pages/settings/layout/SettingsLayoutViewDetail.tsx
 msgid "Conditions applied to records before they appear in this view"
-msgstr ""
+msgstr "Condiciones aplicadas a los registros antes de aparecer en esta vista"
 
 #. js-lingui-id: 14PdY0
 #: src/pages/settings/applications/SettingsApplicationRegistrationDetails.tsx
@@ -3839,7 +3839,7 @@ msgstr "Configurar métodos de inicio de sesión de respaldo para usuarios con p
 #. js-lingui-id: OLqG0t
 #: src/modules/settings/data-model/object-details/components/tabs/ObjectSettings.tsx
 msgid "Configure how this object appears in search results"
-msgstr ""
+msgstr "Configurar cómo aparece este objeto en los resultados de búsqueda"
 
 #. js-lingui-id: ghdb7+
 #: src/modules/settings/accounts/components/SettingsAccountsCalendarChannelsGeneral.tsx
@@ -4624,12 +4624,12 @@ msgstr "Créditos agotados. Actualiza tu plan para obtener más créditos."
 #. js-lingui-id: iSuLEw
 #: src/modules/information-banner/components/billing/InformationBannerNoMoreCredits.tsx
 msgid "Credits limit reached. Contact your admin to resume Workflows and AI."
-msgstr ""
+msgstr "Límite de créditos alcanzado. Contacta a tu administrador para reanudar flujos de trabajo e IA."
 
 #. js-lingui-id: 2rAG3K
 #: src/modules/information-banner/components/billing/InformationBannerNoMoreCredits.tsx
 msgid "Credits limit reached. Update your credit plan to keep Workflows and AI running."
-msgstr ""
+msgstr "Límite de créditos alcanzado. Actualiza tu plan de créditos para mantener flujos de trabajo e IA activos."
 
 #. js-lingui-id: n3kKrs
 #: src/modules/settings/billing/components/SettingsBillingCreditsSection.tsx
@@ -4656,7 +4656,7 @@ msgstr "Cron"
 #. js-lingui-id: rV1+uS
 #: src/modules/settings/logic-functions/components/triggers/SettingsLogicFunctionCronTriggerSection.tsx
 msgid "Cron triggers pass no payload — the handler is called with an empty object."
-msgstr ""
+msgstr "Los disparadores cron no envían datos — el controlador se llama con un objeto vacío."
 
 #. js-lingui-id: zovbHa
 #: src/modules/workflow/workflow-trigger/components/WorkflowEditTriggerCronForm.tsx
@@ -4822,7 +4822,7 @@ msgstr "Personalizar diseños de página y estructura de UI"
 #. js-lingui-id: LMX+xC
 #: src/modules/settings/data-model/object-details/components/tabs/ObjectLayout.tsx
 msgid "Customize record page"
-msgstr ""
+msgstr "Personalizar página de registro"
 
 #. js-lingui-id: 1KIzk7
 #: src/modules/settings/data-model/object-details/components/tabs/ObjectLayout.tsx
@@ -5921,7 +5921,7 @@ msgstr "ej., resumen, estado, conteo"
 #. js-lingui-id: npNQJR
 #: src/pages/settings/data-model/new-index/SettingsObjectNewIndex.tsx
 msgid "Each index speeds up reads on the fields it covers, but slows down every insert and update, and uses disk space. Only add an index when you know which queries it serves."
-msgstr ""
+msgstr "Cada índice acelera las lecturas en los campos que cubre, pero ralentiza cada inserción y actualización, y usa espacio en disco. Añade un índice solo cuando sepas qué consultas sirve."
 
 #. js-lingui-id: 79hamt
 #: src/modules/side-panel/pages/page-layout/constants/settings/ChartConfigurationSettingLabels.ts
@@ -6963,7 +6963,7 @@ msgstr "Excluir correos electrónicos no profesionales"
 #. js-lingui-id: ccv57g
 #: src/modules/settings/accounts/components/SettingsAccountsBlocklistSection.tsx
 msgid "Exclude the following people and domains from my email sync."
-msgstr ""
+msgstr "Excluir las siguientes personas y dominios de mi sincronización de correo."
 
 #. js-lingui-id: yhhfqh
 #: src/modules/settings/accounts/components/SettingsAccountsBlocklistSection.tsx
@@ -7106,7 +7106,7 @@ msgstr "Exportar CSV"
 #. js-lingui-id: leUV74
 #: src/modules/settings/logic-functions/components/triggers/SettingsLogicFunctionWorkflowActionTriggerSection.tsx
 msgid "Exposes the function as a step in the workflow builder"
-msgstr ""
+msgstr "Expone la función como un paso en el constructor de flujos de trabajo"
 
 #. js-lingui-id: Kh6fBo
 #: src/modules/settings/logic-functions/components/triggers/SettingsLogicFunctionToolTriggerSection.tsx
@@ -7478,12 +7478,12 @@ msgstr ""
 #: src/modules/side-panel/pages/page-layout/utils/getPageLayoutPageTitle.ts
 #: src/modules/side-panel/hooks/useOpenWidgetSettingsInSidePanel.ts
 msgid "Field widget"
-msgstr ""
+msgstr "Widget de campo"
 
 #. js-lingui-id: hlVgd/
 #: src/modules/side-panel/components/hooks/usePageLayoutHeaderInfo.ts
 msgid "Field Widget"
-msgstr ""
+msgstr "Widget de campo"
 
 #. js-lingui-id: RnX5oc
 #: src/pages/settings/applications/SettingsAvailableApplicationDetails.tsx
@@ -7521,7 +7521,7 @@ msgstr "Campos (opcional)"
 #. js-lingui-id: h5NDR9
 #: src/pages/settings/applications/tabs/SettingsApplicationDetailContentTab.tsx
 msgid "Fields added to other objects"
-msgstr ""
+msgstr "Campos añadidos a otros objetos"
 
 #. js-lingui-id: Tnz22x
 #: src/modules/object-record/record-merge/components/MergeSettingsTab.tsx
@@ -7584,7 +7584,7 @@ msgstr "Archivo \"{fileName}\" subido correctamente"
 #. js-lingui-id: EYl2hs
 #: src/modules/activities/files/hooks/useUploadAttachmentFile.tsx
 msgid "File field not found for attachment object"
-msgstr ""
+msgstr "Campo de archivo no encontrado para el objeto adjunto"
 
 #. js-lingui-id: N793lP
 #: src/modules/object-record/record-field/ui/meta-types/input/components/FilesFieldInput.tsx
@@ -7627,7 +7627,7 @@ msgstr "Filtrar por evento"
 #. js-lingui-id: yZOiaW
 #: src/modules/side-panel/components/SidePanelObjectFilterDropdown.tsx
 msgid "Filter by object type"
-msgstr ""
+msgstr "Filtrar por tipo de objeto"
 
 #. js-lingui-id: gVEHcL
 #: src/pages/settings/security/event-logs/components/EventLogFilters.tsx
@@ -8312,7 +8312,7 @@ msgstr ""
 #. js-lingui-id: WC32k6
 #: src/pages/settings/applications/tabs/SettingsApplicationDetailContentTab.tsx
 msgid "How records, pages, and navigation are displayed"
-msgstr ""
+msgstr "Cómo se muestran registros, páginas y navegación"
 
 #. js-lingui-id: B06Bgk
 #: src/pages/onboarding/CreateProfile.tsx
@@ -9252,12 +9252,12 @@ msgstr "Última 1 Hora (del más antiguo → al más nuevo)"
 #. js-lingui-id: YoKFgq
 #: src/modules/settings/admin-panel/components/SettingsAdminGeneral.tsx
 msgid "Last 10 users created. Click to impersonate."
-msgstr ""
+msgstr "Últimos 10 usuarios creados. Haz clic para suplantar."
 
 #. js-lingui-id: sgqwjE
 #: src/modules/settings/admin-panel/components/SettingsAdminGeneral.tsx
 msgid "Last 10 users created. Click to manage feature flags or impersonate."
-msgstr ""
+msgstr "Últimos 10 usuarios creados. Haz clic para gestionar feature flags o suplantar."
 
 #. js-lingui-id: XUlP/Y
 #: src/modules/settings/admin-panel/health-status/constants/WorkerQueueMetricsSelectOptions.ts
@@ -9885,7 +9885,7 @@ msgstr "Gestionar miembros"
 #. js-lingui-id: LNz5UW
 #: src/pages/settings/data-model/SettingsObjects.tsx
 msgid "Manage objects, fields and relationships"
-msgstr ""
+msgstr "Administrar objetos, campos y relaciones"
 
 #. js-lingui-id: eGGH1l
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useSettingsRolePermissionFlagConfig.ts
@@ -10094,7 +10094,7 @@ msgstr "Fusionando..."
 #. js-lingui-id: xDAtGP
 #: src/pages/settings/security/event-logs/utils/getColumnsForEventLogTable.ts
 msgid "Message"
-msgstr ""
+msgstr "Mensaje"
 
 #. js-lingui-id: U15XwX
 #: src/modules/activities/timeline-activities/rows/message/components/EventCardMessage.tsx
@@ -10591,7 +10591,7 @@ msgstr "Nuevo chat"
 #. js-lingui-id: TsXckK
 #: src/modules/sign-in-background-mock/components/BackgroundMockPage.tsx
 msgid "New Company"
-msgstr ""
+msgstr "Nueva empresa"
 
 #. js-lingui-id: +HY5kX
 #: src/modules/side-panel/components/SidePanelTopBarRightCornerIcon.tsx
@@ -10821,12 +10821,12 @@ msgstr "No hay agentes que coincidan con tu búsqueda"
 #. js-lingui-id: nPalt1
 #: src/pages/settings/ai/SettingsAiUsageUserDetail.tsx
 msgid "No AI consumption recorded for this user."
-msgstr ""
+msgstr "No hay consumo de IA registrado para este usuario."
 
 #. js-lingui-id: 42kV9p
 #: src/modules/settings/admin-panel/ai/components/SettingsAdminAI.tsx
 msgid "No AI usage data recorded yet."
-msgstr ""
+msgstr "Aún no hay datos de uso de IA registrados."
 
 #. js-lingui-id: 9mx36q
 #: src/modules/settings/roles/role-assignment/components/SettingsRoleAssignmentTable.tsx
@@ -11043,7 +11043,7 @@ msgstr "Ningún campo configurado"
 #. js-lingui-id: /hvarH
 #: src/modules/side-panel/pages/page-layout/components/dropdown-content/ChartGroupByFieldSelectionRelationFieldView.tsx
 msgid "No fields available"
-msgstr ""
+msgstr "No hay campos disponibles"
 
 #. js-lingui-id: RM6uKY
 #: src/modules/settings/security/components/SettingsSecurityEditableProfileFields.tsx
@@ -11115,7 +11115,7 @@ msgstr "No se encontró la última versión"
 #. js-lingui-id: vV85hO
 #: src/modules/workflow/workflow-run/observability/WorkflowRunStepLogsDetail.tsx
 msgid "No logs were recorded for this step."
-msgstr ""
+msgstr "No se registraron logs para este paso."
 
 #. js-lingui-id: 5sf2dF
 #: src/pages/settings/ai/components/SettingsAgentLogsTab.tsx
@@ -11140,12 +11140,12 @@ msgstr "No hay miembros que coincidan con tu búsqueda"
 #. js-lingui-id: JzzHsG
 #: src/pages/settings/ai/SettingsAgentTurnDetail.tsx
 msgid "No messages found for this turn"
-msgstr ""
+msgstr "No se encontraron mensajes para este turno"
 
 #. js-lingui-id: IohPnt
 #: src/modules/settings/admin-panel/components/SettingsAdminChatThreadMessageList.tsx
 msgid "No messages found."
-msgstr ""
+msgstr "No se encontraron mensajes."
 
 #. js-lingui-id: 0NudpV
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminWorkerMetricsGraph.tsx
@@ -11166,7 +11166,7 @@ msgstr "Sin notas"
 #. js-lingui-id: 14uqQk
 #: src/pages/settings/applications/components/SettingsApplicationDataTable.tsx
 msgid "No object found"
-msgstr ""
+msgstr "No se encontró ningún objeto"
 
 #. js-lingui-id: YFHO2u
 #: src/modules/navigation-menu-item/edit/side-panel/components/SidePanelNewSidebarItemViewObjectPickerSubView.tsx
@@ -11218,7 +11218,7 @@ msgstr "No se han establecido permisos para objetos individuales."
 #: src/modules/object-record/record-field/ui/form-types/components/FormSingleRecordPicker.tsx
 #: src/modules/object-record/record-field/ui/form-types/components/FormSingleRecordFieldChip.tsx
 msgid "No record"
-msgstr ""
+msgstr "Sin registro"
 
 #. js-lingui-id: ePgApM
 #: src/modules/workflow/workflow-trigger/components/WorkflowEditTriggerManual.tsx
@@ -11229,7 +11229,7 @@ msgstr "No se requiere ningún registro para activar este flujo de trabajo"
 #: src/modules/command-menu-item/edit/components/CommandMenuItemEditRecordSelectionDropdown.tsx
 #: src/modules/command-menu-item/edit/components/CommandMenuItemEditRecordSelectionDropdown.tsx
 msgid "No record selected"
-msgstr ""
+msgstr "Ningún registro seleccionado"
 
 #. js-lingui-id: EqGTpW
 #: src/modules/object-record/record-table/empty-state/components/RecordTableEmptyStateReadOnly.tsx
@@ -11619,7 +11619,7 @@ msgstr "ID del objeto"
 #. js-lingui-id: PezPrT
 #: src/modules/object-record/record-index/components/RecordIndexEmptyStateNotShared.tsx
 msgid "Object not shared"
-msgstr ""
+msgstr "Objeto no compartido"
 
 #. js-lingui-id: wZpAXW
 #: src/modules/metadata-error-handler/hooks/useMetadataErrorHandler.ts
@@ -11675,7 +11675,7 @@ msgstr "Objetos"
 #. js-lingui-id: tmyEbd
 #: src/pages/settings/applications/components/SettingsApplicationDataTable.tsx
 msgid "Objects and fields managed by this app"
-msgstr ""
+msgstr "Objetos y campos gestionados por esta aplicación"
 
 #. js-lingui-id: /8Yh6y
 #: src/modules/settings/roles/role-permissions/objects-permissions/components/SettingsRolePermissionsObjectsSection.tsx
@@ -11861,7 +11861,7 @@ msgstr "Abrir Outlook"
 #. js-lingui-id: p9J4lB
 #: src/pages/settings/layout/SettingsLayoutViewDetail.tsx
 msgid "Open records in"
-msgstr ""
+msgstr "Abrir registros en"
 
 #. js-lingui-id: bY2Xkv
 #: src/modules/side-panel/components/SidePanelToggleButton.tsx
@@ -11928,7 +11928,7 @@ msgstr "Naranja"
 #. js-lingui-id: I/EsFC
 #: src/pages/settings/layout/SettingsLayoutViewDetail.tsx
 msgid "Order in which records are displayed"
-msgstr ""
+msgstr "Orden en que se muestran los registros"
 
 #. js-lingui-id: VWupWc
 #: src/modules/advanced-text-editor/extensions/slash-command/DefaultSlashCommands.ts
@@ -12275,7 +12275,7 @@ msgstr ""
 #. js-lingui-id: 64gHBj
 #: src/modules/command-menu-item/engine-command/record/components/DestroyRecordsCommand.tsx
 msgid "Permanently Destroy {objectLabel}"
-msgstr ""
+msgstr "Eliminar permanentemente {objectLabel}"
 
 #. js-lingui-id: yWmZKk
 #: src/modules/metadata-error-handler/hooks/useMetadataErrorHandler.ts
@@ -12333,7 +12333,7 @@ msgstr "Selecciona un objeto"
 #. js-lingui-id: JHXjkT
 #: src/pages/settings/data-model/new-index/SettingsObjectNewIndex.tsx
 msgid "Pick one or more fields. The order you select them in becomes the column order in the index — important for composite queries. For composite fields like Address, pick the specific sub-column to index."
-msgstr ""
+msgstr "Elige uno o más campos. El orden en que los selecciones será el orden de columnas en el índice — importante para consultas compuestas. Para campos compuestos como Dirección, elige la subcolumna específica a indexar."
 
 #. js-lingui-id: X1kz7Q
 #: src/pages/settings/data-model/new-index/SettingsObjectNewIndex.tsx
@@ -12994,7 +12994,7 @@ msgstr "Etiqueta de registro"
 #. js-lingui-id: XueM/X
 #: src/pages/settings/layout/SettingsLayout.tsx
 msgid "Record page"
-msgstr ""
+msgstr "Página de registro"
 
 #. js-lingui-id: mAHjRd
 #: src/modules/object-record/object-options-dropdown/components/ObjectOptionsDropdownLayoutOpenInContent.tsx
@@ -13022,7 +13022,7 @@ msgstr "Nivel de registro"
 #: src/modules/command-menu-item/edit/components/CommandMenuItemEditRecordSelectionDropdown.tsx
 #: src/modules/command-menu-item/edit/components/CommandMenuItemEditRecordSelectionDropdown.tsx
 msgid "Record(s) selected"
-msgstr ""
+msgstr "Registro(s) seleccionado(s)"
 
 #. js-lingui-id: PWlTvh
 #: src/modules/settings/roles/role-permissions/object-level-permissions/components/SettingsRolePermissionsObjectLevelTableHeader.tsx
@@ -13197,7 +13197,7 @@ msgstr "Eliminar filtro Eliminado"
 #. js-lingui-id: /hrkZs
 #: src/modules/settings/data-model/indexes/forms/components/SettingsObjectIndexFieldsForm.tsx
 msgid "Remove field"
-msgstr ""
+msgstr "Eliminar campo"
 
 #. js-lingui-id: 9VZ6f0
 #: src/modules/navigation-menu-item/edit/side-panel/components/SidePanelEditOrganizeActions.tsx
@@ -13379,7 +13379,7 @@ msgstr ""
 #. js-lingui-id: AASIAQ
 #: src/modules/layout-customization/components/LayoutCustomizationBarMenuDropdown.tsx
 msgid "Reset record page layout"
-msgstr ""
+msgstr "Restablecer diseño de página de registro"
 
 #. js-lingui-id: L+rMC9
 #: src/modules/side-panel/pages/page-layout/components/WidgetSettingsManageSection.tsx
@@ -13463,7 +13463,7 @@ msgstr "Restaurar"
 #. js-lingui-id: 8KyDbM
 #: src/modules/command-menu-item/engine-command/record/components/RestoreRecordsCommand.tsx
 msgid "Restore {objectLabel}"
-msgstr ""
+msgstr "Restaurar {objectLabel}"
 
 #. js-lingui-id: hO3AfV
 #: src/pages/settings/ai/components/SettingsAiModelsTab.tsx
@@ -13857,7 +13857,7 @@ msgstr "Buscar una vista..."
 #. js-lingui-id: N7Z3jc
 #: src/modules/settings/data-model/object-details/components/tabs/SettingsObjectSearchSection.tsx
 msgid "Search across indexed fields..."
-msgstr ""
+msgstr "Buscar en campos indexados..."
 
 #. js-lingui-id: +7s4fw
 #: src/modules/settings/roles/role-assignment/components/SettingsRoleAssignmentEntityPickerDropdown.tsx
@@ -14147,7 +14147,7 @@ msgstr ""
 #: src/pages/settings/members/tabs/SettingsWorkspaceMembersTeamTab.tsx
 #: src/pages/settings/data-model/SettingsObjectDetailPage.tsx
 msgid "See records"
-msgstr ""
+msgstr "Ver registros"
 
 #. js-lingui-id: irbH/8
 #: src/modules/settings/roles/role-permissions/objects-permissions/components/SettingsRolePermissionsObjectsSection.tsx
@@ -14190,7 +14190,7 @@ msgstr "Selecciona una fecha"
 #. js-lingui-id: 1YV5aa
 #: src/modules/settings/data-model/indexes/forms/components/SettingsObjectIndexFieldsForm.tsx
 msgid "Select a field"
-msgstr ""
+msgstr "Seleccionar un campo"
 
 #. js-lingui-id: bP/w4M
 #: src/modules/workflow/workflow-steps/filters/components/WorkflowStepFilterFieldSelect.tsx
@@ -14651,7 +14651,7 @@ msgstr "Mostrar grupos ocultos"
 #. js-lingui-id: eOY8jq
 #: src/modules/side-panel/components/SidePanelObjectFilterDropdownContent.tsx
 msgid "Show hidden objects"
-msgstr ""
+msgstr "Mostrar objetos ocultos"
 
 #. js-lingui-id: qi+g0a
 #: src/modules/spreadsheet-import/steps/components/ValidationStep/ValidationStep.tsx
@@ -14661,7 +14661,7 @@ msgstr "Mostrar solo filas con errores"
 #. js-lingui-id: 3UVA3z
 #: src/modules/settings/data-model/object-details/components/tabs/SettingsObjectSearchSection.tsx
 msgid "Show this object's records in the command menu (⌘K)."
-msgstr ""
+msgstr "Mostrar los registros de este objeto en el menú de comandos (⌘K)."
 
 #. js-lingui-id: TJ4tz9
 #: src/modules/side-panel/pages/page-layout/constants/settings/ChartConfigurationSettingLabels.ts
@@ -14982,7 +14982,7 @@ msgstr "Español"
 #. js-lingui-id: pyfee5
 #: src/modules/settings/data-model/object-details/components/tabs/ObjectSettings.tsx
 msgid "Speed up reads on the fields you filter or sort by most. Each index also slows down writes and uses disk space, so add them with intent."
-msgstr ""
+msgstr "Acelera las lecturas en los campos que más filtras u ordenas. Cada índice también ralentiza las escrituras y usa espacio en disco; añádelos con intención."
 
 #. js-lingui-id: gsifzp
 #: src/modules/side-panel/pages/page-layout/utils/__tests__/shouldHideChartSetting.test.ts
@@ -15649,7 +15649,7 @@ msgstr ""
 #. js-lingui-id: n+CCXl
 #: src/pages/settings/ai/components/SettingsAiModelsTab.tsx
 msgid "The default AI model used for chats, agents, and workflows"
-msgstr ""
+msgstr "El modelo de IA predeterminado para chats, agentes y flujos de trabajo"
 
 #. js-lingui-id: 1xQkU9
 #: src/modules/settings/data-model/fields/forms/phones/components/SettingsDataModelFieldPhonesForm.tsx
@@ -16390,7 +16390,7 @@ msgstr "Activa la función a intervalos regulares"
 #. js-lingui-id: /oEL03
 #: src/modules/settings/logic-functions/components/triggers/SettingsLogicFunctionDatabaseEventTriggerSection.tsx
 msgid "Triggers the function when a record changes"
-msgstr ""
+msgstr "Activa la función cuando cambia un registro"
 
 #. js-lingui-id: YdQqyX
 #: src/modules/settings/logic-functions/components/triggers/SettingsLogicFunctionHttpTriggerSection.tsx

@@ -15,6 +15,7 @@ export type RandomUserWorkspaceData = {
   id: string;
   userId: string;
   workspaceId: string;
+  locale: string;
 };
 
 export type RandomWorkspaceMemberData = {
@@ -526,13 +527,14 @@ export function generateRandomUsers(): {
       id: userWorkspaceId,
       userId,
       workspaceId: SEED_APPLE_WORKSPACE_ID,
+      locale: 'es-ES',
     });
 
     workspaceMembers.push({
       id: workspaceMemberId,
       nameFirstName: firstName,
       nameLastName: lastName,
-      locale: 'en',
+      locale: 'es-ES',
       colorScheme: COLOR_SCHEMES[colorSchemeIndex],
       userEmail: email,
       userId,

@@ -22,8 +22,19 @@ export const bindDataToRequestObject = (
   request.impersonationContext = data.impersonationContext;
   request.tokenType = data.tokenType;
 
+  const headerLocale = request.headers['x-locale'] as
+    | keyof typeof APP_LOCALES
+    | undefined;
+  const userWorkspaceLocale = data.userWorkspace?.locale;
+
+  const candidateLocale =
+    headerLocale ??
+    userWorkspaceLocale ??
+    ('es-ES' as keyof typeof APP_LOCALES);
+
+  // Bridge Studio: español por defecto; 'en' legado se trata como es-ES.
   request.locale =
-    data.userWorkspace?.locale ??
-    (request.headers['x-locale'] as keyof typeof APP_LOCALES) ??
-    SOURCE_LOCALE;
+    candidateLocale === SOURCE_LOCALE
+      ? ('es-ES' as keyof typeof APP_LOCALES)
+      : candidateLocale;
 };

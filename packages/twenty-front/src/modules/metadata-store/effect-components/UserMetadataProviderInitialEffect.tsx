@@ -24,6 +24,8 @@ import {
 } from '~/generated-metadata/graphql';
 import { dateLocaleState } from '~/localization/states/dateLocaleState';
 import { dynamicActivate } from '~/utils/i18n/dynamicActivate';
+import { resolveApplicationLocale } from '~/utils/i18n/resolveApplicationLocale';
+import { syncApplicationMetadataLocale } from '~/utils/i18n/syncApplicationMetadataLocale';
 
 export const UserMetadataProviderInitialEffect = () => {
   const hasAccessTokenPair = useHasAccessTokenPair();
@@ -129,12 +131,19 @@ export const UserMetadataProviderInitialEffect = () => {
       return {
         ...workspaceMember,
         colorScheme: (workspaceMember.colorScheme as ColorScheme) ?? 'System',
-        locale:
-          (workspaceMember.locale as keyof typeof APP_LOCALES) ?? 'es-ES',
+        locale: resolveApplicationLocale(
+          workspaceMember.locale as keyof typeof APP_LOCALES,
+        ),
       };
     };
 
     if (isDefined(workspaceMember)) {
+      const applicationLocale = resolveApplicationLocale(
+        workspaceMember.locale as keyof typeof APP_LOCALES,
+      );
+
+      syncApplicationMetadataLocale(store, applicationLocale);
+
       const updatedWorkspaceMember =
         affectDefaultValuesOnEmptyWorkspaceMemberFields(workspaceMember);
       setCurrentWorkspaceMember(updatedWorkspaceMember);
@@ -143,9 +152,7 @@ export const UserMetadataProviderInitialEffect = () => {
 
       initializeFormatPreferences(updatedWorkspaceMember);
 
-      dynamicActivate(
-        (workspaceMember.locale as keyof typeof APP_LOCALES) ?? 'es-ES',
-      );
+      dynamicActivate(applicationLocale);
     }
 
     if (isDefined(workspaceMembers)) {
@@ -177,6 +184,7 @@ export const UserMetadataProviderInitialEffect = () => {
     setCurrentWorkspaceDeletedMembers,
     updateLocaleCatalog,
     setIsCurrentUserLoaded,
+    store,
   ]);
 
   return null;

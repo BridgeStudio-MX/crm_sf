@@ -173,7 +173,7 @@ export class UserWorkspaceService extends TypeOrmQueryService<UserWorkspaceEntit
         userId: user.id,
         userEmail: user.email,
         avatarUrl: userWorkspace.defaultAvatarUrl ?? null,
-        locale: (user.locale ?? SOURCE_LOCALE) as keyof typeof APP_LOCALES,
+        locale: (user.locale ?? 'es-ES') as keyof typeof APP_LOCALES,
       });
 
       const workspaceMember = await workspaceMemberRepository.find({

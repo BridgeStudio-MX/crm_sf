@@ -42,7 +42,7 @@ export const seedUserWorkspaces = async ({
 }: SeedUserWorkspacesArgs) => {
   let userWorkspaces: Pick<
     UserWorkspaceEntity,
-    'id' | 'userId' | 'workspaceId'
+    'id' | 'userId' | 'workspaceId' | 'locale'
   >[] = [];
 
   if (workspaceId === SEED_APPLE_WORKSPACE_ID) {
@@ -51,26 +51,31 @@ export const seedUserWorkspaces = async ({
         id: USER_WORKSPACE_DATA_SEED_IDS.TIM,
         userId: USER_DATA_SEED_IDS.TIM,
         workspaceId,
+        locale: 'es-ES',
       },
       {
         id: USER_WORKSPACE_DATA_SEED_IDS.JANE,
         userId: USER_DATA_SEED_IDS.JANE,
         workspaceId,
+        locale: 'es-ES',
       },
       {
         id: USER_WORKSPACE_DATA_SEED_IDS.JONY,
         userId: USER_DATA_SEED_IDS.JONY,
         workspaceId,
+        locale: 'es-ES',
       },
       {
         id: USER_WORKSPACE_DATA_SEED_IDS.PHIL,
         userId: USER_DATA_SEED_IDS.PHIL,
         workspaceId,
+        locale: 'es-ES',
       },
       {
         id: USER_WORKSPACE_DATA_SEED_IDS.SCOTT,
         userId: USER_DATA_SEED_IDS.SCOTT,
         workspaceId,
+        locale: 'es-ES',
       },
     ];
 
@@ -83,28 +88,32 @@ export const seedUserWorkspaces = async ({
         id: USER_WORKSPACE_DATA_SEED_IDS.TIM_ACME,
         userId: USER_DATA_SEED_IDS.TIM,
         workspaceId,
+        locale: 'es-ES',
       },
       {
         id: USER_WORKSPACE_DATA_SEED_IDS.JONY_ACME,
         userId: USER_DATA_SEED_IDS.JONY,
         workspaceId,
+        locale: 'es-ES',
       },
       {
         id: USER_WORKSPACE_DATA_SEED_IDS.PHIL_ACME,
         userId: USER_DATA_SEED_IDS.PHIL,
         workspaceId,
+        locale: 'es-ES',
       },
       {
         id: USER_WORKSPACE_DATA_SEED_IDS.JANE_ACME,
         userId: USER_DATA_SEED_IDS.JANE,
         workspaceId,
+        locale: 'es-ES',
       },
     ];
   }
   await queryRunner.manager
     .createQueryBuilder()
     .insert()
-    .into(`${schemaName}.${tableName}`, ['id', 'userId', 'workspaceId'])
+    .into(`${schemaName}.${tableName}`, ['id', 'userId', 'workspaceId', 'locale'])
     .orIgnore()
     .values(userWorkspaces)
     .execute();

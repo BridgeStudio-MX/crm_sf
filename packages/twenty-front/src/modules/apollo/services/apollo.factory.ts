@@ -24,6 +24,7 @@ import { getTokenPair } from '@/apollo/utils/getTokenPair';
 import { loggerLink } from '@/apollo/utils/loggerLink';
 import { StreamingRestLink } from '@/apollo/utils/streamingRestLink';
 import { i18n } from '@lingui/core';
+import { type APP_LOCALES } from 'twenty-shared/translations';
 import { t } from '@lingui/core/macro';
 import {
   type DefinitionNode,
@@ -35,6 +36,7 @@ import isEmpty from 'lodash.isempty';
 import { getGenericOperationName, isDefined } from 'twenty-shared/utils';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { isUndefinedOrNull } from '~/utils/isUndefinedOrNull';
+import { resolveApplicationLocale } from '~/utils/i18n/resolveApplicationLocale';
 
 const logger = loggerLink(() => 'Twenty');
 
@@ -111,7 +113,10 @@ export class ApolloFactory implements ApolloManager {
       const authLink = setContext(async (_, { headers }) => {
         const tokenPair = getTokenPair();
 
-        const locale = this.currentWorkspaceMember?.locale ?? i18n.locale;
+        const locale = resolveApplicationLocale(
+          (i18n.locale as keyof typeof APP_LOCALES | undefined) ??
+            this.currentWorkspaceMember?.locale,
+        );
 
         if (isUndefinedOrNull(tokenPair)) {
           return {

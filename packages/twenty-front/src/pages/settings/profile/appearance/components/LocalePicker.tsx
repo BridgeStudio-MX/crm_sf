@@ -6,7 +6,6 @@ import { getDateFnsLocale } from '@/ui/field/display/utils/getDateFnsLocale';
 import { Select } from '@/ui/input/components/Select';
 import { useUpdateWorkspaceMemberSettings } from '@/settings/profile/hooks/useUpdateWorkspaceMemberSettings';
 
-import { useInvalidateMetadataStore } from '@/metadata-store/hooks/useInvalidateMetadataStore';
 import { useStore } from 'jotai';
 import { useLingui } from '@lingui/react/macro';
 import { enUS } from 'date-fns/locale';
@@ -15,6 +14,7 @@ import { isDefined } from 'twenty-shared/utils';
 import { dateLocaleState } from '~/localization/states/dateLocaleState';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 import { dynamicActivate } from '~/utils/i18n/dynamicActivate';
+import { syncApplicationMetadataLocale } from '~/utils/i18n/syncApplicationMetadataLocale';
 import { logError } from '~/utils/logError';
 
 const StyledContainer = styled.div`
@@ -31,9 +31,9 @@ export const LocalePicker = () => {
   );
   const { updateWorkspaceMemberSettings } = useUpdateWorkspaceMemberSettings();
 
-  const { invalidateMetadataStore } = useInvalidateMetadataStore();
-
-  const updateWorkspaceMember = async (changedFields: any) => {
+  const updateWorkspaceMember = async (changedFields: {
+    locale?: keyof typeof APP_LOCALES;
+  }) => {
     if (!currentWorkspaceMember?.id) {
       throw new Error('User is not logged in');
     }
@@ -71,7 +71,7 @@ export const LocalePicker = () => {
       // oxlint-disable-next-line no-console
       console.log('Failed to save locale to localStorage:', error);
     }
-    invalidateMetadataStore();
+    syncApplicationMetadataLocale(store, value);
   };
 
   const unsortedLocaleOptions: Array<{

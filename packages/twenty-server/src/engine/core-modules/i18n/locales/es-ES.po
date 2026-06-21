@@ -1372,6 +1372,10 @@ msgstr "Elemento del menú de comandos no encontrado."
 msgid "Commas and dot"
 msgstr ""
 
+#. js-lingui-id: pdOYzu
+msgid "All {objectLabelPlural}"
+msgstr "Todas las {objectLabelPlural}"
+
 #. js-lingui-id: s2QZS6
 #: src/engine/workspace-manager/twenty-standard-application/utils/object-metadata/create-standard-flat-object-metadata.util.ts
 msgid "Companies"
@@ -4154,7 +4158,7 @@ msgstr ""
 #: src/engine/workspace-manager/twenty-standard-application/utils/field-metadata/compute-person-standard-flat-field-metadata.util.ts
 #: src/engine/workspace-manager/twenty-standard-application/utils/field-metadata/compute-company-standard-flat-field-metadata.util.ts
 msgid "Linkedin"
-msgstr ""
+msgstr "LinkedIn"
 
 #. js-lingui-id: LeFv/R
 #: src/engine/workspace-manager/twenty-standard-application/utils/field-metadata/compute-person-standard-flat-field-metadata.util.ts
@@ -4254,7 +4258,7 @@ msgstr ""
 #. js-lingui-id: oE8Gmu
 #: src/engine/workspace-manager/twenty-standard-application/utils/field-metadata/compute-opportunity-standard-flat-field-metadata.util.ts
 msgid "Meeting"
-msgstr ""
+msgstr "Reunión"
 
 #. js-lingui-id: xDAtGP
 #: src/engine/workspace-manager/twenty-standard-application/utils/object-metadata/create-standard-flat-object-metadata.util.ts
@@ -4526,7 +4530,7 @@ msgstr "Se encontraron múltiples suscripciones donde se esperaba una."
 #: src/engine/workspace-manager/twenty-standard-application/utils/field-metadata/compute-company-standard-flat-field-metadata.util.ts
 #: src/engine/workspace-manager/twenty-standard-application/utils/field-metadata/compute-attachment-standard-flat-field-metadata.util.ts
 msgid "Name"
-msgstr ""
+msgstr "Nombre"
 
 #. js-lingui-id: 2m6Fru
 #: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name-availability.util.ts
@@ -4629,7 +4633,11 @@ msgstr ""
 #. js-lingui-id: isRobC
 #: src/engine/workspace-manager/twenty-standard-application/utils/field-metadata/compute-opportunity-standard-flat-field-metadata.util.ts
 msgid "New"
-msgstr ""
+msgstr "Nuevo"
+
+#. js-lingui-id: 6+byWT
+msgid "By Stage"
+msgstr "Por etapa"
 
 #. js-lingui-id: TYhxR+
 #: src/engine/core-modules/user/services/user.service.ts
@@ -5672,7 +5680,7 @@ msgstr ""
 #. js-lingui-id: qcybNQ
 #: src/engine/workspace-manager/twenty-standard-application/utils/field-metadata/compute-opportunity-standard-flat-field-metadata.util.ts
 msgid "Proposal"
-msgstr ""
+msgstr "Propuesta"
 
 #. js-lingui-id: dtGxRz
 #: src/engine/core-modules/record-transformer/utils/transform-phones-value.util.ts
@@ -6155,7 +6163,7 @@ msgstr "Sábado"
 #. js-lingui-id: cOh+MI
 #: src/engine/workspace-manager/twenty-standard-application/utils/field-metadata/compute-opportunity-standard-flat-field-metadata.util.ts
 msgid "Screening"
-msgstr ""
+msgstr "Evaluación"
 
 #. js-lingui-id: eKi1df
 #: src/engine/core-modules/sdk-client/exceptions/sdk-client.exception.ts
@@ -6432,7 +6440,7 @@ msgstr "Domingo"
 #: src/engine/workspace-manager/twenty-standard-application/utils/field-metadata/compute-workspace-member-standard-flat-field-metadata.util.ts
 #: src/engine/metadata-modules/view-field-group/constants/standard-view-field-group-names.ts
 msgid "System"
-msgstr ""
+msgstr "Sistema"
 
 #. js-lingui-id: Bhmfez
 #: src/engine/metadata-modules/flat-object-metadata/validators/utils/validate-object-metadata-system-fields-integrity.util.ts

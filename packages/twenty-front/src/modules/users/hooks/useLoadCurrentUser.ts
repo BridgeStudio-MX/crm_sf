@@ -17,9 +17,12 @@ import { type ObjectPermissions } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 import { type ColorScheme } from 'twenty-ui/input';
 import { useApolloClient } from '@apollo/client/react';
+import { useStore } from 'jotai';
 import { GetCurrentUserDocument } from '~/generated-metadata/graphql';
 import { getWorkspaceUrl } from '~/utils/getWorkspaceUrl';
 import { dynamicActivate } from '~/utils/i18n/dynamicActivate';
+import { resolveApplicationLocale } from '~/utils/i18n/resolveApplicationLocale';
+import { syncApplicationMetadataLocale } from '~/utils/i18n/syncApplicationMetadataLocale';
 
 export const useLoadCurrentUser = () => {
   const setCurrentUser = useSetAtomState(currentUserState);
@@ -43,6 +46,7 @@ export const useLoadCurrentUser = () => {
   const { isOnAWorkspace } = useIsCurrentLocationOnAWorkspace();
 
   const client = useApolloClient();
+  const store = useStore();
 
   const loadCurrentUser = useCallback(async () => {
     const currentUserResult = await client.query({
@@ -85,19 +89,22 @@ export const useLoadCurrentUser = () => {
     }
 
     if (isDefined(user.workspaceMember)) {
+      const applicationLocale = resolveApplicationLocale(
+        user.workspaceMember?.locale as keyof typeof APP_LOCALES,
+      );
+
+      syncApplicationMetadataLocale(store, applicationLocale);
+
       workspaceMember = {
         ...user.workspaceMember,
         colorScheme: user.workspaceMember?.colorScheme as ColorScheme,
-        locale: user.workspaceMember?.locale ?? 'es-ES',
+        locale: applicationLocale,
       };
 
       setCurrentWorkspaceMember(workspaceMember);
 
-      // Initialize unified format preferences state
       initializeFormatPreferences(workspaceMember);
-      dynamicActivate(
-        (workspaceMember.locale as keyof typeof APP_LOCALES) ?? 'es-ES',
-      );
+      dynamicActivate(applicationLocale);
     }
 
     const workspace = isDefined(user.currentWorkspace)
@@ -145,6 +152,7 @@ export const useLoadCurrentUser = () => {
     setLastAuthenticateWorkspaceDomain,
     authProviders,
     setWorkspaceAuthBypassProviders,
+    store,
   ]);
 
   return {

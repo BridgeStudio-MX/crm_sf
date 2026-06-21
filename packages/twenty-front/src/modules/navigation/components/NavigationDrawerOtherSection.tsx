@@ -4,6 +4,7 @@ import { IconHelpCircle, IconSettings } from 'twenty-ui/icon';
 import { AnimatedExpandableContainer } from 'twenty-ui/layout';
 
 import { currentWorkspaceMemberState } from '@/auth/states/currentWorkspaceMemberState';
+import { INTERNAL_CRM_NAVIGATION_CONFIG } from '@/navigation/constants/internal-crm-navigation.config';
 import { getDocumentationUrl } from '@/support/utils/getDocumentationUrl';
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 
@@ -52,13 +53,15 @@ export const NavigationDrawerOtherSection = () => {
           Icon={IconSettings}
           onClick={handleSettingsClick}
         />
-        <NavigationDrawerItem
-          label={t`Documentation`}
-          to={getDocumentationUrl({
-            locale: currentWorkspaceMember?.locale,
-          })}
-          Icon={IconHelpCircle}
-        />
+        {!INTERNAL_CRM_NAVIGATION_CONFIG.hideDocumentation && (
+          <NavigationDrawerItem
+            label={t`Documentation`}
+            to={getDocumentationUrl({
+              locale: currentWorkspaceMember?.locale,
+            })}
+            Icon={IconHelpCircle}
+          />
+        )}
       </AnimatedExpandableContainer>
     </NavigationDrawerSection>
   );

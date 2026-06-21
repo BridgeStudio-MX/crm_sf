@@ -1,6 +1,7 @@
 import { FeatureFlagKey, SettingsPath } from 'twenty-shared/types';
 
 import { useAuth } from '@/auth/hooks/useAuth';
+import { INTERNAL_CRM_NAVIGATION_CONFIG } from '@/navigation/constants/internal-crm-navigation.config';
 import { currentUserState } from '@/auth/states/currentUserState';
 import { currentWorkspaceMemberState } from '@/auth/states/currentWorkspaceMemberState';
 import { billingState } from '@/client-config/states/billingState';
@@ -189,13 +190,16 @@ const useSettingsNavigationItems = (): SettingsNavigationSection[] => {
           label: t`Admin Panel`,
           path: SettingsPath.AdminPanel,
           Icon: IconServer,
-          isHidden: !isAdminEnabled,
+          isHidden:
+            !isAdminEnabled || INTERNAL_CRM_NAVIGATION_CONFIG.hideAdminPanel,
         },
         {
           label: t`Community`,
           path: SettingsPath.Community,
           Icon: IconUsers,
-          isHidden: !permissionMap[PermissionFlagType.WORKSPACE],
+          isHidden:
+            !permissionMap[PermissionFlagType.WORKSPACE] ||
+            INTERNAL_CRM_NAVIGATION_CONFIG.hideCommunity,
         },
         {
           label: t`Support`,
@@ -211,6 +215,7 @@ const useSettingsNavigationItems = (): SettingsNavigationSection[] => {
               '_blank',
             ),
           Icon: IconHelpCircle,
+          isHidden: INTERNAL_CRM_NAVIGATION_CONFIG.hideDocumentation,
         },
         {
           label: t`Logout`,
