@@ -1,9 +1,15 @@
 import { GraphQLClient } from 'graphql-request';
 
 import { twentyConfig } from '../config/twenty.config';
+import {
+  getTwentyRateLimitRetryWaitMs,
+  isTwentyRateLimitError,
+  resetTwentyRequestThrottle,
+  waitForTwentyRequestSlot,
+} from '../utils/twenty-request-throttle.util';
 import { resolveTwentyAuthToken } from './resolve-twenty-auth-token';
 
-const MAX_RETRY_ATTEMPTS = 3;
+const MAX_RETRY_ATTEMPTS = 8;
 const BASE_RETRY_DELAY_MS = 500;
 
 const sleep = (milliseconds: number): Promise<void> =>
@@ -19,6 +25,7 @@ const isRetryableError = (error: unknown): boolean => {
   const message = error.message.toLowerCase();
 
   return (
+    isTwentyRateLimitError(error) ||
     message.includes('fetch failed') ||
     message.includes('network') ||
     message.includes('timeout') ||
@@ -28,12 +35,22 @@ const isRetryableError = (error: unknown): boolean => {
   );
 };
 
+const getRetryDelayMs = (error: unknown, attempt: number): number => {
+  if (isTwentyRateLimitError(error)) {
+    return getTwentyRateLimitRetryWaitMs();
+  }
+
+  return BASE_RETRY_DELAY_MS * 2 ** (attempt - 1);
+};
+
 const requestWithRetry = async <TData>(
   executeRequest: () => Promise<TData>,
 ): Promise<TData> => {
   let lastError: unknown;
 
   for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt += 1) {
+    await waitForTwentyRequestSlot();
+
     try {
       return await executeRequest();
     } catch (error) {
@@ -43,11 +60,12 @@ const requestWithRetry = async <TData>(
         throw error;
       }
 
-      const delayMs = BASE_RETRY_DELAY_MS * 2 ** (attempt - 1);
+      const delayMs = getRetryDelayMs(error, attempt);
       console.warn(
         `[metadata.client] Retry ${attempt}/${MAX_RETRY_ATTEMPTS} in ${delayMs}ms`,
       );
       await sleep(delayMs);
+      resetTwentyRequestThrottle();
     }
   }
 

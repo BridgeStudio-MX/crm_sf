@@ -21,6 +21,7 @@ const runStep = (stepName: (typeof STEPS)[number]): Promise<void> =>
       cwd: path.join(__dirname, '..'),
       env: process.env,
       stdio: 'inherit',
+      shell: true,
     });
 
     child.on('close', (code) => {

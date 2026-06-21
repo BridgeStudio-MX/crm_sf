@@ -114,8 +114,10 @@ jobs:
 
       - name: Bootstrap Parks metadata + demo seed
         working-directory: parks-twenty-service
+        timeout-minutes: 15
         env:
           TWENTY_API_URL: https://parks.bridgehub.mx
           TWENTY_API_KEY: ${{ secrets.TWENTY_API_KEY }}
           RESET_DEMO_SEED: 'true'
+          TWENTY_REQUEST_INTERVAL_MS: '700'
         run: npm run bootstrap:production
