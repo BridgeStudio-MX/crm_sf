@@ -85,3 +85,28 @@ jobs:
             docker compose pull
             docker compose up -d
             docker image prune -f
+
+  parks-bootstrap:
+    needs: deploy
+    runs-on: ubuntu-latest
+    # Metadata Parks + seed demo (borra DEMO-* previos y recrea).
+    # Requiere secret TWENTY_API_KEY (Settings → APIs en parks.bridgehub.mx).
+    # Opcional: variable TWENTY_API_URL (default https://parks.bridgehub.mx).
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install parks-twenty-service dependencies
+        working-directory: parks-twenty-service
+        run: npm ci
+
+      - name: Bootstrap Parks metadata + demo seed
+        working-directory: parks-twenty-service
+        env:
+          TWENTY_API_URL: https://parks.bridgehub.mx
+          TWENTY_API_KEY: ${{ secrets.TWENTY_API_KEY }}
+          RESET_DEMO_SEED: 'true'
+        run: npm run bootstrap:production

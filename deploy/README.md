@@ -100,6 +100,19 @@ git push origin main
 Cada push a `main`: Actions reconstruye la imagen, la sube a GHCR, y el droplet
 hace `pull` + `up -d` con el nuevo codigo. El `.env` del droplet se reutiliza.
 
+Despues del deploy, el job **parks-bootstrap** corre `parks-twenty-service`
+(metadata Parks + datos demo). Borra registros `DEMO-*` anteriores y recrea el
+dataset.
+
+**Secret requerido en GitHub** (Settings → Secrets → Actions):
+
+| Secret | Valor |
+| --- | --- |
+| `TWENTY_API_KEY` | API key Admin de https://parks.bridgehub.mx (Settings → APIs) |
+
+Sin ese secret, el deploy de Twenty sigue funcionando; solo falla el seed demo
+automatico.
+
 ---
 
 # REFERENCIA

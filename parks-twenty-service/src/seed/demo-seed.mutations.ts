@@ -95,3 +95,19 @@ export const FIND_DEMO_CASOS = `
     }
   }
 `;
+
+export const FIND_ALL_DEMO_CASOS = `
+  query FindAllDemoCasos($prefix: String!) {
+    casosLegales(
+      filter: { referencia: { startsWith: $prefix } }
+      first: 50
+    ) {
+      edges {
+        node {
+          id
+          referencia
+        }
+      }
+    }
+  }
+`;

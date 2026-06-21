@@ -3,7 +3,10 @@ import {
   EXPEDIENTE_ESTATUS_ARCHIVADO_FUNO,
   HOLDOVER_ETAPA_DETECTADO,
   HOLDOVER_RESOLUCION_ACTIVO,
+  CHECKLIST_DOCUMENT_TYPES,
 } from '../constants/parks.constants';
+import { checklistService } from '../services/checklist.service';
+import { demoCleanupService } from './demo-cleanup.service';
 import { pdfService } from '../services/pdf.service';
 import { twentyClient } from '../services/twenty.client';
 import { toIsoDateString } from '../utils/business-days.util';
@@ -23,6 +26,7 @@ import {
   CREATE_NAVE,
   CREATE_OPPORTUNITY,
   CREATE_PARQUE,
+  FIND_ALL_DEMO_CASOS,
   FIND_DEMO_CASOS,
 } from './demo-seed.mutations';
 
@@ -620,6 +624,26 @@ const seedOpportunities = async (ids: DemoIdMap): Promise<void> => {
   }
 };
 
+export const seedDemoChecklists = async (): Promise<number> => {
+  const response = await twentyClient.query<{
+    casosLegales: {
+      edges: { node: { id: string; referencia?: string } }[];
+    };
+  }>(FIND_ALL_DEMO_CASOS, { prefix: DEMO_REF_PREFIX });
+
+  const demoCasos = response.casosLegales.edges.map((edge) => edge.node);
+
+  for (const casoLegal of demoCasos) {
+    await checklistService.generarChecklist(casoLegal);
+  }
+
+  console.log(
+    `[seed:demo] + checklists demo (${demoCasos.length} casos × ${CHECKLIST_DOCUMENT_TYPES.length} docs)`,
+  );
+
+  return demoCasos.length;
+};
+
 const generateLogiMexPdf = async (ids: DemoIdMap): Promise<void> => {
   const casoLegalId = ids.casoLogiMex;
 
@@ -640,12 +664,22 @@ const generateLogiMexPdf = async (ids: DemoIdMap): Promise<void> => {
 };
 
 export const demoSeedService = {
-  run: async (options?: { force?: boolean }): Promise<void> => {
+  seedDemoChecklists,
+  run: async (options?: {
+    force?: boolean;
+    reset?: boolean;
+  }): Promise<void> => {
     const force = options?.force === true;
+    const reset =
+      options?.reset === true ||
+      process.env.RESET_DEMO_SEED === 'true' ||
+      force;
 
-    if (!force && (await isDemoAlreadySeeded())) {
+    if (reset) {
+      await demoCleanupService.clearAll();
+    } else if (await isDemoAlreadySeeded()) {
       console.log(
-        '[seed:demo] Demo data already exists (referencia DEMO-*). Use FORCE_DEMO_SEED=true to re-run.',
+        '[seed:demo] Demo data already exists (referencia DEMO-*). Use RESET_DEMO_SEED=true to replace.',
       );
       return;
     }
@@ -666,6 +700,7 @@ export const demoSeedService = {
     await seedInquilinos(ids);
     await seedHojasDeAcuerdos(ids);
     await seedCasosLegales(ids);
+    await seedDemoChecklists();
     await seedExpedientesAndHoldover(ids);
     await seedOpportunities(ids);
     await generateLogiMexPdf(ids);
