@@ -46,7 +46,9 @@ export const getNextParksPipelineStage = (
   currentStageId?: string | null,
 ): string | null => {
   const visibleStages = PARKS_VISIBLE_PIPELINE_STAGES.map((stage) => stage.id);
-  const currentIndex = visibleStages.indexOf(currentStageId ?? '');
+  const currentIndex = visibleStages.indexOf(
+    (currentStageId ?? '') as (typeof visibleStages)[number],
+  );
 
   if (currentIndex < 0 || currentIndex >= visibleStages.length - 1) {
     return null;

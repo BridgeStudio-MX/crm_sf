@@ -7,6 +7,7 @@ import { themeCssVariables } from 'twenty-ui/theme-constants';
 import { ParksStatusBadge } from '@/parks-industrial/components/ui/ParksStatusBadge';
 import {
   formatParksUsd,
+  getParksStackingStatusLabel,
   type ParksPipelineStageTheme,
 } from '@/parks-industrial/utils/parks-format.util';
 import {
@@ -135,7 +136,7 @@ export const ParksRenovacionesKanbanCardView = ({
         <StyledFooter>
           <ParksStatusBadge
             color={stackingStatus.color}
-            label={stackingStatus.label}
+            label={getParksStackingStatusLabel(stackingStatus.statusKey)}
           />
           {item.diasRestantes !== null ? (
             <StyledMeta>{t`${item.diasRestantes}d para vencer`}</StyledMeta>

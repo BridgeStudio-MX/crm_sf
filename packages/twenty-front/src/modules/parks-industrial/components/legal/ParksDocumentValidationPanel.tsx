@@ -1,7 +1,7 @@
 import { styled } from '@linaria/react';
 import { t } from '@lingui/core/macro';
 import { useState } from 'react';
-import { IconAlertTriangle, IconCheck, IconFileSearch } from 'twenty-ui/icon';
+import { IconAlertTriangle, IconCheck, IconSearch } from 'twenty-ui/icon';
 import { Button } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
@@ -149,7 +149,7 @@ export const ParksDocumentValidationPanel = ({
       <StyledActions>
         <Button
           variant="primary"
-          Icon={IconFileSearch}
+          Icon={IconSearch}
           title={t`Validar documentos (OK)`}
           onClick={() => void runValidation(false)}
           disabled={loading}

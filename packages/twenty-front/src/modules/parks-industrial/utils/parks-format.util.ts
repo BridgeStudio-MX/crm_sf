@@ -232,6 +232,21 @@ export const getParksStackingStatus = (
   return { color: 'green', statusKey: 'active' };
 };
 
+export const getParksStackingStatusLabel = (
+  statusKey: ParksStackingStatusKey,
+): string => {
+  switch (statusKey) {
+    case 'available':
+      return 'Disponible';
+    case 'active':
+      return 'Activo';
+    case 'expiring_soon':
+      return 'Vence pronto';
+    case 'renewal_due':
+      return 'Por renovar';
+  }
+};
+
 export const getParksComisionStatusLabel = (estatus?: string | null): string =>
   estatus ?? 'PENDIENTE';
 
