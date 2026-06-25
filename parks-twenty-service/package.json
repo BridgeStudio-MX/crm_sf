@@ -17,6 +17,7 @@
     "seed:demo": "tsx scripts/seed-demo.ts",
     "seed:cleanup": "tsx scripts/seed-cleanup.ts",
     "seed:checklists": "tsx scripts/seed-checklists.ts",
+    "patch:images": "tsx scripts/patch-property-images.ts",
     "bootstrap:production": "tsx scripts/bootstrap-production.ts",
     "pdf:test": "tsx scripts/pdf-test.ts",
     "services:test": "tsx scripts/services-test.ts",

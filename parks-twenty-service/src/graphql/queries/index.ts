@@ -177,6 +177,7 @@ export const GET_DOCUMENTOS_CHECKLIST_BY_CASO = `
           id
           titulo
           tipoDocumento
+          entregado
         }
       }
     }
@@ -460,6 +461,30 @@ export const COUNT_ACTIVE_RENOVACION_CASOS = `
       edges {
         node {
           id
+        }
+      }
+    }
+  }
+`;
+
+export const GET_NAVES_DISPONIBLES = `
+  query GetNavesDisponibles($estatusDisponible: String!) {
+    naves(
+      filter: { estatus: { eq: $estatusDisponible } }
+      first: 200
+      orderBy: [{ m2: DescNullsLast }]
+    ) {
+      edges {
+        node {
+          id
+          identificador
+          m2
+          estatus
+          parque {
+            id
+            nombre
+            ubicacion
+          }
         }
       }
     }

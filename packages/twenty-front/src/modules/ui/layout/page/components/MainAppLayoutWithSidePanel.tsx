@@ -31,6 +31,7 @@ const StyledContent = styled.div`
   min-height: 0;
   min-width: 0;
   overflow: hidden;
+  position: relative;
 `;
 
 const StyledContentTransitionContainer = styled.div`
@@ -84,7 +85,7 @@ export const MainAppLayoutWithSidePanel = () => {
 
   return (
     <StyledRow>
-      <StyledContent>
+      <StyledContent data-main-app-content="">
         <MainAppLayoutOutlet />
       </StyledContent>
       {isMobile ? <CommandMenuForMobile /> : <SidePanelForDesktop />}

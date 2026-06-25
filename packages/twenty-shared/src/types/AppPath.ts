@@ -25,6 +25,17 @@ export enum AppPath {
   RecordShowPage = '/object/:objectNameSingular/:objectRecordId',
   PageLayoutPage = '/page/:pageLayoutId',
 
+  ParksDashboard = '/parks/dashboard',
+  ParksStackingPlanIndex = '/parks/stacking-plan',
+  ParksStackingPlan = '/parks/parque/:parqueId/stacking-plan',
+  ParksPipeline = '/parks/pipeline',
+  ParksContratos = '/parks/contratos',
+  ParksContratoAprobacion = '/parks/contratos/:contratoId/aprobacion',
+  ParksComisiones = '/parks/comisiones',
+  ParksRenovaciones = '/parks/renovaciones',
+  ParksReservas = '/parks/reservas',
+  ParksMapa = '/parks/mapa',
+
   Settings = `settings`,
   SettingsCatchAll = `/${Settings}/*`,
   Developers = `developers`,

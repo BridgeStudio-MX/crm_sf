@@ -28,8 +28,8 @@ const demoContext: PdfContext = {
     m2: 4500,
   },
   parque: {
-    nombre: 'Parque Industrial Guadalajara Norte',
-    ubicacion: 'El Salto, Jalisco',
+    nombre: 'Guadalajara Park',
+    ubicacion: 'Carretera a Chapala Km 17, Tlaquepaque, Jalisco',
   },
   broker: {
     empresa: 'Newmark',

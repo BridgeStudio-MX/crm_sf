@@ -20,6 +20,11 @@ const getPathnameOrPrefix = (pathname: string) => {
       return prefix;
     }
   }
+
+  if (pathname.startsWith('/parks/')) {
+    return '/parks';
+  }
+
   return pathname;
 };
 
@@ -56,6 +61,22 @@ export const getPageTitleFromPath = (pathname: string): string => {
       return t`General - Settings`;
     case SettingsPathPrefixes.Community:
       return t`Community - Settings`;
+    case '/parks':
+      return t`Parks Industrial`;
+    case AppPath.ParksDashboard:
+      return t`Dashboard Ejecutivo`;
+    case AppPath.ParksPipeline:
+      return t`Pipeline Comercial`;
+    case AppPath.ParksContratos:
+      return t`Contratos`;
+    case AppPath.ParksComisiones:
+      return t`Comisiones`;
+    case AppPath.ParksRenovaciones:
+      return t`Renovaciones`;
+    case AppPath.ParksReservas:
+      return t`Reservas`;
+    case AppPath.ParksMapa:
+      return t`Mapa de parques`;
     default:
       return 'CRM';
   }

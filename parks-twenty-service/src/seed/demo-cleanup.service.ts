@@ -4,6 +4,7 @@ import {
   DEMO_PARQUES,
   DEMO_REF_PREFIX,
 } from './demo-cleanup.constants';
+import { DEMO_NAVE_DEFINITIONS } from './demo-seed-naves.constants';
 import {
   DESTROY_BROKERS,
   DESTROY_CASOS_LEGALES,
@@ -36,8 +37,15 @@ const DEMO_OPPORTUNITY_FILTER = {
   name: { startsWith: DEMO_REF_PREFIX },
 };
 
+const DEMO_NAVE_IDENTIFICADORES = DEMO_NAVE_DEFINITIONS.map(
+  (nave) => nave.identificador,
+);
+
 const DEMO_NAVE_FILTER = {
-  identificador: { startsWith: 'NVA-' },
+  or: [
+    { identificador: { startsWith: 'NVA-' } },
+    { identificador: { in: DEMO_NAVE_IDENTIFICADORES } },
+  ],
 };
 
 const destroyRecords = async (

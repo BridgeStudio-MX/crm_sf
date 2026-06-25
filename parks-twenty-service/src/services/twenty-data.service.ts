@@ -37,6 +37,7 @@ import {
   GET_HOJA_DE_ACUERDOS_BY_ID,
   GET_NAVE_BY_ID,
   GET_HOLDOVER_BY_EXPEDIENTE,
+  GET_NAVES_DISPONIBLES,
   GET_OPPORTUNITY_BY_ID,
 } from '../graphql/queries';
 import {
@@ -158,12 +159,21 @@ export const twentyDataService = {
 
   findDocumentosChecklistByCasoLegal: async (
     casoLegalId: string,
-  ): Promise<{ id: string; tipoDocumento?: string }[]> => {
+  ): Promise<
+    {
+      id: string;
+      titulo?: string;
+      tipoDocumento?: string;
+      entregado?: boolean;
+    }[]
+  > => {
     try {
       const response = await twentyClient.query<{
         documentosChecklist: GraphQlConnection<{
           id: string;
+          titulo?: string;
           tipoDocumento?: string;
+          entregado?: boolean;
         }>;
       }>(GET_DOCUMENTOS_CHECKLIST_BY_CASO, { casoLegalId });
 
@@ -173,6 +183,31 @@ export const twentyDataService = {
         `findDocumentosChecklistByCasoLegal(${casoLegalId}) failed`,
         error,
       );
+      return [];
+    }
+  },
+
+  findNavesDisponibles: async (): Promise<
+    {
+      identificador?: string;
+      m2?: number;
+      parque?: { nombre?: string; ubicacion?: string };
+    }[]
+  > => {
+    try {
+      const response = await twentyClient.query<{
+        naves: GraphQlConnection<{
+          identificador?: string;
+          m2?: number;
+          parque?: { nombre?: string; ubicacion?: string };
+        }>;
+      }>(GET_NAVES_DISPONIBLES, {
+        estatusDisponible: toSelectValue('Disponible'),
+      });
+
+      return mapConnectionNodes(response.naves);
+    } catch (error) {
+      logGraphQlError('findNavesDisponibles failed', error);
       return [];
     }
   },

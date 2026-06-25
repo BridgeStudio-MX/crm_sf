@@ -16,6 +16,10 @@ import {
   DEMO_PARQUES,
   DEMO_REF_PREFIX,
 } from './demo-seed.constants';
+import { DEMO_NAVE_DEFINITIONS } from './demo-seed-naves.constants';
+import {
+  getParksNavePropertyImageByIndex,
+} from './parks-demo-image.constants';
 import {
   CREATE_BROKER,
   CREATE_CASO_LEGAL,
@@ -81,6 +85,7 @@ const seedParques = async (ids: DemoIdMap): Promise<void> => {
         m2Totales: parque.m2Totales,
         m2Rentados: parque.m2Rentados,
         administrador: parque.administrador,
+        fotoEntradaUrl: parque.fotoEntradaUrl,
         estatus: toSelectValue('Activo'),
       },
     );
@@ -110,82 +115,7 @@ const seedBrokers = async (ids: DemoIdMap): Promise<void> => {
 };
 
 const seedNaves = async (ids: DemoIdMap): Promise<void> => {
-  const naveDefinitions = [
-    {
-      key: 'naveGdl001',
-      identificador: 'NVA-GDL-001',
-      parqueKey: 'parqueGdl',
-      m2: 4500,
-      estatus: 'Rentada',
-      esPropiedadFuno: false,
-      precioBaseUsd: 0.85,
-    },
-    {
-      key: 'naveGdl002',
-      identificador: 'NVA-GDL-002',
-      parqueKey: 'parqueGdl',
-      m2: 5200,
-      estatus: 'Rentada',
-      esPropiedadFuno: false,
-      precioBaseUsd: 0.9,
-    },
-    {
-      key: 'naveGdl003',
-      identificador: 'NVA-GDL-003',
-      parqueKey: 'parqueGdl',
-      m2: 3800,
-      estatus: 'En negociación',
-      esPropiedadFuno: false,
-      precioBaseUsd: 0.82,
-    },
-    {
-      key: 'naveGdl004',
-      identificador: 'NVA-GDL-004',
-      parqueKey: 'parqueGdl',
-      m2: 6000,
-      estatus: 'Disponible',
-      esPropiedadFuno: false,
-      precioBaseUsd: 0.88,
-    },
-    {
-      key: 'naveMty001',
-      identificador: 'NVA-MTY-001',
-      parqueKey: 'parqueMty',
-      m2: 8000,
-      estatus: 'Rentada',
-      esPropiedadFuno: true,
-      precioBaseUsd: 1.1,
-    },
-    {
-      key: 'naveMty002',
-      identificador: 'NVA-MTY-002',
-      parqueKey: 'parqueMty',
-      m2: 4200,
-      estatus: 'Rentada',
-      esPropiedadFuno: false,
-      precioBaseUsd: 0.95,
-    },
-    {
-      key: 'naveMty003',
-      identificador: 'NVA-MTY-003',
-      parqueKey: 'parqueMty',
-      m2: 5100,
-      estatus: 'Disponible',
-      esPropiedadFuno: false,
-      precioBaseUsd: 0.91,
-    },
-    {
-      key: 'naveMty004',
-      identificador: 'NVA-MTY-004',
-      parqueKey: 'parqueMty',
-      m2: 4700,
-      estatus: 'En negociación',
-      esPropiedadFuno: false,
-      precioBaseUsd: 0.89,
-    },
-  ];
-
-  for (const nave of naveDefinitions) {
+  for (const [naveIndex, nave] of DEMO_NAVE_DEFINITIONS.entries()) {
     const record = await createRecord<{ id: string }>(CREATE_NAVE, 'createNave', {
       identificador: nave.identificador,
       m2: nave.m2,
@@ -194,6 +124,7 @@ const seedNaves = async (ids: DemoIdMap): Promise<void> => {
       estatus: toSelectValue(nave.estatus),
       esPropiedadFuno: nave.esPropiedadFuno,
       precioBaseUsd: nave.precioBaseUsd,
+      fotoInmuebleUrl: getParksNavePropertyImageByIndex(naveIndex),
       parqueId: ids[nave.parqueKey],
     });
 
@@ -279,7 +210,7 @@ const seedHojasDeAcuerdos = async (ids: DemoIdMap): Promise<void> => {
       naveKey: 'naveGdl001',
       brokerKey: 'brokerNewmark',
       tipoContrato: 'Arrendamiento nuevo',
-      m2: 4500,
+      m2: 1254,
       precio: 0.85,
       plazo: 60,
       ejecutivo: 'María González',
@@ -291,7 +222,7 @@ const seedHojasDeAcuerdos = async (ids: DemoIdMap): Promise<void> => {
       naveKey: 'naveGdl002',
       brokerKey: 'brokerCbre',
       tipoContrato: 'Renovación',
-      m2: 5200,
+      m2: 2345,
       precio: 0.9,
       plazo: 48,
       ejecutivo: 'Héctor Montelongo',
@@ -303,7 +234,7 @@ const seedHojasDeAcuerdos = async (ids: DemoIdMap): Promise<void> => {
       naveKey: 'naveGdl003',
       brokerKey: 'brokerIndependiente',
       tipoContrato: 'Renovación',
-      m2: 3800,
+      m2: 8496,
       precio: 0.82,
       plazo: 36,
       ejecutivo: 'Patricia López',
@@ -312,10 +243,10 @@ const seedHojasDeAcuerdos = async (ids: DemoIdMap): Promise<void> => {
       key: 'hojaHoldover',
       referencia: `${DEMO_REF_PREFIX}HOJA-HOLDOVER`,
       inquilinoKey: 'inquilinoHoldover',
-      naveKey: 'naveMty002',
+      naveKey: 'naveTulti002',
       brokerKey: 'brokerNewmark',
       tipoContrato: 'Renovación',
-      m2: 4200,
+      m2: 5984.33,
       precio: 0.95,
       plazo: 36,
       ejecutivo: 'Héctor Montelongo',
@@ -327,7 +258,7 @@ const seedHojasDeAcuerdos = async (ids: DemoIdMap): Promise<void> => {
       naveKey: 'naveGdl004',
       brokerKey: undefined,
       tipoContrato: 'Terminación anticipada',
-      m2: 6000,
+      m2: 10914,
       precio: 0.88,
       plazo: 12,
       ejecutivo: 'María González',
@@ -339,7 +270,7 @@ const seedHojasDeAcuerdos = async (ids: DemoIdMap): Promise<void> => {
       naveKey: 'naveMty001',
       brokerKey: 'brokerCbre',
       tipoContrato: 'Arrendamiento nuevo',
-      m2: 8000,
+      m2: 2787.09,
       precio: 1.1,
       plazo: 120,
       ejecutivo: 'Director Comercial',
@@ -423,7 +354,7 @@ const seedCasosLegales = async (ids: DemoIdMap): Promise<void> => {
       referencia: `${DEMO_REF_PREFIX}CASO-HOLDOVER`,
       hojaKey: 'hojaHoldover',
       inquilinoKey: 'inquilinoHoldover',
-      naveKey: 'naveMty002',
+      naveKey: 'naveTulti002',
       tipoDocumento: 'Convenio renovación',
       estatus: 'En negociación con cliente',
       semaforo: 'ROJO',
@@ -502,11 +433,11 @@ const seedExpedientesAndHoldover = async (ids: DemoIdMap): Promise<void> => {
       numeroExpediente: `${DEMO_REF_PREFIX}EXP-2024-HOLDOVER`,
       fechaApertura: isoDaysFromToday(-400),
       fechaVencimiento: isoDaysFromToday(-56),
-      rentaMensualUsd: 4200 * 0.95,
+      rentaMensualUsd: 5984.33 * 0.95,
       estatus: toSelectValue(EXPEDIENTE_ESTATUS_ACTIVO),
       casoLegalId: ids.casoHoldover,
       inquilinoId: ids.inquilinoHoldover,
-      naveId: ids.naveMty002,
+      naveId: ids.naveTulti002,
       oracleSincronizado: true,
     },
   );
@@ -514,24 +445,24 @@ const seedExpedientesAndHoldover = async (ids: DemoIdMap): Promise<void> => {
   ids.expedienteHoldover = holdoverExpediente.id;
 
   await createRecord(CREATE_HOLDOVER, 'createHoldover', {
-    referencia: `${DEMO_REF_PREFIX}HOLDOVER-MTY-002`,
+    referencia: `${DEMO_REF_PREFIX}HOLDOVER-TUL-E4A`,
     fechaInicioHoldover: isoDaysFromToday(-56),
-    rentaBaseMensualUsd: 4200 * 0.95,
-    montoHoldoverMensual: 4200 * 0.95 * 2,
+    rentaBaseMensualUsd: 5984.33 * 0.95,
+    montoHoldoverMensual: 5984.33 * 0.95 * 2,
     facturasEmitidas: 2,
     resolucion: toSelectValue(HOLDOVER_RESOLUCION_ACTIVO),
     etapaPipeline: toSelectValue(HOLDOVER_ETAPA_DETECTADO),
     oracleNotificado: true,
     casoLegalId: ids.casoHoldover,
     inquilinoId: ids.inquilinoHoldover,
-    naveId: ids.naveMty002,
+    naveId: ids.naveTulti002,
   });
 
   await createRecord(CREATE_EXPEDIENTE_CONTRATO, 'createExpedienteContrato', {
     numeroExpediente: `${DEMO_REF_PREFIX}EXP-2025-FUNO`,
     fechaApertura: isoDaysFromToday(-90),
     fechaVencimiento: isoDaysFromToday(365 * 10),
-    rentaMensualUsd: 8000 * 1.1,
+    rentaMensualUsd: 2787.09 * 1.1,
     estatus: toSelectValue(EXPEDIENTE_ESTATUS_ARCHIVADO_FUNO),
     notas: 'Expediente físico archivado en FUNO — no en Parks.',
     oracleSincronizado: true,
@@ -544,7 +475,7 @@ const seedExpedientesAndHoldover = async (ids: DemoIdMap): Promise<void> => {
     numeroExpediente: `${DEMO_REF_PREFIX}EXP-2026-RENOV-1`,
     fechaApertura: isoDaysFromToday(-300),
     fechaVencimiento: isoDaysFromToday(75),
-    rentaMensualUsd: 5200 * 0.9,
+    rentaMensualUsd: 2345 * 0.9,
     estatus: toSelectValue(EXPEDIENTE_ESTATUS_ACTIVO),
     casoLegalId: ids.casoManufactura,
     inquilinoId: ids.inquilinoManufactura,
@@ -555,7 +486,7 @@ const seedExpedientesAndHoldover = async (ids: DemoIdMap): Promise<void> => {
     numeroExpediente: `${DEMO_REF_PREFIX}EXP-2026-RENOV-2`,
     fechaApertura: isoDaysFromToday(-280),
     fechaVencimiento: isoDaysFromToday(88),
-    rentaMensualUsd: 3800 * 0.82,
+    rentaMensualUsd: 8496 * 0.82,
     estatus: toSelectValue(EXPEDIENTE_ESTATUS_ACTIVO),
     casoLegalId: ids.casoRetail,
     inquilinoId: ids.inquilinoRetail,
@@ -611,10 +542,16 @@ const seedOpportunities = async (ids: DemoIdMap): Promise<void> => {
       tipoOperacion: toSelectValue(opportunity.tipoOperacion),
       m2Requeridos:
         opportunity.naveKey === 'naveGdl001'
-          ? 4500
+          ? 1254
           : opportunity.naveKey === 'naveMty001'
-            ? 8000
-            : 5000,
+            ? 2787
+            : opportunity.naveKey === 'naveGdl002'
+              ? 2345
+              : opportunity.naveKey === 'naveGdl003'
+                ? 8496
+                : opportunity.naveKey === 'naveGdl004'
+                  ? 10914
+                  : 5000,
       canalOrigen: toSelectValue('Directo'),
       inquilinoVinculadoId: ids[opportunity.inquilinoKey],
       naveVinculadaId: ids[opportunity.naveKey],

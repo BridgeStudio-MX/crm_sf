@@ -51,6 +51,9 @@ export const envConfig = {
   cronRenovacionAlerts: process.env.CRON_RENOVACION_ALERTS ?? '0 7 * * *',
   cronOracleSync: process.env.CRON_ORACLE_SYNC ?? '0 */4 * * *',
   forceDemoSeed: parseBoolean(process.env.FORCE_DEMO_SEED, false),
+  openAiApiKey: process.env.OPENAI_API_KEY ?? '',
+  openAiModel: process.env.OPENAI_MODEL ?? 'gpt-4o-mini',
+  parksAiMock: parseBoolean(process.env.PARKS_AI_MOCK, true),
 } as const;
 
 export type EnvConfig = typeof envConfig;

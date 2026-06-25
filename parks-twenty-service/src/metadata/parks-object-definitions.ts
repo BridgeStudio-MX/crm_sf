@@ -72,6 +72,11 @@ export const PARKS_OBJECT_DEFINITIONS: ParksObjectDefinition[] = [
       { name: 'm2Rentados', label: 'm² rentados', type: 'NUMBER' },
       { name: 'administrador', label: 'Administrador', type: 'TEXT' },
       {
+        name: 'fotoEntradaUrl',
+        label: 'Foto de entrada',
+        type: 'TEXT',
+      },
+      {
         name: 'estatus',
         label: 'Estatus',
         type: 'SELECT',
@@ -118,6 +123,11 @@ export const PARKS_OBJECT_DEFINITIONS: ParksObjectDefinition[] = [
       },
       { name: 'precioBaseUsd', label: 'Precio base USD/m²/mes', type: 'NUMBER' },
       { name: 'oracleNaveId', label: 'Oracle nave ID', type: 'TEXT' },
+      {
+        name: 'fotoInmuebleUrl',
+        label: 'Foto del inmueble',
+        type: 'TEXT',
+      },
     ],
   },
   {

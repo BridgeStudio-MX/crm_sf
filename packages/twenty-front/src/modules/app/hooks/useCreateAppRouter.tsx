@@ -108,6 +108,70 @@ const NotFound = lazy(() =>
   })),
 );
 
+const ParksDashboardPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksDashboardPage').then((module) => ({
+    default: module.ParksDashboardPage,
+  })),
+);
+
+const ParksStackingPlanIndexPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksStackingPlanIndexPage').then(
+    (module) => ({
+      default: module.ParksStackingPlanIndexPage,
+    }),
+  ),
+);
+
+const ParksStackingPlanPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksStackingPlanPage').then((module) => ({
+    default: module.ParksStackingPlanPage,
+  })),
+);
+
+const ParksPipelinePage = lazy(() =>
+  import('~/pages/parks-industrial/ParksPipelinePage').then((module) => ({
+    default: module.ParksPipelinePage,
+  })),
+);
+
+const ParksContratosPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksContratosPage').then((module) => ({
+    default: module.ParksContratosPage,
+  })),
+);
+
+const ParksContratoAprobacionPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksContratoAprobacionPage').then(
+    (module) => ({
+      default: module.ParksContratoAprobacionPage,
+    }),
+  ),
+);
+
+const ParksComisionesPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksComisionesPage').then((module) => ({
+    default: module.ParksComisionesPage,
+  })),
+);
+
+const ParksMapPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksMapPage').then((module) => ({
+    default: module.ParksMapPage,
+  })),
+);
+
+const ParksRenovacionesPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksRenovacionesPage').then((module) => ({
+    default: module.ParksRenovacionesPage,
+  })),
+);
+
+const ParksReservasPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksReservasPage').then((module) => ({
+    default: module.ParksReservasPage,
+  })),
+);
+
 export const useCreateAppRouter = (
   isFunctionSettingsEnabled?: boolean,
   isAdminPageEnabled?: boolean,
@@ -234,6 +298,86 @@ export const useCreateAppRouter = (
               element={
                 <LazyRoute>
                   <StandalonePageLayoutPage />
+                </LazyRoute>
+              }
+            />
+            <Route
+              path={AppPath.ParksDashboard}
+              element={
+                <LazyRoute>
+                  <ParksDashboardPage />
+                </LazyRoute>
+              }
+            />
+            <Route
+              path={AppPath.ParksStackingPlanIndex}
+              element={
+                <LazyRoute>
+                  <ParksStackingPlanIndexPage />
+                </LazyRoute>
+              }
+            />
+            <Route
+              path={AppPath.ParksStackingPlan}
+              element={
+                <LazyRoute>
+                  <ParksStackingPlanPage />
+                </LazyRoute>
+              }
+            />
+            <Route
+              path={AppPath.ParksPipeline}
+              element={
+                <LazyRoute>
+                  <ParksPipelinePage />
+                </LazyRoute>
+              }
+            />
+            <Route
+              path={AppPath.ParksContratos}
+              element={
+                <LazyRoute>
+                  <ParksContratosPage />
+                </LazyRoute>
+              }
+            />
+            <Route
+              path={AppPath.ParksContratoAprobacion}
+              element={
+                <LazyRoute>
+                  <ParksContratoAprobacionPage />
+                </LazyRoute>
+              }
+            />
+            <Route
+              path={AppPath.ParksComisiones}
+              element={
+                <LazyRoute>
+                  <ParksComisionesPage />
+                </LazyRoute>
+              }
+            />
+            <Route
+              path={AppPath.ParksRenovaciones}
+              element={
+                <LazyRoute>
+                  <ParksRenovacionesPage />
+                </LazyRoute>
+              }
+            />
+            <Route
+              path={AppPath.ParksReservas}
+              element={
+                <LazyRoute>
+                  <ParksReservasPage />
+                </LazyRoute>
+              }
+            />
+            <Route
+              path={AppPath.ParksMapa}
+              element={
+                <LazyRoute>
+                  <ParksMapPage />
                 </LazyRoute>
               }
             />
