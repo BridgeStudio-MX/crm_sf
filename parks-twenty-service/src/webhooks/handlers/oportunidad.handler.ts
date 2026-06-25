@@ -3,6 +3,7 @@ import {
   OPPORTUNITY_STAGE_HOJA_FIRMADA,
   TIPO_CONTRATO_TO_TIPO_DOCUMENTO,
 } from '../../constants/parks.constants';
+import { leadOnboardingService } from '../../services/lead-onboarding.service';
 import { slaService } from '../../services/sla.service';
 import { twentyDataService } from '../../services/twenty-data.service';
 import { type TwentyWebhookPayload } from '../../types/parks.types';
@@ -25,15 +26,39 @@ const resolveTipoDocumento = (
   );
 };
 
-export const handleOportunidadWebhook = async (
-  payload: TwentyWebhookPayload,
-): Promise<void> => {
-  const parsedWebhook = parseTwentyWebhook(payload);
+const isLeadStage = (stage: string | undefined): boolean => {
+  if (!stage) {
+    return true;
+  }
 
-  if (!parsedWebhook || parsedWebhook.action !== 'updated') {
+  return (
+    stage === 'LEAD_RECIBIDO' ||
+    isSelectValueEqual(stage, 'LEAD_RECIBIDO') ||
+    isSelectValueEqual(stage, 'Prospecto nuevo')
+  );
+};
+
+const handleNewLead = async (
+  parsedWebhook: NonNullable<ReturnType<typeof parseTwentyWebhook>>,
+): Promise<void> => {
+  const stage =
+    typeof parsedWebhook.record.stage === 'string'
+      ? parsedWebhook.record.stage
+      : undefined;
+
+  if (!isLeadStage(stage)) {
     return;
   }
 
+  await leadOnboardingService.processNewOpportunity({
+    opportunityId: parsedWebhook.recordId,
+    record: parsedWebhook.record,
+  });
+};
+
+const handleLegalHandoff = async (
+  parsedWebhook: NonNullable<ReturnType<typeof parseTwentyWebhook>>,
+): Promise<void> => {
   if (!wasFieldUpdated(parsedWebhook, 'stage')) {
     return;
   }
@@ -114,4 +139,25 @@ export const handleOportunidadWebhook = async (
   console.log(
     `[oportunidad.handler] Handoff complete — caso ${createdCasoLegal.id} from opportunity ${opportunity.id}`,
   );
+};
+
+export const handleOportunidadWebhook = async (
+  payload: TwentyWebhookPayload,
+): Promise<void> => {
+  const parsedWebhook = parseTwentyWebhook(payload);
+
+  if (!parsedWebhook) {
+    return;
+  }
+
+  if (parsedWebhook.action === 'created') {
+    await handleNewLead(parsedWebhook);
+    return;
+  }
+
+  if (parsedWebhook.action !== 'updated') {
+    return;
+  }
+
+  await handleLegalHandoff(parsedWebhook);
 };

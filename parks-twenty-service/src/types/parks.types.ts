@@ -125,6 +125,17 @@ export type ComisionRecord = {
   tipo?: string;
   beneficiario?: string;
   montoUsd?: number;
+  estatus?: string;
+  baseCalculo?: string;
+  hojaDeAcuerdosId?: string;
+  casoLegalId?: string;
+  hojaDeAcuerdos?: {
+    referencia?: string;
+    m2Acordados?: number;
+    precioUsdM2?: number;
+    nave?: { identificador?: string };
+  };
+  casoLegal?: { referencia?: string };
 };
 
 export type NotificacionTicket = {
@@ -142,6 +153,9 @@ export type OpportunityRecord = {
   naveVinculadaId?: string;
   brokerVinculadoId?: string;
   tipoOperacion?: string;
+  m2Requeridos?: number;
+  updatedAt?: string;
+  amount?: { amountMicros?: number; currencyCode?: string };
 };
 
 export type FlujoFirmasRecord = {

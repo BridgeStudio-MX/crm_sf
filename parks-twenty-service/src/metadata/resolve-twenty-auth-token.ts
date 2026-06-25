@@ -10,17 +10,23 @@ const buildOrigin = (): string => {
 };
 
 export const resolveTwentyAuthToken = async (): Promise<string> => {
+  const devEmail = process.env.TWENTY_DEV_EMAIL ?? 'tim@apple.dev';
+  const devPassword = process.env.TWENTY_DEV_PASSWORD ?? 'tim@apple.dev';
+
+  return resolveTwentyAuthTokenForUser(devEmail, devPassword);
+};
+
+export const resolveTwentyAuthTokenForUser = async (
+  email: string,
+  password: string,
+): Promise<string> => {
   if (envConfig.twentyApiKey) {
     return envConfig.twentyApiKey;
   }
 
-  const devEmail = process.env.TWENTY_DEV_EMAIL ?? 'tim@apple.dev';
-  const devPassword = process.env.TWENTY_DEV_PASSWORD ?? 'tim@apple.dev';
   const origin = buildOrigin();
 
-  console.log(
-    `[auth] TWENTY_API_KEY not set — using dev login (${devEmail})`,
-  );
+  console.log(`[auth] TWENTY_API_KEY not set — using dev login (${email})`);
 
   const loginResponse = await axios.post<{ data: Record<string, unknown> }>(
     `${twentyConfig.apiUrl}/metadata`,
@@ -42,7 +48,7 @@ export const resolveTwentyAuthToken = async (): Promise<string> => {
           }
         }
       `,
-      variables: { email: devEmail, password: devPassword, origin },
+      variables: { email, password, origin },
     },
     { headers: { Origin: origin, 'Content-Type': 'application/json' } },
   );

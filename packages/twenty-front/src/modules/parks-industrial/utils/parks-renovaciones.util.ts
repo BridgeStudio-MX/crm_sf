@@ -6,12 +6,18 @@ import {
   type ParksOpportunityRecord,
 } from '@/parks-industrial/hooks/useParksRecords';
 import { type ParksParqueRecord } from '@/parks-industrial/hooks/useParksParques';
-import { getParksRenovacionStageLabel } from '@/parks-industrial/constants/parks-industrial.constants';
+import {
+  getParksRenovacionStageLabel,
+  PARKS_RENOVACION_STAGES,
+} from '@/parks-industrial/constants/parks-industrial.constants';
 import {
   getParksDaysUntil,
   getParksStackingStatus,
 } from '@/parks-industrial/utils/parks-format.util';
-import { isParksSelectValueEqual } from '@/parks-industrial/utils/parks-select-value.util';
+import {
+  isParksSelectValueEqual,
+  toParksSelectValue,
+} from '@/parks-industrial/utils/parks-select-value.util';
 
 export type ParksRenovacionRiskBand =
   | 'critical'
@@ -27,6 +33,18 @@ export type ParksRenovacionQueueItem = {
   etapaRenovacion: string;
   ingresoMensualUsd: number;
   parqueNombre?: string;
+};
+
+export type ParksRenovacionKanbanItem = {
+  dragId: string;
+  opportunityId: string | null;
+  expediente: ParksExpedienteRecord;
+  diasRestantes: number | null;
+  etapaRenovacionStageId: string;
+  ingresoMensualUsd: number;
+  parqueNombre?: string;
+  tenantLabel: string;
+  naveLabel: string;
 };
 
 export type ParksRenovacionesSummary = {
@@ -81,23 +99,46 @@ export const getParksRenovacionRiskLabel = (
 };
 
 const deriveEtapaFromDays = (diasRestantes: number | null): string => {
+  return getParksRenovacionStageLabel(deriveEtapaStageIdFromDays(diasRestantes));
+};
+
+export const deriveEtapaStageIdFromDays = (
+  diasRestantes: number | null,
+): string => {
   if (diasRestantes === null) {
-    return getParksRenovacionStageLabel('ALERTA_12_MESES');
+    return 'ALERTA_12_MESES';
   }
 
   if (diasRestantes <= 30) {
-    return getParksRenovacionStageLabel('ALERTA_1_MES');
+    return 'ALERTA_1_MES';
   }
 
   if (diasRestantes <= 90) {
-    return getParksRenovacionStageLabel('ALERTA_3_MESES');
+    return 'ALERTA_3_MESES';
   }
 
   if (diasRestantes <= 180) {
-    return getParksRenovacionStageLabel('ALERTA_6_MESES');
+    return 'ALERTA_6_MESES';
   }
 
-  return getParksRenovacionStageLabel('ALERTA_12_MESES');
+  return 'ALERTA_12_MESES';
+};
+
+export const normalizeParksRenovacionStageId = (
+  storedValue?: string | null,
+): string => {
+  if (!storedValue) {
+    return 'ALERTA_12_MESES';
+  }
+
+  const matchedStage = PARKS_RENOVACION_STAGES.find(
+    (stage) =>
+      stage.id === storedValue ||
+      stage.label === storedValue ||
+      toParksSelectValue(stage.label) === toParksSelectValue(storedValue),
+  );
+
+  return matchedStage?.id ?? storedValue;
 };
 
 const findLinkedRenovacionOpportunity = (
@@ -116,21 +157,39 @@ const findLinkedRenovacionOpportunity = (
     const matchesInquilino =
       opportunity.inquilinoVinculado?.id === inquilinoId;
 
-    return (
-      (matchesNave || matchesInquilino) &&
-      isDefinedRenovacionOpportunity(opportunity)
-    );
+    return matchesNave || matchesInquilino;
   });
 
-const isDefinedRenovacionOpportunity = (
-  opportunity: ParksOpportunityRecord,
-): boolean => {
-  if (opportunity.etapaRenovacion) {
-    return !isParksSelectValueEqual(opportunity.etapaRenovacion, 'Renovado');
-  }
+export const buildParksRenovacionKanbanItems = ({
+  queue,
+  opportunities,
+}: {
+  queue: ParksRenovacionQueueItem[];
+  opportunities: ParksOpportunityRecord[];
+}): ParksRenovacionKanbanItem[] =>
+  queue.map((queueItem) => {
+    const linkedOpportunity = findLinkedRenovacionOpportunity(
+      queueItem.expediente,
+      opportunities,
+    );
+    const etapaRenovacionStageId = linkedOpportunity?.etapaRenovacion
+      ? normalizeParksRenovacionStageId(linkedOpportunity.etapaRenovacion)
+      : deriveEtapaStageIdFromDays(queueItem.diasRestantes);
 
-  return false;
-};
+    return {
+      dragId: linkedOpportunity?.id ?? `expediente-${queueItem.expediente.id}`,
+      opportunityId: linkedOpportunity?.id ?? null,
+      expediente: queueItem.expediente,
+      diasRestantes: queueItem.diasRestantes,
+      etapaRenovacionStageId,
+      ingresoMensualUsd: queueItem.ingresoMensualUsd,
+      parqueNombre: queueItem.parqueNombre,
+      tenantLabel:
+        queueItem.expediente.inquilino?.empresa ?? t`Inquilino sin nombre`,
+      naveLabel:
+        queueItem.expediente.nave?.identificador ?? t`Sin nave asignada`,
+    };
+  });
 
 export const buildParksRenovacionQueue = ({
   expedientes,

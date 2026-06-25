@@ -14,6 +14,8 @@ export type ParksAiScreen =
   | 'comisiones'
   | 'renovaciones'
   | 'reservas'
+  | 'notificaciones'
+  | 'mi-desempeno'
   | 'unknown';
 
 export type ParksAiRouteContext = {

@@ -12,6 +12,7 @@
     "setup:opportunity": "tsx scripts/setup-opportunity.ts",
     "setup:pipelines": "tsx scripts/setup-pipelines.ts",
     "setup:roles": "tsx scripts/setup-roles.ts",
+    "setup:assign-roles": "tsx scripts/setup-assign-roles.ts",
     "setup:dashboards": "tsx scripts/setup-dashboards.ts",
     "setup:webhooks": "tsx scripts/setup-webhooks.ts",
     "seed:demo": "tsx scripts/seed-demo.ts",

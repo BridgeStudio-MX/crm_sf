@@ -292,6 +292,20 @@ export const PARKS_RENOVACION_STAGES = [
   color: ParksPipelineStageColor | 'red';
 }>;
 
+export const PARKS_VISIBLE_RENOVACION_STAGES = PARKS_RENOVACION_STAGES.filter(
+  (stage) => stage.id !== 'RENOVADO',
+);
+
+export const getParksRenovacionStageColor = (
+  stageId?: string | null,
+): ParksPipelineStageColor | 'red' => {
+  const stage = PARKS_RENOVACION_STAGES.find(
+    (renovacionStage) => renovacionStage.id === stageId,
+  );
+
+  return stage?.color ?? 'gray';
+};
+
 export const PARKS_HOLDOVER_STAGES = [
   { id: 'DETECTADO', label: 'Detectado', color: 'red' },
   { id: 'NOTIFICADO', label: 'Notificado', color: 'orange' },

@@ -11,6 +11,7 @@ import { themeCssVariables } from 'twenty-ui/theme-constants';
 
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
 import { PARKS_VISIBLE_PIPELINE_STAGES } from '@/parks-industrial/constants/parks-industrial.constants';
+import { useParksProspectScores } from '@/parks-industrial/hooks/useParksProspectScores';
 import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRecords';
 import { ParksEmptyState } from '@/parks-industrial/components/ui/ParksEmptyState';
 import {
@@ -96,6 +97,7 @@ export const ParksPipelineBoard = ({
   });
   const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
   const [draggingDealId, setDraggingDealId] = useState<string | null>(null);
+  const prospectScoresById = useParksProspectScores(items);
   const { updateOneRecord } = useUpdateOneRecord();
   const { openRecordInSidePanel } = useOpenRecordInSidePanel();
 
@@ -243,6 +245,7 @@ export const ParksPipelineBoard = ({
                   deals={grouped.get(stage.id) ?? []}
                   selectedDealId={selectedDealId}
                   draggingDealId={draggingDealId}
+                  prospectScoresById={prospectScoresById}
                   onSelectDeal={setSelectedDealId}
                   onOpenRecord={handleOpenRecord}
                 />
@@ -265,7 +268,10 @@ export const ParksPipelineBoard = ({
             ) : null}
           </ParksDetailDrawer>
 
-          <ParksPipelineDragOverlay dealsById={dealsById} />
+          <ParksPipelineDragOverlay
+            dealsById={dealsById}
+            prospectScoresById={prospectScoresById}
+          />
         </DragDropProvider>
       )}
     </StyledParksPageStack>

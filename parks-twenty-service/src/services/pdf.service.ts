@@ -282,6 +282,10 @@ export const pdfService = {
     const template = Handlebars.compile(templateSource);
     const html = template(context);
 
+    return pdfService.generateContratoFromHtml(html);
+  },
+
+  generateContratoFromHtml: async (html: string): Promise<Buffer> => {
     const browser = await puppeteer.launch(resolveBrowserLaunchOptions());
 
     try {
@@ -290,6 +294,12 @@ export const pdfService = {
       const pdfBuffer = await page.pdf({
         format: 'Letter',
         printBackground: true,
+        margin: {
+          top: '2cm',
+          bottom: '2cm',
+          left: '2.5cm',
+          right: '2cm',
+        },
       });
 
       return Buffer.from(pdfBuffer);

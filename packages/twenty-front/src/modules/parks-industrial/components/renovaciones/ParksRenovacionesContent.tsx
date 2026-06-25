@@ -5,16 +5,20 @@ import { AppPath } from 'twenty-shared/types';
 import { Link } from 'react-router-dom';
 
 import { ParksRenovacionesHoldovers } from '@/parks-industrial/components/renovaciones/ParksRenovacionesHoldovers';
+import { ParksRenovacionesKanbanBoard } from '@/parks-industrial/components/renovaciones/ParksRenovacionesKanbanBoard';
 import { ParksRenovacionesQueue } from '@/parks-industrial/components/renovaciones/ParksRenovacionesQueue';
-import { ParksRenovacionesSummary } from '@/parks-industrial/components/renovaciones/ParksRenovacionesSummary';
+import { ParksRenovacionesSummarySection } from '@/parks-industrial/components/renovaciones/ParksRenovacionesSummarySection';
 import { ParksSegmentedControl } from '@/parks-industrial/components/ui/ParksSegmentedControl';
 import { StyledParksPageStack } from '@/parks-industrial/components/ui/ParksSectionCard';
 import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
-import { useParksRenovaciones } from '@/parks-industrial/hooks/useParksRecords';
+import {
+  useParksOpportunities,
+  useParksRenovaciones,
+} from '@/parks-industrial/hooks/useParksRecords';
 import { type ParksRenovacionRiskBand } from '@/parks-industrial/utils/parks-renovaciones.util';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
-type RenovacionesTab = 'queue' | 'holdovers';
+type RenovacionesTab = 'queue' | 'kanban' | 'holdovers';
 
 const StyledToolbar = styled.div`
   align-items: center;
@@ -35,32 +39,31 @@ const StyledPipelineLink = styled(Link)`
 `;
 
 export const ParksRenovacionesContent = () => {
-  const { queue, summary, isHoldoverMetadataReady, loading } =
-    useParksRenovaciones();
+  const { queue, loading } = useParksRenovaciones();
+  const { records: opportunities, loading: opportunitiesLoading } =
+    useParksOpportunities();
   const [activeTab, setActiveTab] = useState<RenovacionesTab>('queue');
   const [riskFilter, setRiskFilter] = useState<
     ParksRenovacionRiskBand | 'all'
   >('all');
 
-  if (loading) {
+  if (loading || opportunitiesLoading) {
     return <ParksLoadingSkeleton variant="list" />;
   }
 
   return (
     <StyledParksPageStack>
-      <ParksRenovacionesSummary summary={summary} />
+      <ParksRenovacionesSummarySection queue={queue} />
       <StyledToolbar>
         <ParksSegmentedControl
           value={activeTab}
           onChange={setActiveTab}
           options={[
             { id: 'queue', label: t`Cola de renovación`, count: queue.length },
+            { id: 'kanban', label: t`Kanban`, count: queue.length },
             {
               id: 'holdovers',
               label: t`Holdovers`,
-              count: isHoldoverMetadataReady
-                ? summary.holdoversActivos
-                : undefined,
             },
           ]}
         />
@@ -73,6 +76,11 @@ export const ParksRenovacionesContent = () => {
           items={queue}
           activeRiskFilter={riskFilter}
           onRiskFilterChange={setRiskFilter}
+        />
+      ) : activeTab === 'kanban' ? (
+        <ParksRenovacionesKanbanBoard
+          queue={queue}
+          opportunities={opportunities}
         />
       ) : (
         <ParksRenovacionesHoldovers />

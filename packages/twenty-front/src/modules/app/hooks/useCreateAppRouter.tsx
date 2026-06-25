@@ -160,6 +160,18 @@ const ParksMapPage = lazy(() =>
   })),
 );
 
+const ParksMiDesempenoPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksMiDesempenoPage').then((module) => ({
+    default: module.ParksMiDesempenoPage,
+  })),
+);
+
+const ParksNotificacionesPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksNotificacionesPage').then((module) => ({
+    default: module.ParksNotificacionesPage,
+  })),
+);
+
 const ParksRenovacionesPage = lazy(() =>
   import('~/pages/parks-industrial/ParksRenovacionesPage').then((module) => ({
     default: module.ParksRenovacionesPage,
@@ -334,6 +346,14 @@ export const useCreateAppRouter = (
               }
             />
             <Route
+              path={AppPath.ParksNotificaciones}
+              element={
+                <LazyRoute>
+                  <ParksNotificacionesPage />
+                </LazyRoute>
+              }
+            />
+            <Route
               path={AppPath.ParksContratos}
               element={
                 <LazyRoute>
@@ -354,6 +374,14 @@ export const useCreateAppRouter = (
               element={
                 <LazyRoute>
                   <ParksComisionesPage />
+                </LazyRoute>
+              }
+            />
+            <Route
+              path={AppPath.ParksMiDesempeno}
+              element={
+                <LazyRoute>
+                  <ParksMiDesempenoPage />
                 </LazyRoute>
               }
             />

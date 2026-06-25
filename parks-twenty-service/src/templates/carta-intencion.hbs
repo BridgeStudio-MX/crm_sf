@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Carta de Intención — {{inquilino.empresa}}</title>
+  <style>
+    body {
+      font-family: 'Times New Roman', serif;
+      font-size: 12pt;
+      line-height: 1.6;
+      color: #111;
+      margin: 0;
+      padding: 0;
+    }
+    .draft-banner {
+      background: #fef2f2;
+      border: 1px solid #dc2626;
+      color: #991b1b;
+      font-weight: bold;
+      text-align: center;
+      padding: 8px;
+      margin-bottom: 24px;
+      font-size: 11pt;
+    }
+    .header { text-align: center; margin-bottom: 2em; }
+    .header h2 { margin: 0 0 8px; font-size: 16pt; }
+    .clausula { margin-bottom: 1.2em; text-align: justify; }
+    footer {
+      font-size: 9pt;
+      color: #666;
+      margin-top: 3em;
+      border-top: 1px solid #ddd;
+      padding-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="draft-banner">BORRADOR LOI — NO VÁLIDO PARA FIRMA</div>
+
+  <div class="header">
+    <h2>CARTA DE INTENCIÓN (LOI)</h2>
+    <p>{{parque.nombre}} · {{parque.ubicacion}}</p>
+  </div>
+
+  <div class="clausula">
+    Entre <strong>Parks Industrial</strong> y <strong>{{inquilino.empresa}}</strong>
+    (RFC {{inquilino.rfc}}), representada por {{inquilino.repLegalNombre}},
+    las partes manifiestan su intención de celebrar un contrato de arrendamiento
+    sobre la nave <strong>{{nave.identificador}}</strong>.
+  </div>
+
+  <div class="clausula">
+    <strong>Términos comerciales preliminares:</strong>
+    superficie {{hojaAcuerdos.m2Acordados}} m²,
+    precio USD {{hojaAcuerdos.precioUsdM2}}/m²,
+    plazo {{hojaAcuerdos.plazoMeses}} meses,
+    renta mensual estimada USD {{rentaMensualTotal hojaAcuerdos}}.
+  </div>
+
+  <div class="clausula">
+    Esta LOI no constituye obligación definitiva y está sujeta a due diligence,
+    aprobación legal y firma del contrato definitivo.
+  </div>
+
+  <footer>
+    Versión {{numeroVersion}} · {{fechaGeneracion}} · Parks Industrial
+  </footer>
+</body>
+</html>

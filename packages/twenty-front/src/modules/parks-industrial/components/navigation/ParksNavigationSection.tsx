@@ -9,6 +9,8 @@ import {
   IconLayoutKanban,
   IconMap,
   IconRefresh,
+  IconBell,
+  IconTarget,
 } from 'twenty-ui/icon';
 import { AnimatedExpandableContainer } from 'twenty-ui/layout';
 
@@ -62,6 +64,11 @@ export const ParksNavigationSection = () => {
           Icon={IconLayoutKanban}
         />
         <NavigationDrawerItem
+          label={t`Notificaciones`}
+          to={AppPath.ParksNotificaciones}
+          Icon={IconBell}
+        />
+        <NavigationDrawerItem
           label={t`Contratos`}
           to={AppPath.ParksContratos}
           Icon={IconFileText}
@@ -80,6 +87,11 @@ export const ParksNavigationSection = () => {
           label={t`Comisiones`}
           to={AppPath.ParksComisiones}
           Icon={IconCoins}
+        />
+        <NavigationDrawerItem
+          label={t`Mi desempeño`}
+          to={AppPath.ParksMiDesempeno}
+          Icon={IconTarget}
         />
         <NavigationDrawerItem
           label={t`Mapa`}

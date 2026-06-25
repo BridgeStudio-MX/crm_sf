@@ -1,7 +1,7 @@
 import { styled } from '@linaria/react';
 import { t } from '@lingui/core/macro';
 import { useEffect, useState } from 'react';
-import { IconCheck, IconCircle, IconFileText } from 'twenty-ui/icon';
+import { IconCheck, IconCircle } from 'twenty-ui/icon';
 import { Button, ButtonGroup } from 'twenty-ui/input';
 import { MOBILE_VIEWPORT, themeCssVariables } from 'twenty-ui/theme-constants';
 
@@ -13,6 +13,9 @@ import {
   parseParksApprovalStage,
 } from '@/parks-industrial/constants/parks-industrial.constants';
 import { type ParksCasoLegalRecord } from '@/parks-industrial/hooks/useParksRecords';
+import { ParksDocumentValidationPanel } from '@/parks-industrial/components/legal/ParksDocumentValidationPanel';
+import { ParksCxcHandoffPanel } from '@/parks-industrial/components/operations/ParksCxcHandoffPanel';
+import { ParksContractEditorPanel } from '@/parks-industrial/components/legal/ParksContractEditorPanel';
 import { ParksAiQuickActions } from '@/parks-industrial/components/ai/ParksAiQuickActions';
 import { ParksSectionCard } from '@/parks-industrial/components/ui/ParksSectionCard';
 import { useParksAiAssistant } from '@/parks-industrial/hooks/useParksAiAssistant';
@@ -25,6 +28,7 @@ import {
   formatParksUsd,
   parseParksApprovalComments,
 } from '@/parks-industrial/utils/parks-format.util';
+import { type DocumentValidationResult } from '@/parks-industrial/types/parks-legal.types';
 
 const StyledLayout = styled.div`
   display: grid;
@@ -124,6 +128,17 @@ const StyledSummaryRow = styled.div`
   margin-top: ${themeCssVariables.spacing[2]};
 `;
 
+const StyledOracleNotice = styled.div`
+  background: ${themeCssVariables.color.yellow1};
+  border: 1px solid ${themeCssVariables.color.yellow3};
+  border-radius: ${themeCssVariables.border.radius.sm};
+  color: ${themeCssVariables.font.color.secondary};
+  font-size: ${themeCssVariables.font.size.sm};
+  line-height: 1.5;
+  margin-top: ${themeCssVariables.spacing[2]};
+  padding: ${themeCssVariables.spacing[2]};
+`;
+
 const StyledCommentHistory = styled.div`
   display: flex;
   flex-direction: column;
@@ -138,27 +153,19 @@ const StyledCommentItem = styled.div`
   padding: ${themeCssVariables.spacing[2]};
 `;
 
-const StyledDocumentList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${themeCssVariables.spacing[2]};
-`;
+const mapValidationToSemaforo = (
+  result: DocumentValidationResult,
+): string => {
+  if (result.overallStatus === 'green') {
+    return 'VERDE';
+  }
 
-const StyledDocumentItem = styled.div`
-  align-items: center;
-  background: ${themeCssVariables.background.tertiary};
-  border-radius: ${themeCssVariables.border.radius.sm};
-  display: flex;
-  gap: ${themeCssVariables.spacing[2]};
-  padding: ${themeCssVariables.spacing[2]};
-`;
+  if (result.overallStatus === 'yellow') {
+    return 'AMARILLO';
+  }
 
-const APPROVAL_DOCUMENTS = [
-  'Letter of Intent (LOI)',
-  'Contrato de arrendamiento',
-  'Identificación del representante legal',
-  'Comprobante de domicilio fiscal',
-];
+  return 'ROJO';
+};
 
 type ParksApprovalTimelineProps = {
   casoLegal: ParksCasoLegalRecord;
@@ -255,6 +262,16 @@ export const ParksApprovalTimeline = ({
     }
   };
 
+  const handleValidationComplete = async (result: DocumentValidationResult) => {
+    await updateOneRecord({
+      objectNameSingular: 'casoLegal',
+      idToUpdate: casoLegal.id,
+      updateOneRecordInput: {
+        semaforo: mapValidationToSemaforo(result),
+      },
+    });
+  };
+
   return (
     <StyledLayout>
       <StyledMainColumn>
@@ -275,7 +292,13 @@ export const ParksApprovalTimeline = ({
                   <StyledStageMeta>
                     {t`Responsable`}: {stage.responsable}
                   </StyledStageMeta>
-                  {stage.status === 'active' ? (
+                  {stage.id === 'oracle' &&
+                  (stage.status === 'active' || stage.status === 'pending') ? (
+                    <StyledOracleNotice>
+                      {t`Integración Oracle ERP en configuración. Esta etapa mostrará el estatus de alta del cliente y contrato en el ERP cuando TI Parks active el conector.`}
+                    </StyledOracleNotice>
+                  ) : null}
+                  {stage.status === 'active' && stage.id !== 'oracle' ? (
                     <>
                       <ParksStatusBadge color="blue" label={t`Etapa actual`} />
                       <StyledTextarea
@@ -285,6 +308,11 @@ export const ParksApprovalTimeline = ({
                         rows={3}
                       />
                     </>
+                  ) : stage.status === 'active' && stage.id === 'oracle' ? (
+                    <ParksStatusBadge
+                      color="yellow"
+                      label={t`Pendiente de integración`}
+                    />
                   ) : null}
                 </div>
               </StyledTimelineItem>
@@ -323,20 +351,18 @@ export const ParksApprovalTimeline = ({
           </ParksSectionCard>
         ) : null}
 
-        <ParksSectionCard title={t`Documentos del expediente`}>
-          <StyledDocumentList>
-            {APPROVAL_DOCUMENTS.map((documentName) => (
-              <StyledDocumentItem key={documentName}>
-                <IconFileText size={18} />
-                <span>{documentName}</span>
-                <ParksStatusBadge color="yellow" label={t`Pendiente`} />
-              </StyledDocumentItem>
-            ))}
-          </StyledDocumentList>
-        </ParksSectionCard>
+        <ParksDocumentValidationPanel
+          casoLegalId={casoLegal.id}
+          onValidationComplete={(result) => void handleValidationComplete(result)}
+        />
       </StyledMainColumn>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <ParksCxcHandoffPanel
+          casoLegalId={casoLegal.id}
+          referencia={casoLegal.referencia}
+        />
+        <ParksContractEditorPanel casoLegalId={casoLegal.id} />
         <ParksSectionCard title={t`Resumen del contrato`}>
           <div
             style={{

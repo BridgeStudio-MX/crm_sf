@@ -21,6 +21,9 @@ import {
   PARKS_VISIBLE_PIPELINE_STAGES,
 } from '@/parks-industrial/constants/parks-industrial.constants';
 import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRecords';
+import { ParksCommercialProposalSection } from '@/parks-industrial/components/pipeline/ParksCommercialProposalSection';
+import { ParksEmailSequencePanel } from '@/parks-industrial/components/pipeline/ParksEmailSequencePanel';
+import { ParksProspectEnrichmentPanel } from '@/parks-industrial/components/pipeline/ParksProspectEnrichmentPanel';
 import { ParksStatusBadge } from '@/parks-industrial/components/ui/ParksStatusBadge';
 import {
   formatParksDate,
@@ -185,6 +188,10 @@ export const ParksPipelineDealDetail = ({
   const daysInStage = getParksDaysInStage(deal.updatedAt);
   const daysColor = getParksDaysInStageColor(deal.updatedAt);
   const ownerName = getParksOwnerName(deal);
+  const companyName =
+    deal.inquilinoVinculado?.empresa ?? deal.name ?? t`Nuevo prospecto`;
+  const showEnrichment =
+    !deal.stage || deal.stage === 'LEAD_RECIBIDO' || deal.stage === 'PROSPECTO_NUEVO';
 
   const updatedAgo = deal.updatedAt
     ? formatDistanceToNow(parseISO(deal.updatedAt), {
@@ -231,6 +238,27 @@ export const ParksPipelineDealDetail = ({
             {deal.inquilinoVinculado?.empresa ?? t`Sin prospecto vinculado`}
           </StyledInfoValue>
         </div>
+
+        {showEnrichment ? (
+          <ParksProspectEnrichmentPanel
+            opportunityId={deal.id}
+            companyName={companyName}
+            m2Requeridos={deal.m2Requeridos}
+          />
+        ) : null}
+
+        {showEnrichment ? (
+          <ParksEmailSequencePanel
+            opportunityId={deal.id}
+            companyName={companyName}
+          />
+        ) : null}
+
+        <ParksCommercialProposalSection
+          opportunityId={deal.id}
+          companyName={companyName}
+          m2Requeridos={deal.m2Requeridos}
+        />
 
         <div>
           <StyledSectionLabel>{t`Mover a etapa`}</StyledSectionLabel>

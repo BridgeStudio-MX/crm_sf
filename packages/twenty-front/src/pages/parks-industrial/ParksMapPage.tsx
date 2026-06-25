@@ -7,16 +7,18 @@ import { ParksMapContent } from '@/parks-industrial/components/mapa/ParksMapCont
 import { ParksMetadataGate } from '@/parks-industrial/components/layout/ParksMetadataGate';
 import { ParksPageShell } from '@/parks-industrial/components/layout/ParksPageShell';
 import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
+import { useParksNaves } from '@/parks-industrial/hooks/useParksRecords';
 import { useParksParques } from '@/parks-industrial/hooks/useParksParques';
 
 const ParksMapContentWrapper = () => {
-  const { records, loading } = useParksParques();
+  const { records: parques, loading: parquesLoading } = useParksParques();
+  const { records: naves, loading: navesLoading } = useParksNaves();
 
-  if (loading) {
+  if (parquesLoading || navesLoading) {
     return <ParksLoadingSkeleton variant="map" />;
   }
 
-  return <ParksMapContent parques={records} />;
+  return <ParksMapContent parques={parques} naves={naves} />;
 };
 
 export const ParksMapPage = () => {

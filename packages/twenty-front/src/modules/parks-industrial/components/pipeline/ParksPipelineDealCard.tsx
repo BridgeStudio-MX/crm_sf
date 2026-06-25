@@ -16,6 +16,11 @@ import {
   getParksOwnerName,
   type ParksPipelineStageTheme,
 } from '@/parks-industrial/utils/parks-format.util';
+import {
+  formatParksProspectUrgencyLabel,
+  getParksProspectScoreBadgeColor,
+} from '@/parks-industrial/utils/parks-prospect-scoring.util';
+import { type ProspectScoreResult } from '@/parks-industrial/types/parks-commercial.types';
 
 const StyledDealCard = styled.div<{
   accentColor: string;
@@ -136,6 +141,7 @@ export type ParksPipelineDealCardViewProps = {
   isDragging: boolean;
   isSelected: boolean;
   isOverlayPreview: boolean;
+  prospectScore?: ProspectScoreResult;
   onSelect?: (dealId: string) => void;
   onOpenRecord?: (dealId: string) => void;
 };
@@ -146,6 +152,7 @@ export const ParksPipelineDealCardView = ({
   isDragging,
   isSelected,
   isOverlayPreview,
+  prospectScore,
   onSelect,
   onOpenRecord,
 }: ParksPipelineDealCardViewProps) => {
@@ -207,6 +214,12 @@ export const ParksPipelineDealCardView = ({
           {formatParksNumber(deal.m2Requeridos)} m²
         </StyledDealMeta>
         <StyledDealFooter>
+          {prospectScore ? (
+            <ParksStatusBadge
+              color={getParksProspectScoreBadgeColor(prospectScore.tier)}
+              label={t`${prospectScore.fitScore} · ${formatParksProspectUrgencyLabel(prospectScore.urgency)}`}
+            />
+          ) : null}
           <ParksStatusBadge
             color={daysColor}
             label={t`${daysInStage}d en etapa`}
@@ -223,6 +236,7 @@ type ParksPipelineDealCardProps = {
   stageTheme: ParksPipelineStageTheme;
   isSelected: boolean;
   isOverlayPreview: boolean;
+  prospectScore?: ProspectScoreResult;
   onSelect?: (dealId: string) => void;
   onOpenRecord?: (dealId: string) => void;
 };
@@ -232,6 +246,7 @@ export const ParksPipelineDealCard = ({
   stageTheme,
   isSelected,
   isOverlayPreview,
+  prospectScore,
   onSelect,
   onOpenRecord,
 }: ParksPipelineDealCardProps) => {
@@ -253,6 +268,7 @@ export const ParksPipelineDealCard = ({
         isDragging={isDragging}
         isSelected={isSelected}
         isOverlayPreview={isOverlayPreview}
+        prospectScore={prospectScore}
         onSelect={onSelect}
         onOpenRecord={onOpenRecord}
       />

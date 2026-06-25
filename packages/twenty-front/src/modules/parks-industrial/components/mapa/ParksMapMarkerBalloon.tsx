@@ -1,11 +1,14 @@
 import { styled } from '@linaria/react';
 import { t } from '@lingui/core/macro';
+import { useState } from 'react';
 import { AppPath } from 'twenty-shared/types';
 import { getAppPath } from 'twenty-shared/utils';
 import { IconBuildingSkyscraper, IconMap, IconX } from 'twenty-ui/icon';
 import { Button } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
+import { ParksMapReserveNavePanel } from '@/parks-industrial/components/mapa/ParksMapReserveNavePanel';
+import { type ParksNaveRecord } from '@/parks-industrial/hooks/useParksRecords';
 import { type ParksParqueRecord } from '@/parks-industrial/hooks/useParksParques';
 import { ParksProgressBar } from '@/parks-industrial/components/ui/ParksProgressBar';
 import { ParksPropertyImage } from '@/parks-industrial/components/ui/ParksPropertyImage';
@@ -147,13 +150,16 @@ const StyledBalloonFooter = styled.div`
 
 type ParksMapMarkerBalloonProps = {
   parque: ParksParqueRecord;
+  naves: ParksNaveRecord[];
   onClose: () => void;
 };
 
 export const ParksMapMarkerBalloon = ({
   parque,
+  naves,
   onClose,
 }: ParksMapMarkerBalloonProps) => {
+  const [showReservePanel, setShowReservePanel] = useState(false);
   const ocupacion = getParksParqueOcupacion(
     parque.m2Totales,
     parque.m2Rentados,
@@ -235,6 +241,21 @@ export const ParksMapMarkerBalloon = ({
           fullWidth
           to={getAppPath(AppPath.ParksStackingPlan, { parqueId: parque.id })}
         />
+        <Button
+          title={
+            showReservePanel ? t`Ocultar reserva` : t`Reservar nave`
+          }
+          variant="primary"
+          fullWidth
+          onClick={() => setShowReservePanel((current) => !current)}
+        />
+        {showReservePanel ? (
+          <ParksMapReserveNavePanel
+            parqueId={parque.id}
+            parqueNombre={parque.nombre ?? undefined}
+            naves={naves}
+          />
+        ) : null}
       </StyledBalloonFooter>
     </StyledBalloonShell>
   );

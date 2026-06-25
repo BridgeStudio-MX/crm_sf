@@ -2,7 +2,7 @@ import { styled } from '@linaria/react';
 import { t } from '@lingui/core/macro';
 import { useEffect, useMemo, useState } from 'react';
 
-import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
+import { registerParksPayment } from '@/parks-industrial/services/parks-operations.client';
 import { type ParksComisionRecord } from '@/parks-industrial/hooks/useParksRecords';
 import { ParksComisionesSummary } from '@/parks-industrial/components/comisiones/ParksComisionesSummary';
 import { ParksEmptyState } from '@/parks-industrial/components/ui/ParksEmptyState';
@@ -53,15 +53,32 @@ const StyledFooter = styled.div`
 `;
 
 const getComisionStatusLabel = (estatus?: string | null): string => {
-  if (estatus === 'APROBADA') {
+  if (estatus === 'APROBADA' || estatus === 'Aprobada') {
     return t`Aprobada`;
   }
 
-  if (estatus === 'PENDIENTE') {
+  if (
+    estatus === 'PENDIENTE' ||
+    estatus === 'Pendiente' ||
+    estatus === 'CALCULADA' ||
+    estatus === 'Calculada'
+  ) {
     return t`Pendiente`;
   }
 
   return estatus ?? t`Pendiente`;
+};
+
+const isPendingComision = (estatus?: string | null): boolean => {
+  if (!estatus) {
+    return true;
+  }
+
+  const normalized = estatus.toUpperCase();
+
+  return (
+    normalized.includes('PENDIENTE') || normalized.includes('CALCULADA')
+  );
 };
 
 type ParksComisionesTableProps = {
@@ -73,7 +90,7 @@ export const ParksComisionesTable = ({
 }: ParksComisionesTableProps) => {
   const [items, setItems] = useState(comisiones);
   const [brokerFilter, setBrokerFilter] = useState('');
-  const { updateOneRecord } = useUpdateOneRecord();
+  const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setItems(comisiones);
@@ -92,10 +109,10 @@ export const ParksComisionesTable = ({
   }, [brokerFilter, items]);
 
   const totalPendiente = filtered
-    .filter((comision) => comision.estatus === 'PENDIENTE')
+    .filter((comision) => isPendingComision(comision.estatus))
     .reduce((sum, comision) => sum + (comision.montoUsd ?? 0), 0);
 
-  const handleApprove = async (comisionId: string) => {
+  const handleRegisterPayment = async (comisionId: string) => {
     setItems((previous) =>
       previous.map((comision) =>
         comision.id === comisionId
@@ -105,13 +122,11 @@ export const ParksComisionesTable = ({
     );
 
     try {
-      await updateOneRecord({
-        objectNameSingular: 'comision',
-        idToUpdate: comisionId,
-        updateOneRecordInput: { estatus: 'APROBADA' },
-      });
+      const result = await registerParksPayment(comisionId);
+      setPaymentMessage(result.message);
     } catch {
       setItems(comisiones);
+      setPaymentMessage(t`No se pudo registrar el pago`);
     }
   };
 
@@ -162,10 +177,10 @@ export const ParksComisionesTable = ({
                       />
                     </StyledCell>
                     <StyledCell>
-                      {comision.estatus === 'PENDIENTE' ? (
+                      {isPendingComision(comision.estatus) ? (
                         <Button
-                          title={t`Aprobar pago`}
-                          onClick={() => void handleApprove(comision.id)}
+                          title={t`Registrar pago`}
+                          onClick={() => void handleRegisterPayment(comision.id)}
                         />
                       ) : (
                         '—'
@@ -180,6 +195,7 @@ export const ParksComisionesTable = ({
       </ParksSectionCard>
 
       <StyledFooter>
+        {paymentMessage ? `${paymentMessage} · ` : ''}
         {t`Total comisiones pendientes`}: {formatParksUsd(totalPendiente)}
       </StyledFooter>
     </StyledParksPageStack>

@@ -6,6 +6,8 @@ import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRe
 import { ParksPipelineDealCardView } from '@/parks-industrial/components/pipeline/ParksPipelineDealCard';
 import { getParksPipelineStageTheme } from '@/parks-industrial/utils/parks-format.util';
 
+import { type ProspectScoreResult } from '@/parks-industrial/types/parks-commercial.types';
+
 const StyledOverlay = styled.div`
   cursor: grabbing;
   width: 280px;
@@ -13,10 +15,12 @@ const StyledOverlay = styled.div`
 
 type ParksPipelineDragOverlayProps = {
   dealsById: Map<string, ParksOpportunityRecord>;
+  prospectScoresById: Record<string, ProspectScoreResult>;
 };
 
 export const ParksPipelineDragOverlay = ({
   dealsById,
+  prospectScoresById,
 }: ParksPipelineDragOverlayProps) => {
   const { source } = useDragOperation();
   const dealId = source?.id != null ? String(source.id) : null;
@@ -34,6 +38,7 @@ export const ParksPipelineDragOverlay = ({
             isDragging={false}
             isSelected={false}
             isOverlayPreview
+            prospectScore={prospectScoresById[deal.id]}
           />
         </StyledOverlay>
       ) : null}

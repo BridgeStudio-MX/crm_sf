@@ -1,7 +1,7 @@
 # Parks Industrial — Qué falta
 
-> **Última actualización:** 2026-06-20  
-> **Referencia:** [PROGRESS.md](./PROGRESS.md) · [DASHBOARD_PROGRESS.md](./DASHBOARD_PROGRESS.md) · [Blueprint UI](../../Parks_Industrial_Cursor_Blueprint.md)
+> **Última actualización:** 2026-06-25  
+> **Referencia:** [PROGRESS.md](./PROGRESS.md) · [DASHBOARD_PROGRESS.md](./DASHBOARD_PROGRESS.md) · [FLUJO-COMERCIAL-DEMO.md](./FLUJO-COMERCIAL-DEMO.md) · [Blueprint UI](../../Parks_Industrial_Cursor_Blueprint.md)
 
 Documento de seguimiento de trabajo pendiente tras completar los módulos base de UI en Twenty (`/parks/*`), el microservicio `parks-twenty-service` y las vistas **Renovaciones** y **Reservas**.
 
@@ -12,8 +12,8 @@ Documento de seguimiento de trabajo pendiente tras completar los módulos base d
 | Área | Estado general |
 | --- | --- |
 | Backend (microservicio + metadata Twenty) | ✅ Base completa (fases A–C del blueprint §9) |
-| UI integrada en Twenty (`packages/twenty-front`) | ✅ 10 módulos operativos |
-| Demo lista para cliente | 🔄 Falta operación (roles, commit, verificación de datos) |
+| UI integrada en Twenty (`packages/twenty-front`) | ✅ 11 módulos operativos (+ Sprint A comercial) |
+| Demo lista para cliente | 🔄 Falta operación (roles, commit) |
 | Producción / integraciones reales | ⬜ Pendiente |
 
 ---
@@ -47,6 +47,7 @@ Según [PROGRESS.md](./PROGRESS.md):
 | Mapa | `/parks/mapa` | Google Maps + panel lateral |
 | Renovaciones | `/parks/renovaciones` | Cola de vencimientos + holdovers |
 | Reservas | `/parks/reservas` | Naves en negociación |
+| Notificaciones | `/parks/notificaciones` | Centro broker: tareas IA, alertas, enriquecimiento |
 | Asistente IA | Panel en todas las vistas Parks | Fases 1–2 (demo + OpenAI opcional) |
 
 **Código principal:**
@@ -66,10 +67,24 @@ parks-twenty-service/
 
 ### 1. Asignar roles a usuarios en Twenty
 
-Los 8 roles Parks ya están creados (`npm run setup:roles`), pero deben asignarse manualmente:
+Los 8 roles Parks ya están creados (`npm run setup:roles`). Asignación automática demo:
 
-1. Twenty → **Settings → Members** (o Roles)
-2. Asignar rol según persona: Legal (Catalina), Comercial (Héctor), Ejecutivo (Charlie), etc.
+```bash
+cd parks-twenty-service
+npm run setup:assign-roles
+```
+
+Mapeo demo (@apple.dev → persona Parks):
+
+| Usuario | Rol Parks | Persona demo |
+| --- | --- | --- |
+| `jane.austen@apple.dev` | Admin Legal | Catalina |
+| `phil.schiler@apple.dev` | Director Comercial | Héctor |
+| `jony.ive@apple.dev` | CEO | Charlie |
+| `scott.forstall@apple.dev` | CxC | Cobranza |
+| `tim@apple.dev` | Ejecutivo Comercial | Broker principal |
+
+**Nota:** el workspace local puede tener solo `tim@apple.dev`. Invita a los demás en **Settings → Members** y vuelve a ejecutar `setup:assign-roles`, o asigna manualmente en la UI.
 
 ### 2. Commitear y pushear el trabajo de UI
 
@@ -78,12 +93,15 @@ Gran parte del módulo `parks-industrial/` puede estar sin trackear en git. Ante
 - Commit con módulos UI, rutas, Renovaciones, Reservas, Asistente IA
 - Push a remoto para que el equipo pueda desplegar o revisar
 
-### 3. Verificar seed demo en el workspace correcto
+### 3. Verificar seed demo en el workspace correcto ✅
 
 ```bash
 cd parks-twenty-service
 npm run seed:demo
+npm run health
 ```
+
+Seed verificado 2026-06-25 (`DEMO-*` presente, Twenty GraphQL OK).
 
 Comprobar en UI que existan datos visibles en:
 
@@ -111,26 +129,59 @@ En el front, `VITE_PARKS_SERVICE_URL=http://localhost:3002` (ver `.env.example`)
 
 ## Prioridad 2 — Siguiente sprint de UI (impacto en demo)
 
-| # | Feature | Descripción | Esfuerzo estimado |
+| # | Feature | Descripción | Estado |
 | --- | --- | --- | --- |
-| 1 | **Kanban de Renovaciones** | Vista drag-and-drop sobre `opportunity.etapaRenovacion`, igual que el pipeline comercial | Medio |
-| 2 | **"Reservar nave" desde el mapa** | Acción en mapa que vincula nave + deal y la muestra en Reservas | Medio |
-| 3 | **KPI holdovers en vivo** | El summary de Renovaciones usa `holdovers: []` hasta cargar metadata; mostrar conteo real cuando exista el objeto `holdover` | Bajo |
-| 4 | **Ranking de brokers (Comisiones)** | Componente `ComisionSummaryByBroker` del blueprint — posición, deals, total, barra de meta | Bajo–medio |
-| 5 | **Placeholder Oracle en aprobación** | Etapa 3 del flujo legal: mensaje de integración pendiente (sin Oracle real) | Bajo |
+| 1 | **Kanban de Renovaciones** | Vista drag-and-drop sobre `opportunity.etapaRenovacion` | ✅ |
+| 2 | **"Reservar nave" desde el mapa** | Acción en mapa → Reservas | ✅ |
+| 3 | **KPI holdovers en vivo** | Summary Renovaciones con conteo real | ✅ |
+| 4 | **Ranking de brokers (Comisiones)** | Top brokers con barra de meta | ✅ |
+| 5 | **Placeholder Oracle en aprobación** | Etapa 3 flujo legal | ✅ |
 
-### Detalle — Kanban de Renovaciones
+### Sprint A — Flujo comercial (completado 2026-06-25)
 
-- Reutilizar patrón de `ParksPipelineBoard` (`@dnd-kit`)
-- Columnas: etapas de `PARKS_RENOVACION_STAGES` en `parks-industrial.constants.ts`
-- Actualizar `opportunity.etapaRenovacion` al soltar tarjeta
-- Ruta sugerida: tab dentro de `/parks/renovaciones` o sub-ruta dedicada
+| Entregable | Ruta / servicio |
+| --- | --- |
+| Doc flujo demo 18 min | [FLUJO-COMERCIAL-DEMO.md](./FLUJO-COMERCIAL-DEMO.md) |
+| Centro notificaciones | `/parks/notificaciones` |
+| Webhook lead nuevo → tareas + notas | `opportunity.created` en `oportunidad.handler.ts` |
+| Enriquecimiento IA prospecto | `POST /commercial/enrich-prospect` + panel en Pipeline |
+| API notificaciones | `GET/PATCH /commercial/notifications` |
 
-### Detalle — Reservar nave desde mapa
+### Sprint C — Legal sin fricción (completado 2026-06-25)
 
-- Botón en `ParksMapMarkerBalloon` o `ParksParqueSidebarCard`
-- Crear o vincular `opportunity` + cambiar estatus de `nave` a negociación
-- Reflejar en `/parks/reservas` automáticamente
+| Entregable | Ubicación |
+| --- | --- |
+| Validación documental IA | `ParksDocumentValidationPanel` en aprobación |
+| Generador + editor contratos | `ParksContractEditorPanel` |
+| API legal | `parks-twenty-service/src/api/legal.router.ts` |
+
+### Sprint D — Cierre y dinero (completado 2026-06-25)
+
+| Entregable | Ubicación |
+| --- | --- |
+| Handoff CxC | `ParksCxcHandoffPanel` en aprobación |
+| Registrar pago → comisión | Botón en `/parks/comisiones` |
+| Mi desempeño broker | `/parks/mi-desempeno` |
+| API operaciones | `parks-twenty-service/src/api/operations.router.ts` |
+
+**Estado:** Flujo comercial demo (Sprints A–D) **completo**. Scoring en pipeline y secuencia nurture simulada **completados 2026-06-25**.
+
+### Post-Sprint — Scoring + nurture (completado 2026-06-25)
+
+| Entregable | Ubicación |
+| --- | --- |
+| Badge fit score + urgencia en cards | `ParksPipelineDealCard` + `POST /commercial/prospect-scores` |
+| Secuencia nurture 3 emails | `ParksEmailSequencePanel` + `GET /commercial/email-sequence/:id` |
+| Notificaciones por email | Sección dedicada en `/parks/notificaciones` |
+
+### Sprint B — Propuesta comercial (completado 2026-06-25)
+
+| Entregable | Ubicación |
+| --- | --- |
+| Matching naves top 3 | `ParksCommercialProposalSection` en Pipeline |
+| Ficha técnica + link | `POST /commercial/ficha-tecnica` |
+| Tracker vistas | `POST /commercial/ficha/:token/view` |
+| Guion comercial | `POST /commercial/sales-script` |
 
 ---
 
@@ -201,6 +252,7 @@ npm run setup:objects
 npm run setup:opportunity
 npm run setup:pipelines
 npm run setup:roles
+npm run setup:assign-roles
 npm run setup:dashboards
 npm run setup:webhooks
 npm run seed:demo
@@ -220,6 +272,7 @@ npx nx build twenty-shared
 
 | Fecha | Cambio |
 | --- | --- |
+| 2026-06-25 | Scoring pipeline + secuencia nurture simulada; seed verificado |
 | 2026-06-20 | Creación inicial tras fix Renovaciones/Reservas y revisión de roadmap |
 
 ---

@@ -45,6 +45,14 @@ export const resolveParksAiScreenFromPath = (
     return 'reservas';
   }
 
+  if (pathname.includes(AppPath.ParksNotificaciones)) {
+    return 'notificaciones';
+  }
+
+  if (pathname.includes(AppPath.ParksMiDesempeno)) {
+    return 'mi-desempeno';
+  }
+
   return 'unknown';
 };
 
@@ -59,6 +67,8 @@ export const getParksAiScreenLabel = (screen: ParksAiScreen): string => {
     comisiones: t`Comisiones`,
     renovaciones: t`Renovaciones`,
     reservas: t`Reservas`,
+    notificaciones: t`Notificaciones`,
+    'mi-desempeno': t`Mi desempeño`,
     unknown: t`Parks Industrial`,
   };
 

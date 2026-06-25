@@ -16,6 +16,7 @@ import { ParksEmptyState } from '@/parks-industrial/components/ui/ParksEmptyStat
 import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
 import { getParksGoogleMapOptions } from '@/parks-industrial/constants/parks-google-map.constants';
 import { getParqueCoordinates } from '@/parks-industrial/constants/parks-industrial.constants';
+import { type ParksNaveRecord } from '@/parks-industrial/hooks/useParksRecords';
 import { type ParksParqueRecord } from '@/parks-industrial/hooks/useParksParques';
 import {
   getParksOcupacionMarkerHex,
@@ -73,6 +74,7 @@ export type ParksMapMarker = {
 
 type ParksGoogleMapPanelProps = {
   parques: ParksParqueRecord[];
+  naves: ParksNaveRecord[];
   selectedParqueId: string | null;
   colorScheme: 'light' | 'dark';
   onSelectParque: (parqueId: string | null) => void;
@@ -112,6 +114,7 @@ const getMapBalloonPixelOffset = (
 
 export const ParksGoogleMapPanel = ({
   parques,
+  naves,
   selectedParqueId,
   colorScheme,
   onSelectParque,
@@ -265,6 +268,7 @@ export const ParksGoogleMapPanel = ({
           >
             <ParksMapMarkerBalloon
               parque={selectedMarker.parque}
+              naves={naves}
               onClose={() => onSelectParque(null)}
             />
           </OverlayView>

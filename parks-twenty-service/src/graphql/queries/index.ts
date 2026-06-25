@@ -278,6 +278,58 @@ export const GET_COMISIONES_BY_HOJA = `
           id
           tipo
           beneficiario
+          montoUsd
+          estatus
+        }
+      }
+    }
+  }
+`;
+
+export const GET_ALL_COMISIONES = `
+  query GetAllComisiones {
+    comisiones(first: 200, orderBy: [{ updatedAt: DescNullsLast }]) {
+      edges {
+        node {
+          id
+          tipo
+          beneficiario
+          montoUsd
+          estatus
+          baseCalculo
+          hojaDeAcuerdosId
+          casoLegalId
+          hojaDeAcuerdos {
+            referencia
+            m2Acordados
+            precioUsdM2
+            nave {
+              identificador
+            }
+          }
+          casoLegal {
+            referencia
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_OPPORTUNITIES_SUMMARY = `
+  query GetOpportunitiesSummary {
+    opportunities(first: 200, orderBy: [{ updatedAt: DescNullsLast }]) {
+      edges {
+        node {
+          id
+          name
+          stage
+          m2Requeridos
+          updatedAt
+          amount {
+            amountMicros
+            currencyCode
+          }
         }
       }
     }

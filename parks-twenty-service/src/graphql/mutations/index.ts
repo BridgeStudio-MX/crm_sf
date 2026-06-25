@@ -44,6 +44,18 @@ export const CREATE_COMISION = `
   }
 `;
 
+export const UPDATE_COMISION = `
+  mutation UpdateComision($comisionId: UUID!, $data: ComisionUpdateInput!) {
+    updateComision(id: $comisionId, data: $data) {
+      id
+      tipo
+      beneficiario
+      montoUsd
+      estatus
+    }
+  }
+`;
+
 export const CREATE_EXPEDIENTE_CONTRATO = `
   mutation CreateExpedienteContrato($data: ExpedienteContratoCreateInput!) {
     createExpedienteContrato(data: $data) {

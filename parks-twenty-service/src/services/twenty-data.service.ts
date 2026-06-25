@@ -15,6 +15,7 @@ import {
   CREATE_NOTE,
   CREATE_TASK,
   UPDATE_CASO_LEGAL,
+  UPDATE_COMISION,
   UPDATE_EXPEDIENTE_CONTRATO,
   UPDATE_FLUJO_FIRMAS,
   UPDATE_INQUILINO,
@@ -25,6 +26,7 @@ import {
   FIND_HOJA_DE_ACUERDOS_FOR_HANDOFF,
   GET_CASO_LEGAL_BY_ID,
   GET_CASOS_LEGALES_ACTIVOS,
+  GET_ALL_COMISIONES,
   GET_COMISIONES_BY_HOJA,
   COUNT_ACTIVE_RENOVACION_CASOS,
   FIND_OPPORTUNITY_BY_INQUILINO_NAVE,
@@ -39,6 +41,7 @@ import {
   GET_HOLDOVER_BY_EXPEDIENTE,
   GET_NAVES_DISPONIBLES,
   GET_OPPORTUNITY_BY_ID,
+  GET_OPPORTUNITIES_SUMMARY,
 } from '../graphql/queries';
 import {
   type CasoLegalRecord,
@@ -189,6 +192,7 @@ export const twentyDataService = {
 
   findNavesDisponibles: async (): Promise<
     {
+      id?: string;
       identificador?: string;
       m2?: number;
       parque?: { nombre?: string; ubicacion?: string };
@@ -325,6 +329,48 @@ export const twentyDataService = {
     } catch (error) {
       logGraphQlError('createComision failed', error);
       return null;
+    }
+  },
+
+  updateComision: async (
+    comisionId: string,
+    data: Record<string, unknown>,
+  ): Promise<ComisionRecord | null> => {
+    try {
+      const response = await twentyClient.mutate<{
+        updateComision: ComisionRecord;
+      }>(UPDATE_COMISION, { comisionId, data });
+
+      return response.updateComision;
+    } catch (error) {
+      logGraphQlError(`updateComision(${comisionId}) failed`, error);
+      return null;
+    }
+  },
+
+  findAllComisiones: async (): Promise<ComisionRecord[]> => {
+    try {
+      const response = await twentyClient.query<{
+        comisiones: GraphQlConnection<ComisionRecord>;
+      }>(GET_ALL_COMISIONES, {});
+
+      return mapConnectionNodes(response.comisiones);
+    } catch (error) {
+      logGraphQlError('findAllComisiones failed', error);
+      return [];
+    }
+  },
+
+  findOpportunitiesSummary: async (): Promise<OpportunityRecord[]> => {
+    try {
+      const response = await twentyClient.query<{
+        opportunities: GraphQlConnection<OpportunityRecord>;
+      }>(GET_OPPORTUNITIES_SUMMARY, {});
+
+      return mapConnectionNodes(response.opportunities);
+    } catch (error) {
+      logGraphQlError('findOpportunitiesSummary failed', error);
+      return [];
     }
   },
 

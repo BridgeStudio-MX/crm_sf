@@ -6,6 +6,7 @@ import { Tag } from 'twenty-ui/data-display';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
 import { type ParksPipelineStageColor } from '@/parks-industrial/constants/parks-industrial.constants';
+import { type ProspectScoreResult } from '@/parks-industrial/types/parks-commercial.types';
 import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRecords';
 import { ParksPipelineDealCard } from '@/parks-industrial/components/pipeline/ParksPipelineDealCard';
 import {
@@ -102,6 +103,7 @@ type ParksPipelineColumnProps = {
   deals: ParksOpportunityRecord[];
   selectedDealId: string | null;
   draggingDealId: string | null;
+  prospectScoresById: Record<string, ProspectScoreResult>;
   onSelectDeal: (dealId: string) => void;
   onOpenRecord: (dealId: string) => void;
 };
@@ -111,6 +113,7 @@ export const ParksPipelineColumn = ({
   deals,
   selectedDealId,
   draggingDealId,
+  prospectScoresById,
   onSelectDeal,
   onOpenRecord,
 }: ParksPipelineColumnProps) => {
@@ -161,6 +164,7 @@ export const ParksPipelineColumn = ({
               stageTheme={stageTheme}
               isSelected={selectedDealId === deal.id}
               isOverlayPreview={false}
+              prospectScore={prospectScoresById[deal.id]}
               onSelect={onSelectDeal}
               onOpenRecord={onOpenRecord}
             />

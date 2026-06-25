@@ -79,6 +79,21 @@ export const getParksPipelineStageTheme = (
   color: ParksPipelineStageColor,
 ): ParksPipelineStageTheme => pipelineStageThemeByColor[color];
 
+export const getParksRenovacionStageTheme = (
+  color: ParksPipelineStageColor | 'red',
+): ParksPipelineStageTheme => {
+  if (color === 'red') {
+    return {
+      accent: themeCssVariables.color.red,
+      background: themeCssVariables.color.red1,
+      border: themeCssVariables.color.red4,
+      dragHighlight: themeCssVariables.color.red3,
+    };
+  }
+
+  return getParksPipelineStageTheme(color);
+};
+
 export type ParksOcupacionLevel = 'high' | 'medium' | 'low';
 
 export const getParksParqueOcupacion = (

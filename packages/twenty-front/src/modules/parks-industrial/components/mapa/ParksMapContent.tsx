@@ -12,6 +12,7 @@ import {
 import { MOBILE_VIEWPORT, ThemeContext, themeCssVariables } from 'twenty-ui/theme-constants';
 
 import { getParqueCoordinates } from '@/parks-industrial/constants/parks-industrial.constants';
+import { type ParksNaveRecord } from '@/parks-industrial/hooks/useParksRecords';
 import { type ParksParqueRecord } from '@/parks-industrial/hooks/useParksParques';
 import { useParksMapMetrics } from '@/parks-industrial/hooks/useParksMapMetrics';
 import {
@@ -120,6 +121,7 @@ const StyledMapWorkspace = styled.div`
 `;
 
 const StyledMapPane = styled.div`
+  height: 100%;
   min-height: 360px;
   min-width: 0;
   position: relative;
@@ -299,6 +301,7 @@ const syncSelectedParqueId = (
 
 type ParksMapContentProps = {
   parques: ParksParqueRecord[];
+  naves: ParksNaveRecord[];
 };
 
 const buildMapFilterSummaryLabel = ({
@@ -336,7 +339,7 @@ const buildMapFilterSummaryLabel = ({
   return t`${visibleParqueCount} de ${totalParqueCount} parques${filterSuffix}`;
 };
 
-export const ParksMapContent = ({ parques }: ParksMapContentProps) => {
+export const ParksMapContent = ({ parques, naves }: ParksMapContentProps) => {
   const { colorScheme } = useContext(ThemeContext);
   const { setContextPatch } = useParksAiAssistant();
   const [selectedParqueId, setSelectedParqueId] = useState<string | null>(
@@ -519,6 +522,7 @@ export const ParksMapContent = ({ parques }: ParksMapContentProps) => {
             <>
               <ParksGoogleMapPanel
                 parques={filteredParques}
+                naves={naves}
                 selectedParqueId={selectedParque?.id ?? null}
                 colorScheme={colorScheme}
                 onSelectParque={setSelectedParqueId}

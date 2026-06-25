@@ -49,6 +49,7 @@ export type PdfContext = {
 };
 
 export const TEMPLATE_BY_DOCUMENT_TYPE: Record<string, string> = {
+  'Carta de intención': 'carta-intencion.hbs',
   'Contrato nuevo': 'contrato-arrendamiento.hbs',
   'Convenio renovación': 'convenio-renovacion.hbs',
   'Convenio aclaración': 'convenio-aclaracion.hbs',
