@@ -106,9 +106,15 @@ jobs:
       - name: Verify TWENTY_API_KEY is configured
         env:
           TWENTY_API_KEY: ${{ secrets.TWENTY_API_KEY }}
+          TWENTY_BOOTSTRAP_EMAIL: ${{ secrets.TWENTY_BOOTSTRAP_EMAIL }}
+          TWENTY_BOOTSTRAP_PASSWORD: ${{ secrets.TWENTY_BOOTSTRAP_PASSWORD }}
         run: |
           if [ -z "$TWENTY_API_KEY" ]; then
             echo "::error::TWENTY_API_KEY está vacío. Agrégalo en Settings → Secrets → Actions y vuelve a ejecutar el workflow (Re-run jobs)."
+            exit 1
+          fi
+          if [ -z "$TWENTY_BOOTSTRAP_EMAIL" ] || [ -z "$TWENTY_BOOTSTRAP_PASSWORD" ]; then
+            echo "::error::TWENTY_BOOTSTRAP_EMAIL y TWENTY_BOOTSTRAP_PASSWORD son requeridos (admin del workspace con permiso ROLES)."
             exit 1
           fi
 
@@ -119,6 +125,8 @@ jobs:
           TWENTY_API_URL: https://parks.bridgehub.mx
           TWENTY_WORKSPACE_ORIGIN: https://parks.bridgehub.mx
           TWENTY_API_KEY: ${{ secrets.TWENTY_API_KEY }}
+          TWENTY_BOOTSTRAP_EMAIL: ${{ secrets.TWENTY_BOOTSTRAP_EMAIL }}
+          TWENTY_BOOTSTRAP_PASSWORD: ${{ secrets.TWENTY_BOOTSTRAP_PASSWORD }}
           TWENTY_WORKSPACE_INVITE_HASH: ${{ secrets.TWENTY_WORKSPACE_INVITE_HASH }}
           RESET_DEMO_SEED: 'true'
           TWENTY_REQUEST_INTERVAL_MS: '700'

@@ -2,6 +2,7 @@ import axios from 'axios';
 
 import { envConfig } from '../config/env.config';
 import { twentyConfig } from '../config/twenty.config';
+import { PARKS_DEMO_USER_PASSWORD } from './parks-demo-users.constants';
 
 const buildOrigin = (): string => {
   const originUrl = new URL(twentyConfig.apiUrl);
@@ -9,24 +10,13 @@ const buildOrigin = (): string => {
   return originUrl.toString();
 };
 
-export const resolveTwentyAuthToken = async (): Promise<string> => {
-  const devEmail = process.env.TWENTY_DEV_EMAIL ?? 'tim@apple.dev';
-  const devPassword = process.env.TWENTY_DEV_PASSWORD ?? 'tim@apple.dev';
-
-  return resolveTwentyAuthTokenForUser(devEmail, devPassword);
-};
-
-export const resolveTwentyAuthTokenForUser = async (
+const loginAsUser = async (
   email: string,
   password: string,
 ): Promise<string> => {
-  if (envConfig.twentyApiKey) {
-    return envConfig.twentyApiKey;
-  }
-
   const origin = buildOrigin();
 
-  console.log(`[auth] TWENTY_API_KEY not set — using dev login (${email})`);
+  console.log(`[auth] Using user login (${email})`);
 
   const loginResponse = await axios.post<{ data: Record<string, unknown> }>(
     `${twentyConfig.apiUrl}/metadata`,
@@ -89,3 +79,30 @@ export const resolveTwentyAuthTokenForUser = async (
     }
   ).getAuthTokensFromLoginToken.tokens.accessOrWorkspaceAgnosticToken.token;
 };
+
+// API key for metadata CRUD; user login for operations that require user context
+export const resolveTwentyAuthToken = async (): Promise<string> => {
+  if (envConfig.twentyApiKey) {
+    return envConfig.twentyApiKey;
+  }
+
+  return resolveTwentyUserAuthToken();
+};
+
+export const resolveTwentyUserAuthToken = async (): Promise<string> => {
+  const email =
+    process.env.TWENTY_BOOTSTRAP_EMAIL ??
+    process.env.TWENTY_DEV_EMAIL ??
+    'tim@apple.dev';
+  const password =
+    process.env.TWENTY_BOOTSTRAP_PASSWORD ??
+    process.env.TWENTY_DEV_PASSWORD ??
+    PARKS_DEMO_USER_PASSWORD;
+
+  return loginAsUser(email, password);
+};
+
+export const resolveTwentyAuthTokenForUser = async (
+  email: string,
+  password: string,
+): Promise<string> => loginAsUser(email, password);

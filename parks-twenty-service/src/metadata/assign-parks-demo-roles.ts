@@ -2,16 +2,16 @@ import { GraphQLClient } from 'graphql-request';
 
 import { envConfig } from '../config/env.config';
 import { twentyConfig } from '../config/twenty.config';
-import {
-  resolveTwentyAuthToken,
-  resolveTwentyAuthTokenForUser,
-} from './resolve-twenty-auth-token';
 import { metadataClient } from './metadata-client';
 import { PARKS_DEMO_ROLE_ASSIGNMENTS } from './parks-demo-role-assignments.constants';
 import {
   PARKS_DEMO_USER_PASSWORD,
   PARKS_DEMO_USERS,
 } from './parks-demo-users.constants';
+import {
+  resolveTwentyAuthTokenForUser,
+  resolveTwentyUserAuthToken,
+} from './resolve-twenty-auth-token';
 
 const LOG_PREFIX = '[setup:assign-roles]';
 
@@ -106,6 +106,64 @@ const assignRoleWithToken = async ({
   }
 };
 
+const runAssignments = async ({
+  token,
+  assignerLabel,
+  skipEmails = [],
+  roleIdByLabel,
+}: {
+  token: string;
+  assignerLabel: string;
+  skipEmails?: string[];
+  roleIdByLabel: Map<string, string>;
+}): Promise<number> => {
+  const members = await fetchWorkspaceMembers(token);
+  const memberIdByEmail = new Map(
+    members.map((member) => [member.userEmail.toLowerCase(), member.id]),
+  );
+  const skipEmailSet = new Set(skipEmails.map((email) => email.toLowerCase()));
+
+  let passAssignedCount = 0;
+
+  for (const assignment of PARKS_DEMO_ROLE_ASSIGNMENTS) {
+    const roleId = roleIdByLabel.get(assignment.roleLabel);
+
+    if (!roleId) {
+      continue;
+    }
+
+    if (skipEmailSet.has(assignment.userEmail.toLowerCase())) {
+      continue;
+    }
+
+    const workspaceMemberId = memberIdByEmail.get(
+      assignment.userEmail.toLowerCase(),
+    );
+
+    if (!workspaceMemberId) {
+      console.warn(
+        `${LOG_PREFIX}   ⚠ ${assignment.userEmail} not in workspace — run setup:demo-users first`,
+      );
+      continue;
+    }
+
+    const assigned = await assignRoleWithToken({
+      token,
+      assignerEmail: assignerLabel,
+      workspaceMemberId,
+      roleId,
+      targetEmail: assignment.userEmail,
+      roleLabel: assignment.roleLabel,
+    });
+
+    if (assigned) {
+      passAssignedCount += 1;
+    }
+  }
+
+  return passAssignedCount;
+};
+
 export const assignParksDemoRoles = async (): Promise<void> => {
   console.log(`${LOG_PREFIX} Assigning Parks demo roles to workspace members...`);
 
@@ -123,74 +181,52 @@ export const assignParksDemoRoles = async (): Promise<void> => {
     );
   }
 
-  const runAssignments = async ({
-    token,
-    assignerLabel,
-    skipEmails = [],
-  }: {
-    token: string;
-    assignerLabel: string;
-    skipEmails?: string[];
-  }): Promise<number> => {
-    const members = await fetchWorkspaceMembers(token);
-    const memberIdByEmail = new Map(
-      members.map((member) => [member.userEmail.toLowerCase(), member.id]),
-    );
-    const skipEmailSet = new Set(
-      skipEmails.map((email) => email.toLowerCase()),
-    );
-
-    let passAssignedCount = 0;
-
-    for (const assignment of PARKS_DEMO_ROLE_ASSIGNMENTS) {
-      const roleId = roleIdByLabel.get(assignment.roleLabel);
-
-      if (!roleId) {
-        continue;
-      }
-
-      if (skipEmailSet.has(assignment.userEmail.toLowerCase())) {
-        continue;
-      }
-
-      const workspaceMemberId = memberIdByEmail.get(
-        assignment.userEmail.toLowerCase(),
-      );
-
-      if (!workspaceMemberId) {
-        console.warn(
-          `${LOG_PREFIX}   ⚠ ${assignment.userEmail} not in workspace — run setup:demo-users first`,
-        );
-        continue;
-      }
-
-      const assigned = await assignRoleWithToken({
-        token,
-        assignerEmail: assignerLabel,
-        workspaceMemberId,
-        roleId,
-        targetEmail: assignment.userEmail,
-        roleLabel: assignment.roleLabel,
-      });
-
-      if (assigned) {
-        passAssignedCount += 1;
-      }
-    }
-
-    return passAssignedCount;
-  };
+  const bootstrapEmail =
+    process.env.TWENTY_BOOTSTRAP_EMAIL ??
+    process.env.TWENTY_DEV_EMAIL ??
+    'tim@apple.dev';
 
   let assignedCount = 0;
-  let members: WorkspaceMemberNode[] = [];
 
   if (envConfig.twentyApiKey) {
-    const token = await resolveTwentyAuthToken();
-    members = await fetchWorkspaceMembers(token);
+    const token = await resolveTwentyUserAuthToken();
+
     assignedCount = await runAssignments({
       token,
-      assignerLabel: 'TWENTY_API_KEY',
+      assignerLabel: bootstrapEmail,
+      roleIdByLabel,
+      skipEmails: [bootstrapEmail],
     });
+
+    if (
+      bootstrapEmail.toLowerCase() !== 'tim@apple.dev' &&
+      PARKS_DEMO_ROLE_ASSIGNMENTS.some(
+        (assignment) =>
+          assignment.userEmail.toLowerCase() === 'tim@apple.dev',
+      )
+    ) {
+      try {
+        const timToken = await resolveTwentyAuthTokenForUser(
+          'tim@apple.dev',
+          PARKS_DEMO_USER_PASSWORD,
+        );
+
+        assignedCount += await runAssignments({
+          token: timToken,
+          assignerLabel: 'tim@apple.dev',
+          roleIdByLabel,
+          skipEmails: PARKS_DEMO_ROLE_ASSIGNMENTS.filter(
+            (assignment) =>
+              assignment.userEmail.toLowerCase() !== 'tim@apple.dev',
+          ).map((assignment) => assignment.userEmail),
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(
+          `${LOG_PREFIX}   ⚠ Could not assign tim@apple.dev via tim login: ${message}`,
+        );
+      }
+    }
   } else {
     const primaryEmail = process.env.TWENTY_DEV_EMAIL ?? 'tim@apple.dev';
     const primaryPassword =
@@ -201,29 +237,30 @@ export const assignParksDemoRoles = async (): Promise<void> => {
       primaryPassword,
     );
 
-    members = await fetchWorkspaceMembers(primaryToken);
     assignedCount += await runAssignments({
       token: primaryToken,
       assignerLabel: primaryEmail,
       skipEmails: [primaryEmail],
+      roleIdByLabel,
     });
 
-    const timAssignment = PARKS_DEMO_ROLE_ASSIGNMENTS.find(
-      (assignment) => assignment.userEmail.toLowerCase() === 'tim@apple.dev',
-    );
-
-    if (timAssignment) {
-      const secondaryEmail = 'jane.austen@apple.dev';
-
+    if (
+      primaryEmail.toLowerCase() === 'tim@apple.dev' &&
+      PARKS_DEMO_ROLE_ASSIGNMENTS.some(
+        (assignment) =>
+          assignment.userEmail.toLowerCase() === 'tim@apple.dev',
+      )
+    ) {
       try {
         const secondaryToken = await resolveTwentyAuthTokenForUser(
-          secondaryEmail,
+          'jane.austen@apple.dev',
           PARKS_DEMO_USER_PASSWORD,
         );
 
         assignedCount += await runAssignments({
           token: secondaryToken,
-          assignerLabel: secondaryEmail,
+          assignerLabel: 'jane.austen@apple.dev',
+          roleIdByLabel,
           skipEmails: PARKS_DEMO_ROLE_ASSIGNMENTS.filter(
             (assignment) =>
               assignment.userEmail.toLowerCase() !== 'tim@apple.dev',
@@ -232,12 +269,14 @@ export const assignParksDemoRoles = async (): Promise<void> => {
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         console.warn(
-          `${LOG_PREFIX}   ⚠ Could not assign tim@apple.dev role via ${secondaryEmail}: ${message}`,
+          `${LOG_PREFIX}   ⚠ Could not assign tim@apple.dev via jane.austen@apple.dev: ${message}`,
         );
       }
     }
   }
 
+  const userToken = await resolveTwentyUserAuthToken();
+  const members = await fetchWorkspaceMembers(userToken);
   const memberEmails = new Set(
     members.map((member) => member.userEmail.toLowerCase()),
   );
@@ -246,7 +285,7 @@ export const assignParksDemoRoles = async (): Promise<void> => {
     (assignment) => !memberEmails.has(assignment.userEmail.toLowerCase()),
   );
 
-  if (assignedCount === 0 && missingMembers.length > 0) {
+  if (missingMembers.length > 0) {
     console.log(
       `${LOG_PREFIX} Missing workspace members (${missingMembers.length}/${PARKS_DEMO_USERS.length}):`,
     );
@@ -255,9 +294,7 @@ export const assignParksDemoRoles = async (): Promise<void> => {
       console.log(`${LOG_PREFIX}   - ${assignment.userEmail}`);
     }
 
-    console.log(
-      `${LOG_PREFIX} Run: npm run setup:demo-users (invite) or npx nx database:reset twenty-server (local seed)`,
-    );
+    console.log(`${LOG_PREFIX} Run: npm run setup:demo-users first`);
   }
 
   console.log(
@@ -267,6 +304,19 @@ export const assignParksDemoRoles = async (): Promise<void> => {
   for (const assignment of PARKS_DEMO_ROLE_ASSIGNMENTS) {
     console.log(
       `${LOG_PREFIX}   ${assignment.userEmail} → ${assignment.roleLabel} (${assignment.persona})`,
+    );
+  }
+
+  const expectedAssignments = PARKS_DEMO_ROLE_ASSIGNMENTS.filter((assignment) =>
+    roleIdByLabel.has(assignment.roleLabel),
+  ).length;
+
+  if (
+    envConfig.twentyApiKey &&
+    assignedCount < expectedAssignments
+  ) {
+    throw new Error(
+      `Only ${assignedCount}/${expectedAssignments} Parks demo roles were assigned — check TWENTY_BOOTSTRAP_EMAIL has admin + ROLES permission`,
     );
   }
 };

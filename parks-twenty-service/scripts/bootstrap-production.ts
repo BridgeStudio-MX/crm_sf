@@ -56,6 +56,23 @@ const main = async (): Promise<void> => {
     process.exit(1);
   }
 
+  if (hasApiKey && !process.env.TWENTY_BOOTSTRAP_EMAIL) {
+    console.error(
+      '[bootstrap] TWENTY_BOOTSTRAP_EMAIL is missing — required for role assignment and workspace branding.',
+    );
+    console.error(
+      '[bootstrap] Add TWENTY_BOOTSTRAP_EMAIL + TWENTY_BOOTSTRAP_PASSWORD (workspace admin) to GitHub Secrets.',
+    );
+    process.exit(1);
+  }
+
+  if (hasApiKey && !process.env.TWENTY_BOOTSTRAP_PASSWORD) {
+    console.error(
+      '[bootstrap] TWENTY_BOOTSTRAP_PASSWORD is missing — required with TWENTY_BOOTSTRAP_EMAIL.',
+    );
+    process.exit(1);
+  }
+
   if (process.env.RESET_DEMO_SEED !== 'false') {
     process.env.RESET_DEMO_SEED = 'true';
   }

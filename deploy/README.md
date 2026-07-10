@@ -109,6 +109,8 @@ dataset.
 | Secret | Valor |
 | --- | --- |
 | `TWENTY_API_KEY` | API key Admin de https://parks.bridgehub.mx (Settings → APIs) |
+| `TWENTY_BOOTSTRAP_EMAIL` | Email del admin del workspace (permiso ROLES + WORKSPACE) |
+| `TWENTY_BOOTSTRAP_PASSWORD` | Contraseña de ese admin |
 
 Sin ese secret, el deploy de Twenty sigue funcionando; solo falla el seed demo
 automatico.
