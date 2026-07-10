@@ -48,13 +48,15 @@ const resolveAdminToken = async (): Promise<string> => {
     return resolveTwentyAuthToken();
   }
 
-  const adminEmail =
-    process.env.TWENTY_DEV_EMAIL ?? 'tim@apple.dev';
+  const adminEmail = process.env.TWENTY_DEV_EMAIL ?? 'tim@apple.dev';
   const adminPassword =
     process.env.TWENTY_DEV_PASSWORD ?? PARKS_DEMO_USER_PASSWORD;
 
   return resolveTwentyAuthTokenForUser(adminEmail, adminPassword);
 };
+
+const resolveWorkspaceOrigin = (): string =>
+  process.env.TWENTY_WORKSPACE_ORIGIN ?? twentyConfig.apiUrl;
 
 const fetchWorkspaceMembers = async (
   token: string,
@@ -81,55 +83,135 @@ const fetchWorkspaceMembers = async (
   return response.workspaceMembers.edges.map((edge) => edge.node);
 };
 
-const fetchWorkspaceContext = async (
+const fetchWorkspaceContextFromAuthenticated = async (
   token: string,
-): Promise<WorkspaceContext> => {
+): Promise<Partial<WorkspaceContext>> => {
   const client = buildMetadataClient(token);
 
   const response = await client.request<{
-    currentUser: {
-      currentWorkspace: {
-        id: string;
-        inviteHash: string;
-        isPublicInviteLinkEnabled: boolean;
-        workspaceUrls: {
-          subdomainUrl: string;
-          customUrl?: string | null;
-        };
-      } | null;
+    currentWorkspace: {
+      id: string;
+      inviteHash?: string | null;
+      isPublicInviteLinkEnabled?: boolean | null;
+      workspaceUrls: {
+        subdomainUrl: string;
+        customUrl?: string | null;
+      };
     };
   }>(`
     query WorkspaceContextForDemoUsers {
-      currentUser {
-        currentWorkspace {
-          id
-          inviteHash
-          isPublicInviteLinkEnabled
-          workspaceUrls {
-            subdomainUrl
-            customUrl
-          }
+      currentWorkspace {
+        id
+        inviteHash
+        isPublicInviteLinkEnabled
+        workspaceUrls {
+          subdomainUrl
+          customUrl
         }
       }
     }
   `);
 
-  const workspace = response.currentUser.currentWorkspace;
-
-  if (!workspace?.id || !workspace.inviteHash) {
-    throw new Error('Could not resolve workspace id or inviteHash');
-  }
-
-  const origin =
-    workspace.workspaceUrls.customUrl ??
-    workspace.workspaceUrls.subdomainUrl ??
-    twentyConfig.apiUrl;
+  const workspace = response.currentWorkspace;
 
   return {
     id: workspace.id,
-    inviteHash: workspace.inviteHash,
-    isPublicInviteLinkEnabled: workspace.isPublicInviteLinkEnabled,
-    origin,
+    inviteHash: workspace.inviteHash ?? undefined,
+    isPublicInviteLinkEnabled: workspace.isPublicInviteLinkEnabled ?? false,
+    origin:
+      workspace.workspaceUrls.customUrl ??
+      workspace.workspaceUrls.subdomainUrl ??
+      resolveWorkspaceOrigin(),
+  };
+};
+
+const fetchWorkspaceContextFromPublicDomain = async (
+  origin: string,
+): Promise<Partial<WorkspaceContext>> => {
+  const response = await axios.post<{
+    data?: {
+      getPublicWorkspaceDataByDomain?: {
+        id: string;
+        workspaceUrls: {
+          subdomainUrl: string;
+          customUrl?: string | null;
+        };
+      };
+    };
+    errors?: Array<{ message: string }>;
+  }>(
+    `${twentyConfig.apiUrl}/metadata`,
+    {
+      query: `
+        query PublicWorkspaceContextForDemoUsers($origin: String!) {
+          getPublicWorkspaceDataByDomain(origin: $origin) {
+            id
+            workspaceUrls {
+              subdomainUrl
+              customUrl
+            }
+          }
+        }
+      `,
+      variables: { origin },
+    },
+    {
+      headers: {
+        Origin: origin,
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+
+  if (response.data.errors?.length) {
+    throw new Error(JSON.stringify(response.data.errors));
+  }
+
+  const workspace = response.data.data?.getPublicWorkspaceDataByDomain;
+
+  if (!workspace?.id) {
+    throw new Error(`Could not resolve workspace from origin ${origin}`);
+  }
+
+  return {
+    id: workspace.id,
+    origin:
+      workspace.workspaceUrls.customUrl ??
+      workspace.workspaceUrls.subdomainUrl ??
+      origin,
+  };
+};
+
+const resolveWorkspaceContext = async (
+  token: string,
+): Promise<WorkspaceContext> => {
+  const origin = resolveWorkspaceOrigin();
+  const authenticatedContext =
+    await fetchWorkspaceContextFromAuthenticated(token);
+  const publicContext = await fetchWorkspaceContextFromPublicDomain(origin);
+  const inviteHash =
+    authenticatedContext.inviteHash ??
+    process.env.TWENTY_WORKSPACE_INVITE_HASH ??
+    '';
+
+  const workspaceId = authenticatedContext.id ?? publicContext.id;
+
+  if (!workspaceId) {
+    throw new Error('Could not resolve workspace id');
+  }
+
+  if (!inviteHash) {
+    throw new Error(
+      'Could not resolve workspace inviteHash — set TWENTY_WORKSPACE_INVITE_HASH in CI secrets if needed',
+    );
+  }
+
+  return {
+    id: workspaceId,
+    inviteHash,
+    isPublicInviteLinkEnabled:
+      authenticatedContext.isPublicInviteLinkEnabled ?? false,
+    origin: authenticatedContext.origin ?? publicContext.origin ?? origin,
   };
 };
 
@@ -281,7 +363,14 @@ const provisionMissingDemoUsers = async ({
   workspaceContext: WorkspaceContext;
 }): Promise<number> => {
   if (!workspaceContext.isPublicInviteLinkEnabled) {
-    await enablePublicInviteLink(token);
+    try {
+      await enablePublicInviteLink(token);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(
+        `${LOG_PREFIX}   ⚠ Could not enable public invite link: ${message}`,
+      );
+    }
   }
 
   let provisionedCount = 0;
@@ -301,15 +390,22 @@ const provisionMissingDemoUsers = async ({
     stillMissingEmails.push(demoUser.email);
   }
 
-  if (stillMissingEmails.length > 0) {
+  if (stillMissingEmails.length > 0 && !envConfig.twentyApiKey) {
     console.log(
       `${LOG_PREFIX} Fallback invitations for ${stillMissingEmails.length} user(s)...`,
     );
 
-    provisionedCount += await inviteMissingMembers({
-      token,
-      emails: stillMissingEmails,
-    });
+    try {
+      provisionedCount += await inviteMissingMembers({
+        token,
+        emails: stillMissingEmails,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(
+        `${LOG_PREFIX}   ⚠ Invitation fallback skipped: ${message}`,
+      );
+    }
   }
 
   return provisionedCount;
@@ -321,7 +417,7 @@ export const inviteParksDemoUsers = async (): Promise<void> => {
   );
 
   const token = await resolveAdminToken();
-  const workspaceContext = await fetchWorkspaceContext(token);
+  const workspaceContext = await resolveWorkspaceContext(token);
   const members = await fetchWorkspaceMembers(token);
 
   const memberEmails = new Set(
@@ -358,6 +454,12 @@ export const inviteParksDemoUsers = async (): Promise<void> => {
     console.log(
       `${LOG_PREFIX} Provisioned ${provisionedCount}/${missingDemoUsers.length} — remaining missing: ${remainingCount}`,
     );
+
+    if (remainingCount > 0) {
+      throw new Error(
+        `${remainingCount} demo user(s) still missing from workspace after provisioning`,
+      );
+    }
   }
 
   console.log(

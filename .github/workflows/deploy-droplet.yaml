@@ -117,7 +117,9 @@ jobs:
         timeout-minutes: 15
         env:
           TWENTY_API_URL: https://parks.bridgehub.mx
+          TWENTY_WORKSPACE_ORIGIN: https://parks.bridgehub.mx
           TWENTY_API_KEY: ${{ secrets.TWENTY_API_KEY }}
+          TWENTY_WORKSPACE_INVITE_HASH: ${{ secrets.TWENTY_WORKSPACE_INVITE_HASH }}
           RESET_DEMO_SEED: 'true'
           TWENTY_REQUEST_INTERVAL_MS: '700'
         run: npm run bootstrap:production
