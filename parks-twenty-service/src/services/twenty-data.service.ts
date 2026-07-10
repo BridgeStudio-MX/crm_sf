@@ -30,6 +30,7 @@ import {
   GET_COMISIONES_BY_HOJA,
   COUNT_ACTIVE_RENOVACION_CASOS,
   FIND_OPPORTUNITY_BY_INQUILINO_NAVE,
+  FIND_OPPORTUNITIES_BY_INQUILINO,
   GET_DOCUMENTOS_CHECKLIST_BY_CASO,
   GET_EXPEDIENTE_BY_ID,
   GET_EXPEDIENTES_ACTIVOS,
@@ -40,6 +41,7 @@ import {
   GET_NAVE_BY_ID,
   GET_HOLDOVER_BY_EXPEDIENTE,
   GET_NAVES_DISPONIBLES,
+  GET_INQUILINO_BY_ID,
   GET_OPPORTUNITY_BY_ID,
   GET_OPPORTUNITIES_SUMMARY,
 } from '../graphql/queries';
@@ -51,6 +53,7 @@ import {
   type GraphQlConnection,
   type HojaDeAcuerdosRecord,
   type HoldoverRecord,
+  type InquilinoRecord,
   type NaveRecord,
   type OpportunityRecord,
 } from '../types/parks.types';
@@ -361,6 +364,21 @@ export const twentyDataService = {
     }
   },
 
+  findOpportunitiesByInquilino: async (
+    inquilinoId: string,
+  ): Promise<OpportunityRecord[]> => {
+    try {
+      const response = await twentyClient.query<{
+        opportunities: GraphQlConnection<OpportunityRecord>;
+      }>(FIND_OPPORTUNITIES_BY_INQUILINO, { inquilinoId });
+
+      return mapConnectionNodes(response.opportunities);
+    } catch (error) {
+      logGraphQlError('findOpportunitiesByInquilino failed', error);
+      return [];
+    }
+  },
+
   findOpportunitiesSummary: async (): Promise<OpportunityRecord[]> => {
     try {
       const response = await twentyClient.query<{
@@ -474,6 +492,21 @@ export const twentyDataService = {
       return response.opportunity;
     } catch (error) {
       logGraphQlError(`getOpportunityById(${opportunityId}) failed`, error);
+      return null;
+    }
+  },
+
+  getInquilinoById: async (
+    inquilinoId: string,
+  ): Promise<InquilinoRecord | null> => {
+    try {
+      const response = await twentyClient.query<{
+        inquilino: InquilinoRecord | null;
+      }>(GET_INQUILINO_BY_ID, { inquilinoId });
+
+      return response.inquilino;
+    } catch (error) {
+      logGraphQlError(`getInquilinoById(${inquilinoId}) failed`, error);
       return null;
     }
   },

@@ -214,7 +214,7 @@ export const ParksRenovacionesKanbanBoard = ({
   return (
     <StyledParksPageStack>
       <StyledDragHint>
-        {t`Arrastra cada renovación entre etapas · Se actualiza opportunity.etapaRenovacion en Twenty`}
+        {t`Arrastra cada renovación entre etapas · Se actualiza en Parks Industrial`}
       </StyledDragHint>
 
       <DragDropProvider

@@ -2,12 +2,12 @@ import { styled } from '@linaria/react';
 import { type IconComponent } from 'twenty-ui/icon';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
-export type ParksMetricCardAccent =
-  | 'blue'
-  | 'green'
-  | 'yellow'
-  | 'red'
-  | 'gray';
+import {
+  type ParksVisualAccent,
+  PARKS_VISUAL_THEME,
+} from '@/parks-industrial/constants/parks-theme.constants';
+
+export type ParksMetricCardAccent = ParksVisualAccent;
 
 type ParksMetricCardProps = {
   label: string;
@@ -17,27 +17,25 @@ type ParksMetricCardProps = {
   trend?: string;
 };
 
-const accentBackground: Record<ParksMetricCardAccent, string> = {
-  blue: themeCssVariables.color.blue1,
-  green: themeCssVariables.color.green1,
-  yellow: themeCssVariables.color.yellow1,
-  red: themeCssVariables.color.red1,
-  gray: themeCssVariables.background.primary,
-};
-
-const accentBorder: Record<ParksMetricCardAccent, string> = {
-  blue: themeCssVariables.color.blue3,
-  green: themeCssVariables.color.green3,
-  yellow: themeCssVariables.color.yellow3,
-  red: themeCssVariables.color.red3,
-  gray: themeCssVariables.border.color.medium,
-};
-
 const StyledCard = styled.div<{ accent: ParksMetricCardAccent }>`
-  background: ${({ accent }) => accentBackground[accent]};
-  border: 1px solid ${({ accent }) => accentBorder[accent]};
+  background: ${({ accent }) => PARKS_VISUAL_THEME.accents[accent].backgroundGradient};
+  border: 1px solid ${({ accent }) => PARKS_VISUAL_THEME.accents[accent].border};
   border-radius: ${themeCssVariables.border.radius.md};
+  box-shadow: ${themeCssVariables.boxShadow.light};
   padding: ${themeCssVariables.spacing[3]};
+  position: relative;
+
+  &::after {
+    background: ${({ accent }) => PARKS_VISUAL_THEME.accents[accent].accent};
+    border-radius: ${themeCssVariables.border.radius.pill};
+    bottom: ${themeCssVariables.spacing[3]};
+    content: '';
+    height: 3px;
+    left: ${themeCssVariables.spacing[3]};
+    opacity: 0.55;
+    position: absolute;
+    width: 28px;
+  }
 `;
 
 const StyledHeader = styled.div`
@@ -52,7 +50,8 @@ const StyledLabel = styled.div`
   font-weight: ${themeCssVariables.font.weight.medium};
 `;
 
-const StyledValue = styled.div`
+const StyledValue = styled.div<{ accent: ParksMetricCardAccent }>`
+  color: ${({ accent }) => PARKS_VISUAL_THEME.accents[accent].accent};
   font-size: ${themeCssVariables.font.size.xl};
   font-weight: ${themeCssVariables.font.weight.semiBold};
   margin-top: ${themeCssVariables.spacing[2]};
@@ -64,21 +63,38 @@ const StyledTrend = styled.div`
   margin-top: ${themeCssVariables.spacing[1]};
 `;
 
+const StyledIconWrap = styled.span<{ accent: ParksMetricCardAccent }>`
+  align-items: center;
+  background: ${({ accent }) => PARKS_VISUAL_THEME.accents[accent].iconBackground};
+  border: 1px solid ${({ accent }) => PARKS_VISUAL_THEME.accents[accent].border};
+  border-radius: ${themeCssVariables.border.radius.sm};
+  color: ${({ accent }) => PARKS_VISUAL_THEME.accents[accent].accent};
+  display: flex;
+  flex-shrink: 0;
+  height: 36px;
+  justify-content: center;
+  width: 36px;
+`;
+
 export const ParksMetricCard = ({
   label,
   value,
   icon: Icon,
-  accent = 'gray',
+  accent = 'blue',
   trend,
 }: ParksMetricCardProps) => (
   <StyledCard accent={accent}>
     <StyledHeader>
       <div>
         <StyledLabel>{label}</StyledLabel>
-        <StyledValue>{value}</StyledValue>
+        <StyledValue accent={accent}>{value}</StyledValue>
         {trend ? <StyledTrend>{trend}</StyledTrend> : null}
       </div>
-      {Icon ? <Icon size={22} stroke={1.5} /> : null}
+      {Icon ? (
+        <StyledIconWrap accent={accent}>
+          <Icon size={20} stroke={1.75} />
+        </StyledIconWrap>
+      ) : null}
     </StyledHeader>
   </StyledCard>
 );

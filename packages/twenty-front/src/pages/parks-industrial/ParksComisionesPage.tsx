@@ -4,6 +4,7 @@ import { useContext } from 'react';
 import { ThemeContext } from 'twenty-ui/theme-constants';
 
 import { ParksComisionesTable } from '@/parks-industrial/components/comisiones/ParksComisionesTable';
+import { getParksIndustrialPageSubtitle } from '@/parks-industrial/constants/parks-tenant.constants';
 import { ParksMetadataGate } from '@/parks-industrial/components/layout/ParksMetadataGate';
 import { ParksPageShell } from '@/parks-industrial/components/layout/ParksPageShell';
 import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
@@ -25,7 +26,9 @@ export const ParksComisionesPage = () => {
   return (
     <ParksPageShell
       title={t`Motor de comisiones`}
-      subtitle={t`Control de pagos a brokers y comisiones pendientes`}
+      subtitle={getParksIndustrialPageSubtitle(
+        t`Control de pagos a brokers y comisiones pendientes`,
+      )}
       icon={<IconCoins size={theme.icon.size.md} />}
     >
       <ParksMetadataGate loadingVariant="table">

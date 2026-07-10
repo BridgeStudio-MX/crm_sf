@@ -15,6 +15,8 @@ import { UndecoratedLink } from 'twenty-ui/navigation';
 import { MOBILE_VIEWPORT, themeCssVariables } from 'twenty-ui/theme-constants';
 
 import { ParksAiQuickActions } from '@/parks-industrial/components/ai/ParksAiQuickActions';
+import { ParksCemDirectorDashboard } from '@/parks-industrial/components/dashboard/ParksCemDirectorDashboard';
+import { ParksCemQueueSection } from '@/parks-industrial/components/dashboard/ParksCemQueueSection';
 import { ParksDashboardColumnChart } from '@/parks-industrial/components/dashboard/charts/ParksDashboardColumnChart';
 import { ParksDashboardDonutChart } from '@/parks-industrial/components/dashboard/charts/ParksDashboardDonutChart';
 import { ParksDashboardHorizontalBars } from '@/parks-industrial/components/dashboard/charts/ParksDashboardHorizontalBars';
@@ -194,7 +196,7 @@ export const ParksDashboardContent = () => {
         <StyledHeroCopy>
           <StyledHeroTitle>{t`Resumen ejecutivo de cartera`}</StyledHeroTitle>
           <StyledHeroText>
-            {t`Vista consolidada de ocupación, ingresos, pipeline comercial y riesgos de vencimiento para el grupo Parks Industrial.`}
+            {t`Vista consolidada de ocupación, ingresos, pipeline comercial y riesgos de vencimiento para Parks Industrial.`}
           </StyledHeroText>
           <StyledHeroStats>
             <StyledHeroStat>
@@ -225,6 +227,9 @@ export const ParksDashboardContent = () => {
           centerValue={`${metrics.ocupacion}%`}
         />
       </StyledHeroCard>
+
+      <ParksCemQueueSection />
+      <ParksCemDirectorDashboard />
 
       <StyledMetricsGrid>
         <ParksMetricCard
@@ -269,13 +274,13 @@ export const ParksDashboardContent = () => {
       </StyledMetricsGrid>
 
       {charts.regionalSummaries.length > 0 ? (
-        <ParksSectionCard title={t`Desempeño por región`}>
+        <ParksSectionCard title={t`Desempeño por región`} accent="sky">
           <ParksDashboardRegionalCards regions={charts.regionalSummaries} />
         </ParksSectionCard>
       ) : null}
 
       <StyledParksTwoColumnGrid>
-        <ParksSectionCard title={t`Vencimientos por mes`}>
+        <ParksSectionCard title={t`Vencimientos por mes`} accent="orange">
           {vencimientos.every((item) => item.contratos === 0) ? (
             <ParksEmptyState title={t`Sin vencimientos en los próximos 12 meses`} />
           ) : (
@@ -283,7 +288,7 @@ export const ParksDashboardContent = () => {
           )}
         </ParksSectionCard>
 
-        <ParksSectionCard title={t`Ingresos por región`}>
+        <ParksSectionCard title={t`Ingresos por región`} accent="green">
           {ingresosRegionItems.length === 0 ? (
             <ParksEmptyState title={t`Sin ingresos activos por región`} />
           ) : (
@@ -293,7 +298,7 @@ export const ParksDashboardContent = () => {
       </StyledParksTwoColumnGrid>
 
       <StyledParksTwoColumnGrid>
-        <ParksSectionCard title={t`Estado de naves`}>
+        <ParksSectionCard title={t`Estado de naves`} accent="turquoise">
           {charts.naveStatusSlices.length === 0 ? (
             <ParksEmptyState title={t`Sin naves registradas`} />
           ) : (
@@ -310,7 +315,7 @@ export const ParksDashboardContent = () => {
           )}
         </ParksSectionCard>
 
-        <ParksSectionCard title={t`Embudo comercial`}>
+        <ParksSectionCard title={t`Embudo comercial`} accent="purple">
           {charts.pipelineStages.every((stage) => stage.count === 0) ? (
             <ParksEmptyState title={t`Sin deals en pipeline`} />
           ) : (
@@ -320,7 +325,7 @@ export const ParksDashboardContent = () => {
       </StyledParksTwoColumnGrid>
 
       <StyledBottomGrid>
-        <ParksSectionCard title={t`Top parques por ocupación`}>
+        <ParksSectionCard title={t`Top parques por ocupación`} accent="blue">
           {topParqueItems.length === 0 ? (
             <ParksEmptyState title={t`No hay parques registrados`} />
           ) : (
@@ -330,6 +335,7 @@ export const ParksDashboardContent = () => {
 
         <ParksSectionCard
           title={t`Alertas de vencimiento`}
+          accent="red"
           action={
             <Link to={AppPath.ParksRenovaciones} style={{ fontSize: 12 }}>
               {t`Ver renovaciones`}
@@ -360,6 +366,7 @@ export const ParksDashboardContent = () => {
 
       <ParksSectionCard
         title={t`Pipeline activo`}
+        accent="blue"
         action={
           <Link to={AppPath.ParksPipeline} style={{ fontSize: 12 }}>
             {t`Ver pipeline`}

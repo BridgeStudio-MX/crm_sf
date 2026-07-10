@@ -9,6 +9,7 @@ const BackgroundMockPage = lazy(() =>
 import { AppPath } from 'twenty-shared/types';
 
 import { RootStackingContextZIndices } from '@/ui/layout/constants/RootStackingContextZIndices';
+import { PARKS_INDUSTRIAL_TENANT_NAME } from '@/parks-industrial/constants/parks-tenant.constants';
 import { PageTitle } from '@/ui/utilities/page-title/components/PageTitle';
 import { styled } from '@linaria/react';
 import { MainButton } from 'twenty-ui/input';
@@ -46,7 +47,9 @@ export const NotFound = () => {
 
   return (
     <>
-      <PageTitle title={t`Page Not Found | Twenty`} />
+      <PageTitle
+        title={t`Page Not Found | ${PARKS_INDUSTRIAL_TENANT_NAME}`}
+      />
       <StyledBackDrop>
         <AnimatedPlaceholderErrorContainer>
           <AnimatedPlaceholder type="error404" />

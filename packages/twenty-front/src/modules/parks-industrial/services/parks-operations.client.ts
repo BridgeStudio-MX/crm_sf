@@ -18,7 +18,7 @@ const parseErrorMessage = async (response: Response): Promise<string> => {
 
   return (
     errorBody?.error ??
-    `Error del servicio Parks Operations (${response.status})`
+    `Error del servicio Parks Industrial (${response.status})`
   );
 };
 

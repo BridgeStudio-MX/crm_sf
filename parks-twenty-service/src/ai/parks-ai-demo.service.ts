@@ -248,7 +248,7 @@ export const parksAiDemoService = {
 
     return {
       reply: [
-        '## Asistente Parks (modo demo)',
+        '## Asistente Parks Industrial (modo demo)',
         '',
         `Recibí tu consulta: "${message.trim()}"`,
         '',

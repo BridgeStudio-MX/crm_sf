@@ -1,9 +1,17 @@
 import { GraphQLClient } from 'graphql-request';
 
+import { envConfig } from '../config/env.config';
 import { twentyConfig } from '../config/twenty.config';
-import { resolveTwentyAuthTokenForUser } from './resolve-twenty-auth-token';
+import {
+  resolveTwentyAuthToken,
+  resolveTwentyAuthTokenForUser,
+} from './resolve-twenty-auth-token';
 import { metadataClient } from './metadata-client';
 import { PARKS_DEMO_ROLE_ASSIGNMENTS } from './parks-demo-role-assignments.constants';
+import {
+  PARKS_DEMO_USER_PASSWORD,
+  PARKS_DEMO_USERS,
+} from './parks-demo-users.constants';
 
 const LOG_PREFIX = '[setup:assign-roles]';
 
@@ -115,46 +123,24 @@ export const assignParksDemoRoles = async (): Promise<void> => {
     );
   }
 
-  const assignerPasses: Array<{ email: string; password: string }> = [
-    { email: 'jane.austen@apple.dev', password: 'tim@apple.dev' },
-    { email: 'tim@apple.dev', password: 'tim@apple.dev' },
-  ];
-
-  let assignedCount = 0;
-
-  for (const assigner of assignerPasses) {
-    let token: string;
-
-    try {
-      token = await resolveTwentyAuthTokenForUser(
-        assigner.email,
-        assigner.password,
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.warn(
-        `${LOG_PREFIX}   ⚠ Could not login as ${assigner.email}: ${message}`,
-      );
-      continue;
-    }
-
-    let members: WorkspaceMemberNode[];
-
-    try {
-      members = await fetchWorkspaceMembers(token);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.warn(
-        `${LOG_PREFIX}   ⚠ Could not list members as ${assigner.email}: ${message}`,
-      );
-      continue;
-    }
-
+  const runAssignments = async ({
+    token,
+    assignerLabel,
+    skipEmails = [],
+  }: {
+    token: string;
+    assignerLabel: string;
+    skipEmails?: string[];
+  }): Promise<number> => {
+    const members = await fetchWorkspaceMembers(token);
     const memberIdByEmail = new Map(
       members.map((member) => [member.userEmail.toLowerCase(), member.id]),
     );
+    const skipEmailSet = new Set(
+      skipEmails.map((email) => email.toLowerCase()),
+    );
 
-    const assignerMemberId = memberIdByEmail.get(assigner.email.toLowerCase());
+    let passAssignedCount = 0;
 
     for (const assignment of PARKS_DEMO_ROLE_ASSIGNMENTS) {
       const roleId = roleIdByLabel.get(assignment.roleLabel);
@@ -163,10 +149,7 @@ export const assignParksDemoRoles = async (): Promise<void> => {
         continue;
       }
 
-      if (
-        assignerMemberId &&
-        assignment.userEmail.toLowerCase() === assigner.email.toLowerCase()
-      ) {
+      if (skipEmailSet.has(assignment.userEmail.toLowerCase())) {
         continue;
       }
 
@@ -175,12 +158,15 @@ export const assignParksDemoRoles = async (): Promise<void> => {
       );
 
       if (!workspaceMemberId) {
+        console.warn(
+          `${LOG_PREFIX}   ⚠ ${assignment.userEmail} not in workspace — run setup:demo-users first`,
+        );
         continue;
       }
 
       const assigned = await assignRoleWithToken({
         token,
-        assignerEmail: assigner.email,
+        assignerEmail: assignerLabel,
         workspaceMemberId,
         roleId,
         targetEmail: assignment.userEmail,
@@ -188,20 +174,89 @@ export const assignParksDemoRoles = async (): Promise<void> => {
       });
 
       if (assigned) {
-        assignedCount += 1;
+        passAssignedCount += 1;
+      }
+    }
+
+    return passAssignedCount;
+  };
+
+  let assignedCount = 0;
+  let members: WorkspaceMemberNode[] = [];
+
+  if (envConfig.twentyApiKey) {
+    const token = await resolveTwentyAuthToken();
+    members = await fetchWorkspaceMembers(token);
+    assignedCount = await runAssignments({
+      token,
+      assignerLabel: 'TWENTY_API_KEY',
+    });
+  } else {
+    const primaryEmail = process.env.TWENTY_DEV_EMAIL ?? 'tim@apple.dev';
+    const primaryPassword =
+      process.env.TWENTY_DEV_PASSWORD ?? PARKS_DEMO_USER_PASSWORD;
+
+    const primaryToken = await resolveTwentyAuthTokenForUser(
+      primaryEmail,
+      primaryPassword,
+    );
+
+    members = await fetchWorkspaceMembers(primaryToken);
+    assignedCount += await runAssignments({
+      token: primaryToken,
+      assignerLabel: primaryEmail,
+      skipEmails: [primaryEmail],
+    });
+
+    const timAssignment = PARKS_DEMO_ROLE_ASSIGNMENTS.find(
+      (assignment) => assignment.userEmail.toLowerCase() === 'tim@apple.dev',
+    );
+
+    if (timAssignment) {
+      const secondaryEmail = 'jane.austen@apple.dev';
+
+      try {
+        const secondaryToken = await resolveTwentyAuthTokenForUser(
+          secondaryEmail,
+          PARKS_DEMO_USER_PASSWORD,
+        );
+
+        assignedCount += await runAssignments({
+          token: secondaryToken,
+          assignerLabel: secondaryEmail,
+          skipEmails: PARKS_DEMO_ROLE_ASSIGNMENTS.filter(
+            (assignment) =>
+              assignment.userEmail.toLowerCase() !== 'tim@apple.dev',
+          ).map((assignment) => assignment.userEmail),
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(
+          `${LOG_PREFIX}   ⚠ Could not assign tim@apple.dev role via ${secondaryEmail}: ${message}`,
+        );
       }
     }
   }
 
-  const timOnlyWorkspace =
-    assignedCount === 0 &&
-    PARKS_DEMO_ROLE_ASSIGNMENTS.every(
-      (assignment) => assignment.userEmail.toLowerCase() !== 'tim@apple.dev',
+  const memberEmails = new Set(
+    members.map((member) => member.userEmail.toLowerCase()),
+  );
+
+  const missingMembers = PARKS_DEMO_ROLE_ASSIGNMENTS.filter(
+    (assignment) => !memberEmails.has(assignment.userEmail.toLowerCase()),
+  );
+
+  if (assignedCount === 0 && missingMembers.length > 0) {
+    console.log(
+      `${LOG_PREFIX} Missing workspace members (${missingMembers.length}/${PARKS_DEMO_USERS.length}):`,
     );
 
-  if (timOnlyWorkspace) {
+    for (const assignment of missingMembers) {
+      console.log(`${LOG_PREFIX}   - ${assignment.userEmail}`);
+    }
+
     console.log(
-      `${LOG_PREFIX} Solo hay un miembro (tim@apple.dev). Invita a jane.austen@, phil.schiler@, jony.ive@ y scott.forstall@apple.dev para asignar roles demo, o usa Settings → Members manualmente.`,
+      `${LOG_PREFIX} Run: npm run setup:demo-users (invite) or npx nx database:reset twenty-server (local seed)`,
     );
   }
 

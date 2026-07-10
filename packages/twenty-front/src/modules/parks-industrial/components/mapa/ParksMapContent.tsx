@@ -424,7 +424,7 @@ export const ParksMapContent = ({ parques, naves }: ParksMapContentProps) => {
     return (
       <ParksEmptyState
         title={t`No hay parques registrados`}
-        description={t`Agrega parques industriales en Twenty para visualizarlos aquí.`}
+        description={t`Agrega parques industriales en Parks Industrial para visualizarlos aquí.`}
       />
     );
   }

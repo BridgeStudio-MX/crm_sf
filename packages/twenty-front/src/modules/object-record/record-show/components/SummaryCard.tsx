@@ -1,6 +1,7 @@
 import { allowRequestsToTwentyIconsState } from '@/client-config/states/allowRequestsToTwentyIcons';
 import { useLabelIdentifierFieldMetadataItem } from '@/object-metadata/hooks/useLabelIdentifierFieldMetadataItem';
 import { useObjectMetadataItem } from '@/object-metadata/hooks/useObjectMetadataItem';
+import { ParksOpportunitySummaryCard } from '@/parks-industrial/components/record-show/ParksOpportunitySummaryCard';
 import { CoreObjectNameSingular } from 'twenty-shared/types';
 import { useIsRecordFieldReadOnly } from '@/object-record/read-only/hooks/useIsRecordFieldReadOnly';
 import { FieldContext } from '@/object-record/record-field/ui/contexts/FieldContext';
@@ -24,12 +25,13 @@ type SummaryCardProps = {
   isInSidePanel: boolean;
 };
 
-// TODO: refactor all this hierarchy of side panel / show page record to avoid drill down
-export const SummaryCard = ({
+type DefaultSummaryCardProps = SummaryCardProps;
+
+const DefaultSummaryCard = ({
   objectNameSingular,
   objectRecordId,
   isInSidePanel,
-}: SummaryCardProps) => {
+}: DefaultSummaryCardProps) => {
   const { recordLoading } = useRecordShowContainerData({
     objectRecordId,
   });
@@ -120,6 +122,30 @@ export const SummaryCard = ({
           ? onUploadPicture
           : undefined
       }
+    />
+  );
+};
+
+// TODO: refactor all this hierarchy of side panel / show page record to avoid drill down
+export const SummaryCard = ({
+  objectNameSingular,
+  objectRecordId,
+  isInSidePanel,
+}: SummaryCardProps) => {
+  if (objectNameSingular === CoreObjectNameSingular.Opportunity) {
+    return (
+      <ParksOpportunitySummaryCard
+        objectRecordId={objectRecordId}
+        isInSidePanel={isInSidePanel}
+      />
+    );
+  }
+
+  return (
+    <DefaultSummaryCard
+      objectNameSingular={objectNameSingular}
+      objectRecordId={objectRecordId}
+      isInSidePanel={isInSidePanel}
     />
   );
 };

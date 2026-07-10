@@ -219,7 +219,7 @@ export const ParksNotificacionesContent = () => {
       {!loading && !error && notifications.length > 0 ? (
         <>
           {emailNotifications.length > 0 ? (
-            <ParksSectionCard title={t`Secuencia nurture (emails)`}>
+            <ParksSectionCard title={t`Secuencia nurture (emails)`} accent="purple">
               <StyledList>
                 {emailNotifications.map((notification) => {
                   const NotificationIcon = resolveNotificationIcon(notification);
@@ -260,7 +260,7 @@ export const ParksNotificacionesContent = () => {
           ) : null}
 
           {otherNotifications.length > 0 ? (
-            <ParksSectionCard title={t`Actividad reciente`}>
+            <ParksSectionCard title={t`Actividad reciente`} accent="sky">
               <StyledList>
                 {otherNotifications.map((notification) => {
                   const NotificationIcon = resolveNotificationIcon(notification);

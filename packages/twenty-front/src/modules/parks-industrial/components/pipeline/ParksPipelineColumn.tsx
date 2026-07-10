@@ -20,11 +20,16 @@ const StyledColumnWrapper = styled.div`
   min-width: 300px;
 `;
 
-const StyledColumnHeader = styled.div<{ accentColor: string }>`
-  background: ${themeCssVariables.background.primary};
+const StyledColumnHeader = styled.div<{ accentColor: string; backgroundTint: string }>`
+  background: linear-gradient(
+    160deg,
+    ${({ backgroundTint }) => backgroundTint} 0%,
+    ${themeCssVariables.background.primary} 100%
+  );
   border: 1px solid ${themeCssVariables.border.color.medium};
   border-radius: ${themeCssVariables.border.radius.md};
   border-top: 4px solid ${({ accentColor }) => accentColor};
+  box-shadow: ${themeCssVariables.boxShadow.light};
   margin-bottom: ${themeCssVariables.spacing[2]};
   padding: ${themeCssVariables.spacing[3]};
 `;
@@ -63,8 +68,7 @@ const StyledColumnBody = styled.div<{
   borderColor: string;
   isDropTarget: boolean;
 }>`
-  background: ${({ backgroundColor, isDropTarget }) =>
-    isDropTarget ? backgroundColor : themeCssVariables.background.tertiary};
+  background: ${({ backgroundColor }) => backgroundColor};
   border: 2px dashed
     ${({ borderColor, isDropTarget }) =>
       isDropTarget ? borderColor : themeCssVariables.border.color.medium};
@@ -131,7 +135,10 @@ export const ParksPipelineColumn = ({
 
   return (
     <StyledColumnWrapper ref={ref}>
-      <StyledColumnHeader accentColor={stageTheme.accent}>
+      <StyledColumnHeader
+        accentColor={stageTheme.accent}
+        backgroundTint={stageTheme.background}
+      >
         <StyledColumnTitleRow>
           <StyledColumnTitle>{stage.label}</StyledColumnTitle>
           <Tag

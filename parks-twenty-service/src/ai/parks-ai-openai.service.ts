@@ -3,7 +3,7 @@ import axios from 'axios';
 import { envConfig } from '../config/env.config';
 import { type ParksAiChatMessage } from './parks-ai.types';
 
-const SYSTEM_PROMPT = `Eres el Asistente Parks Industrial de FUNO.
+const SYSTEM_PROMPT = `Eres el Asistente Parks Industrial.
 Respondes en español (México), tono profesional y conciso.
 Usa markdown ligero. Basa respuestas SOLO en el contexto JSON provisto.
 Si falta información, dilo explícitamente. No inventes naves, montos ni fechas.

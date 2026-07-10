@@ -67,10 +67,23 @@ export type ParksOpportunityRecord = ObjectRecord & {
   stage?: string;
   etapaRenovacion?: string;
   m2Requeridos?: number;
+  m2Ofertados?: number;
+  precioPorM2Usd?: number;
+  ubicacionDeseada?: string;
+  giroEmpresa?: string;
+  plazoContratoMeses?: number;
+  presupuestoMensualUsd?: number;
+  motivoSinNave?: string;
+  aprobacionRequerida?: boolean;
+  estatusAprobacion?: string;
+  canalOrigen?: string;
+  createdAt?: string;
+  tipoOperacion?: string;
+  asignadoPor?: string;
   updatedAt?: string;
   amount?: { amountMicros?: number; currencyCode?: string };
-  naveVinculada?: ObjectRecord & { identificador?: string };
-  inquilinoVinculado?: ObjectRecord & { empresa?: string };
+  naveVinculada?: ObjectRecord & { identificador?: string; id?: string };
+  inquilinoVinculado?: ObjectRecord & { empresa?: string; id?: string };
   owner?: ObjectRecord & {
     name?: { firstName?: string; lastName?: string };
   };
@@ -397,7 +410,8 @@ export const useParksDashboardMetrics = () => {
         .filter(
           (opportunity) =>
             opportunity.stage !== 'PERDIDO' &&
-            opportunity.stage !== 'GANADO',
+            opportunity.stage !== 'GANADO' &&
+            opportunity.stage !== 'GANADO_CONTRATO_FIRMADO',
         )
         .slice(0, 5),
     };

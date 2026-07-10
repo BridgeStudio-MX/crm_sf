@@ -1,6 +1,11 @@
 import { t } from '@lingui/core/macro';
 import { AppBasePath, AppPath, SettingsPath } from 'twenty-shared/types';
 
+import {
+  PARKS_INDUSTRIAL_TENANT_NAME,
+  formatParksIndustrialDocumentTitle,
+} from '@/parks-industrial/constants/parks-tenant.constants';
+
 enum SettingsPathPrefixes {
   Accounts = `${AppBasePath.Settings}/${SettingsPath.Accounts}`,
   Experience = `${AppBasePath.Settings}/${SettingsPath.Experience}`,
@@ -21,14 +26,77 @@ const getPathnameOrPrefix = (pathname: string) => {
     }
   }
 
-  if (pathname.startsWith('/parks/')) {
-    return '/parks';
-  }
-
   return pathname;
 };
 
+const resolveParksPageTitle = (pathname: string): string | null => {
+  if (!pathname.startsWith('/parks')) {
+    return null;
+  }
+
+  if (pathname.startsWith(AppPath.ParksNotificaciones)) {
+    return t`Notificaciones`;
+  }
+
+  if (pathname.startsWith(AppPath.ParksMiDesempeno)) {
+    return t`Mi desempeño`;
+  }
+
+  if (pathname.includes('/aprobacion')) {
+    return t`Aprobación legal`;
+  }
+
+  if (
+    pathname.startsWith(AppPath.ParksStackingPlanIndex) ||
+    pathname.includes('/parks/parque/')
+  ) {
+    return t`Stacking plan`;
+  }
+
+  if (pathname.startsWith(AppPath.ParksDashboard)) {
+    return t`Dashboard ejecutivo`;
+  }
+
+  if (pathname.startsWith(AppPath.ParksPipeline)) {
+    return t`Pipeline comercial`;
+  }
+
+  if (pathname.startsWith(AppPath.ParksLeadsCem)) {
+    return t`Leads CEM`;
+  }
+
+  if (pathname.startsWith(AppPath.ParksContratos)) {
+    return t`Contratos`;
+  }
+
+  if (pathname.startsWith(AppPath.ParksComisiones)) {
+    return t`Comisiones`;
+  }
+
+  if (pathname.startsWith(AppPath.ParksRenovaciones)) {
+    return t`Renovaciones`;
+  }
+
+  if (pathname.startsWith(AppPath.ParksReservas)) {
+    return t`Reservas`;
+  }
+
+  if (pathname.startsWith(AppPath.ParksMapa)) {
+    return t`Mapa de cartera`;
+  }
+
+  return PARKS_INDUSTRIAL_TENANT_NAME;
+};
+
 export const getPageTitleFromPath = (pathname: string): string => {
+  const parksPageTitle = resolveParksPageTitle(pathname);
+
+  if (parksPageTitle !== null) {
+    return parksPageTitle === PARKS_INDUSTRIAL_TENANT_NAME
+      ? PARKS_INDUSTRIAL_TENANT_NAME
+      : formatParksIndustrialDocumentTitle(parksPageTitle);
+  }
+
   const pathnameOrPrefix = getPathnameOrPrefix(pathname);
   switch (pathnameOrPrefix) {
     case AppPath.Verify:
@@ -61,23 +129,7 @@ export const getPageTitleFromPath = (pathname: string): string => {
       return t`General - Settings`;
     case SettingsPathPrefixes.Community:
       return t`Community - Settings`;
-    case '/parks':
-      return t`Parks Industrial`;
-    case AppPath.ParksDashboard:
-      return t`Dashboard Ejecutivo`;
-    case AppPath.ParksPipeline:
-      return t`Pipeline Comercial`;
-    case AppPath.ParksContratos:
-      return t`Contratos`;
-    case AppPath.ParksComisiones:
-      return t`Comisiones`;
-    case AppPath.ParksRenovaciones:
-      return t`Renovaciones`;
-    case AppPath.ParksReservas:
-      return t`Reservas`;
-    case AppPath.ParksMapa:
-      return t`Mapa de parques`;
     default:
-      return 'CRM';
+      return PARKS_INDUSTRIAL_TENANT_NAME;
   }
 };

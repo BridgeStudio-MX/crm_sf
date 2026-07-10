@@ -73,6 +73,9 @@ export type NaveRecord = {
   identificador?: string;
   esPropiedadFuno: boolean;
   estatus?: string;
+  m2?: number;
+  alturaLibreM?: number;
+  andenes?: number;
   parque?: ParqueRecord;
 };
 
@@ -89,13 +92,21 @@ export type InquilinoRecord = {
   repLegalNombre?: string;
   contactoPrincipal?: string;
   emailContacto?: string;
+  telefono?: string;
+  repLegalEmail?: string;
+  sector?: string;
   estatus?: string;
+  oracleClienteId?: string;
+  ultimoPagoFecha?: string;
+  pagosAlCorriente?: boolean;
 };
 
 export type BrokerRecord = {
   id: string;
   empresa?: string;
   contacto?: string;
+  clasificacion?: string;
+  activo?: boolean;
 };
 
 export type ExpedienteContratoRecord = {
@@ -111,7 +122,11 @@ export type ExpedienteContratoRecord = {
   inquilinoId?: string;
   naveId?: string;
   inquilino?: InquilinoRecord & { oracleClienteId?: string };
-  nave?: NaveRecord & { oracleNaveId?: string };
+  nave?: NaveRecord & {
+    oracleNaveId?: string;
+    esPropiedadFuno?: boolean;
+    parque?: { id?: string; nombre?: string };
+  };
   casoLegal?: { id: string; estatus?: string; tipoDocumento?: string };
 };
 
@@ -154,7 +169,19 @@ export type OpportunityRecord = {
   brokerVinculadoId?: string;
   tipoOperacion?: string;
   m2Requeridos?: number;
+  m2Ofertados?: number;
+  precioPorM2Usd?: number;
+  plazoContratoMeses?: number;
+  periodoGraciaMeses?: number;
+  depositoGarantiaMeses?: number;
+  rentasAdelantadasMeses?: number;
+  escalacionAnual?: string;
+  aprobacionRequerida?: boolean;
+  estatusAprobacion?: string;
   updatedAt?: string;
+  createdAt?: string;
+  ubicacionDeseada?: string;
+  naveVinculada?: { id?: string; identificador?: string };
   amount?: { amountMicros?: number; currencyCode?: string };
 };
 

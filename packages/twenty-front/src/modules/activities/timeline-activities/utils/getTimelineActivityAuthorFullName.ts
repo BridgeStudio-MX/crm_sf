@@ -1,4 +1,5 @@
 import { type TimelineActivity } from '@/activities/timeline-activities/types/TimelineActivity';
+import { PARKS_INDUSTRIAL_TENANT_NAME } from '@/parks-industrial/constants/parks-tenant.constants';
 import { type CurrentWorkspaceMember } from '@/auth/states/currentWorkspaceMemberState';
 import { isDefined } from 'twenty-shared/utils';
 
@@ -11,5 +12,5 @@ export const getTimelineActivityAuthorFullName = (
       ? 'You'
       : `${event.workspaceMember?.name.firstName} ${event.workspaceMember?.name.lastName}`;
   }
-  return 'Twenty';
+  return PARKS_INDUSTRIAL_TENANT_NAME;
 };

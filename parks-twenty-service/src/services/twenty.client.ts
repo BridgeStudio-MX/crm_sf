@@ -2,6 +2,7 @@ import { GraphQLClient } from 'graphql-request';
 
 import { twentyConfig } from '../config/twenty.config';
 import { resolveTwentyAuthToken } from '../metadata/resolve-twenty-auth-token';
+import { isTwentyAuthError } from '../utils/twenty-auth-error.util';
 import {
   getTwentyRateLimitRetryWaitMs,
   isTwentyRateLimitError,
@@ -75,6 +76,10 @@ const requestWithRetry = async <TData>(
 export class TwentyClient {
   private client: GraphQLClient | null = null;
 
+  private resetClient(): void {
+    this.client = null;
+  }
+
   private async getClient(): Promise<GraphQLClient> {
     if (this.client) {
       return this.client;
@@ -92,13 +97,30 @@ export class TwentyClient {
     return this.client;
   }
 
-  async query<TData>(
+  private async executeRequest<TData>(
     document: string,
     variables?: Record<string, unknown>,
   ): Promise<TData> {
     const client = await this.getClient();
 
     return requestWithRetry(() => client.request<TData>(document, variables));
+  }
+
+  async query<TData>(
+    document: string,
+    variables?: Record<string, unknown>,
+  ): Promise<TData> {
+    try {
+      return await this.executeRequest<TData>(document, variables);
+    } catch (error) {
+      if (!isTwentyAuthError(error)) {
+        throw error;
+      }
+
+      console.warn('[twenty.client] Auth token expired — refreshing and retrying');
+      this.resetClient();
+      return this.executeRequest<TData>(document, variables);
+    }
   }
 
   async mutate<TData>(

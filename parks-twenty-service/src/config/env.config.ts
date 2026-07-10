@@ -54,6 +54,16 @@ export const envConfig = {
   openAiApiKey: process.env.OPENAI_API_KEY ?? '',
   openAiModel: process.env.OPENAI_MODEL ?? 'gpt-4o-mini',
   parksAiMock: parseBoolean(process.env.PARKS_AI_MOCK, true),
+  // Commercial flow stops at Hoja de Acuerdos until Legal module is enabled
+  parksLegalHandoffEnabled: parseBoolean(
+    process.env.PARKS_LEGAL_HANDOFF_ENABLED,
+    false,
+  ),
+  // Placeholder thresholds until Héctor confirms exact discount rules
+  aprobacionCemDescuentoPctMax: parseNumber(
+    process.env.APROBACION_CEM_DESCUENTO_PCT_MAX,
+    5,
+  ),
 } as const;
 
 export type EnvConfig = typeof envConfig;

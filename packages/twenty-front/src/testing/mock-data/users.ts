@@ -64,7 +64,7 @@ export const mockCurrentWorkspace = {
   installedApplications: [CUSTOM_WORKSPACE_APPLICATION_MOCK],
   subdomain: 'acme.twenty.com',
   id: '7dfbc3f7-6e5e-4128-957e-8d86808cdf6w',
-  displayName: 'Twenty',
+  displayName: 'Parks Industrial',
   inviteHash: 'twenty.com-invite-hash',
   logo: workspaceLogoUrl,
   isPublicInviteLinkEnabled: true,

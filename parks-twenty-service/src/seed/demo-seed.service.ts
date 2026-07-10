@@ -105,6 +105,8 @@ const seedBrokers = async (ids: DemoIdMap): Promise<void> => {
         contacto: broker.contacto,
         email: broker.email,
         firma: toSelectValue(broker.firma),
+        clasificacion: toSelectValue(broker.clasificacion),
+        activo: true,
         operacionesCnt: 12,
       },
     );

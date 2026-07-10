@@ -455,7 +455,7 @@ export const ParksAiPanel = () => {
               <IconSparkles size={18} />
             </StyledHeaderIcon>
             <div>
-              <StyledTitle>{t`Asistente Parks`}</StyledTitle>
+              <StyledTitle>{t`Asistente Parks Industrial`}</StyledTitle>
               <StyledSubtitle>{t`Inteligencia sobre cartera, legal y disponibilidad`}</StyledSubtitle>
               <StyledContextBadge>
                 {getParksAiScreenLabel(routeContext.screen)}

@@ -4,18 +4,24 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   IconCopy,
   IconEye,
+  IconFileText,
   IconMail,
   IconMap,
   IconMessage,
   IconRefresh,
-  IconFileText,
 } from 'twenty-ui/icon';
 import { Button } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
+import { ParksFormField } from '@/parks-industrial/components/ui/ParksFormField';
+import {
+  StyledParksLinkValue,
+  StyledParksReadOnlyValue,
+} from '@/parks-industrial/components/ui/parks-form-control.styles';
 import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
 import { ParksProgressBar } from '@/parks-industrial/components/ui/ParksProgressBar';
 import { ParksStatusBadge } from '@/parks-industrial/components/ui/ParksStatusBadge';
+import { ParksToolSection } from '@/parks-industrial/components/ui/ParksToolSection';
 import {
   createParksFichaTecnica,
   fetchCachedProspectEnrichment,
@@ -31,49 +37,37 @@ import {
 } from '@/parks-industrial/types/parks-commercial.types';
 import { formatParksNumber } from '@/parks-industrial/utils/parks-format.util';
 
-const StyledSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${themeCssVariables.spacing[3]};
-`;
-
-const StyledPanel = styled.div`
-  background: ${themeCssVariables.background.secondary};
-  border: 1px solid ${themeCssVariables.border.color.medium};
-  border-radius: ${themeCssVariables.border.radius.md};
+const StyledMatchList = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${themeCssVariables.spacing[2]};
-  padding: ${themeCssVariables.spacing[3]};
-`;
-
-const StyledPanelTitle = styled.div`
-  align-items: center;
-  display: flex;
-  font-size: ${themeCssVariables.font.size.sm};
-  font-weight: ${themeCssVariables.font.weight.semiBold};
-  gap: ${themeCssVariables.spacing[1]};
-  justify-content: space-between;
 `;
 
 const StyledMatchCard = styled.button<{ isSelected: boolean }>`
   background: ${({ isSelected }) =>
     isSelected
-      ? themeCssVariables.background.transparent.light
-      : themeCssVariables.background.primary};
+      ? themeCssVariables.color.blue1
+      : themeCssVariables.background.secondary};
   border: 1px solid
     ${({ isSelected }) =>
       isSelected
-        ? themeCssVariables.color.blue
-        : themeCssVariables.border.color.medium};
-  border-radius: ${themeCssVariables.border.radius.sm};
+        ? themeCssVariables.color.blue3
+        : themeCssVariables.border.color.light};
+  border-radius: ${themeCssVariables.border.radius.md};
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[1]};
-  padding: ${themeCssVariables.spacing[2]};
+  gap: ${themeCssVariables.spacing[2]};
+  padding: ${themeCssVariables.spacing[3]};
   text-align: left;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
   width: 100%;
+
+  &:hover {
+    border-color: ${themeCssVariables.color.blue3};
+  }
 `;
 
 const StyledMatchHeader = styled.div`
@@ -82,38 +76,58 @@ const StyledMatchHeader = styled.div`
   justify-content: space-between;
 `;
 
+const StyledMatchTitle = styled.span`
+  font-size: ${themeCssVariables.font.size.sm};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+`;
+
 const StyledMatchMeta = styled.div`
   color: ${themeCssVariables.font.color.secondary};
   font-size: ${themeCssVariables.font.size.xs};
+  line-height: 1.4;
+`;
+
+const StyledMatchReason = styled.div`
+  color: ${themeCssVariables.font.color.tertiary};
+  font-size: ${themeCssVariables.font.size.xs};
+  line-height: 1.35;
+`;
+
+const StyledActionGrid = styled.div`
+  display: grid;
+  gap: ${themeCssVariables.spacing[2]};
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 `;
 
 const StyledScriptBlock = styled.div`
+  background: ${themeCssVariables.background.secondary};
+  border: 1px solid ${themeCssVariables.border.color.light};
+  border-radius: ${themeCssVariables.border.radius.sm};
   color: ${themeCssVariables.font.color.secondary};
   font-size: ${themeCssVariables.font.size.sm};
   line-height: 1.45;
+  padding: ${themeCssVariables.spacing[3]};
+`;
+
+const StyledScriptTitle = styled.div`
+  color: ${themeCssVariables.font.color.primary};
+  font-size: ${themeCssVariables.font.size.sm};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  margin-bottom: ${themeCssVariables.spacing[2]};
 `;
 
 const StyledList = styled.ul`
   color: ${themeCssVariables.font.color.secondary};
   font-size: ${themeCssVariables.font.size.sm};
-  margin: 0;
+  margin: ${themeCssVariables.spacing[1]} 0 0;
   padding-left: ${themeCssVariables.spacing[4]};
 `;
 
-const StyledLinkBox = styled.div`
-  background: ${themeCssVariables.background.tertiary};
-  border-radius: ${themeCssVariables.border.radius.sm};
-  font-size: ${themeCssVariables.font.size.xs};
-  overflow: hidden;
-  padding: ${themeCssVariables.spacing[2]};
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const StyledActions = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${themeCssVariables.spacing[2]};
+const StyledEmptyHint = styled.p`
+  color: ${themeCssVariables.font.color.tertiary};
+  font-size: ${themeCssVariables.font.size.sm};
+  line-height: 1.45;
+  margin: 0;
 `;
 
 const StyledError = styled.div`
@@ -280,21 +294,21 @@ export const ParksCommercialProposalSection = ({
 
   if (!m2Requeridos || m2Requeridos <= 0) {
     return (
-      <StyledPanel>
-        <StyledMatchMeta>
+      <ParksToolSection title={t`Matching IA de naves`} icon={IconMap}>
+        <StyledEmptyHint>
           {t`Registra m² requeridos en el deal para activar matching de naves.`}
-        </StyledMatchMeta>
-      </StyledPanel>
+        </StyledEmptyHint>
+      </ParksToolSection>
     );
   }
 
   return (
-    <StyledSection>
-      <StyledPanel>
-        <StyledPanelTitle>
-          <span>
-            <IconMap size={16} /> {t`Matching IA de naves`}
-          </span>
+    <>
+      <ParksToolSection
+        title={t`Matching IA de naves`}
+        icon={IconMap}
+        hint={t`Selecciona la nave con mejor fit para generar ficha y guion`}
+        action={
           <Button
             variant="secondary"
             Icon={IconRefresh}
@@ -302,49 +316,55 @@ export const ParksCommercialProposalSection = ({
             onClick={() => void loadMatches()}
             disabled={loadingMatches}
           />
-        </StyledPanelTitle>
-
+        }
+      >
         {loadingMatches ? <ParksLoadingSkeleton variant="list" /> : null}
 
         {!loadingMatches && matches.length === 0 ? (
-          <StyledMatchMeta>{t`Sin naves disponibles para este criterio.`}</StyledMatchMeta>
+          <StyledEmptyHint>
+            {t`Sin naves disponibles para este criterio.`}
+          </StyledEmptyHint>
         ) : null}
 
-        {matches.map((match) => (
-          <StyledMatchCard
-            key={match.naveId}
-            type="button"
-            isSelected={selectedMatch?.naveId === match.naveId}
-            onClick={() => setSelectedMatch(match)}
-          >
-            <StyledMatchHeader>
-              <strong>{match.identificador}</strong>
-              <ParksStatusBadge
-                color="blue"
-                label={`${match.matchScore}%`}
+        <StyledMatchList>
+          {matches.map((match) => (
+            <StyledMatchCard
+              key={match.naveId}
+              type="button"
+              isSelected={selectedMatch?.naveId === match.naveId}
+              onClick={() => setSelectedMatch(match)}
+            >
+              <StyledMatchHeader>
+                <StyledMatchTitle>{match.identificador}</StyledMatchTitle>
+                <ParksStatusBadge
+                  color="blue"
+                  label={`${match.matchScore}%`}
+                />
+              </StyledMatchHeader>
+              <StyledMatchMeta>
+                {formatParksNumber(match.m2)} m² ·{' '}
+                {match.parqueNombre ?? t`Parque`} · {match.ubicacion ?? '—'}
+              </StyledMatchMeta>
+              <ParksProgressBar
+                label={t`Match`}
+                valueLabel={`${match.matchScore}%`}
+                percentage={match.matchScore}
               />
-            </StyledMatchHeader>
-            <StyledMatchMeta>
-              {formatParksNumber(match.m2)} m² ·{' '}
-              {match.parqueNombre ?? t`Parque`} · {match.ubicacion ?? '—'}
-            </StyledMatchMeta>
-            <ParksProgressBar
-              label={t`Match`}
-              valueLabel={`${match.matchScore}%`}
-              percentage={match.matchScore}
-            />
-            <StyledMatchMeta>{match.matchReasons.join(' · ')}</StyledMatchMeta>
-          </StyledMatchCard>
-        ))}
-      </StyledPanel>
+              <StyledMatchReason>
+                {match.matchReasons.join(' · ')}
+              </StyledMatchReason>
+            </StyledMatchCard>
+          ))}
+        </StyledMatchList>
+      </ParksToolSection>
 
       {selectedMatch ? (
-        <StyledPanel>
-          <StyledPanelTitle>
-            <span>{t`Ficha técnica + link tracker`}</span>
-          </StyledPanelTitle>
-
-          <StyledActions>
+        <ParksToolSection
+          title={t`Ficha técnica + link tracker`}
+          icon={IconFileText}
+          hint={t`Genera el link público y registra envíos por email o WhatsApp`}
+        >
+          <StyledActionGrid>
             <Button
               variant="primary"
               title={t`Generar ficha y link`}
@@ -390,31 +410,37 @@ export const ParksCommercialProposalSection = ({
                 />
               </>
             ) : null}
-          </StyledActions>
+          </StyledActionGrid>
 
           {fichaLink ? (
             <>
-              <StyledLinkBox>{fichaLink.publicUrl}</StyledLinkBox>
-              <StyledMatchMeta>
-                {t`Vistas:`} {fichaLink.viewCount}
-                {fichaLink.sentVia
-                  ? ` · ${t`Enviado por`} ${fichaLink.sentVia}`
-                  : ''}
-              </StyledMatchMeta>
+              <ParksFormField label={t`Link público`} hint={t`Comparte con el prospecto`}>
+                <StyledParksLinkValue title={fichaLink.publicUrl}>
+                  {fichaLink.publicUrl}
+                </StyledParksLinkValue>
+              </ParksFormField>
+              <ParksFormField label={t`Estado del tracker`}>
+                <StyledParksReadOnlyValue>
+                  {t`Vistas:`} {fichaLink.viewCount}
+                  {fichaLink.sentVia
+                    ? ` · ${t`Enviado por`} ${fichaLink.sentVia}`
+                    : ''}
+                </StyledParksReadOnlyValue>
+              </ParksFormField>
             </>
           ) : null}
 
           {copyMessage ? (
             <ParksStatusBadge color="green" label={copyMessage} />
           ) : null}
-        </StyledPanel>
+        </ParksToolSection>
       ) : null}
 
-      <StyledPanel>
-        <StyledPanelTitle>
-          <span>
-            <IconFileText size={16} /> {t`Guion comercial`}
-          </span>
+      <ParksToolSection
+        title={t`Guion comercial`}
+        icon={IconFileText}
+        hint={t`Generado con contexto del prospecto y nave seleccionada`}
+        action={
           <Button
             variant="secondary"
             Icon={IconRefresh}
@@ -422,13 +448,13 @@ export const ParksCommercialProposalSection = ({
             onClick={() => void loadSalesScript()}
             disabled={loadingScript}
           />
-        </StyledPanelTitle>
-
+        }
+      >
         {loadingScript ? <ParksLoadingSkeleton variant="list" /> : null}
 
         {salesScript ? (
           <>
-            <strong>{salesScript.scriptTitle}</strong>
+            <StyledScriptTitle>{salesScript.scriptTitle}</StyledScriptTitle>
             <StyledScriptBlock>{salesScript.openingLine}</StyledScriptBlock>
             <StyledScriptBlock>
               <strong>{t`Preguntas de descubrimiento`}</strong>
@@ -454,9 +480,9 @@ export const ParksCommercialProposalSection = ({
             />
           </>
         ) : null}
-      </StyledPanel>
+      </ParksToolSection>
 
       {error ? <StyledError>{error}</StyledError> : null}
-    </StyledSection>
+    </>
   );
 };

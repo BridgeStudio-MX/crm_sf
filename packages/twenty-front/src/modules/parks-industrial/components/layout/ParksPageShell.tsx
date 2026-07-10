@@ -3,6 +3,7 @@ import { ParksAiAssistantButton } from '@/parks-industrial/components/ai/ParksAi
 import { ParksAiPanel } from '@/parks-industrial/components/ai/ParksAiPanel';
 import { ParksAiAssistantProvider } from '@/parks-industrial/hooks/useParksAiAssistant';
 import { StyledParksPageSubtitle } from '@/parks-industrial/components/ui/ParksPageSubtitle';
+import { PARKS_VISUAL_THEME } from '@/parks-industrial/constants/parks-theme.constants';
 import { PageCardHeader } from '@/ui/layout/page/components/PageCardHeader';
 import { PageCardLayout } from '@/ui/layout/page/components/PageCardLayout';
 import { styled } from '@linaria/react';
@@ -17,6 +18,7 @@ type ParksPageShellProps = {
 };
 
 const StyledContent = styled.div`
+  background: ${PARKS_VISUAL_THEME.pageBackgroundGradient};
   color: ${themeCssVariables.font.color.primary};
   display: flex;
   flex: 1;

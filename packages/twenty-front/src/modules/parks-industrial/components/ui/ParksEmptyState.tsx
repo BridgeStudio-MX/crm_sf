@@ -10,8 +10,12 @@ type ParksEmptyStateProps = {
 
 const StyledContainer = styled.div`
   align-items: center;
-  background: ${themeCssVariables.background.primary};
-  border: 1px dashed ${themeCssVariables.border.color.medium};
+  background: linear-gradient(
+    145deg,
+    ${themeCssVariables.color.blue1} 0%,
+    ${themeCssVariables.background.primary} 100%
+  );
+  border: 1px dashed ${themeCssVariables.color.blue3};
   border-radius: ${themeCssVariables.border.radius.md};
   display: flex;
   flex-direction: column;
@@ -23,9 +27,9 @@ const StyledContainer = styled.div`
 `;
 
 const StyledTitle = styled.div`
-  color: ${themeCssVariables.font.color.primary};
+  color: ${themeCssVariables.color.blue};
   font-size: ${themeCssVariables.font.size.md};
-  font-weight: ${themeCssVariables.font.weight.medium};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
 `;
 
 const StyledDescription = styled.div`

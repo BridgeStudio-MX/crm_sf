@@ -5,6 +5,7 @@ import { useContext } from 'react';
 import { ThemeContext } from 'twenty-ui/theme-constants';
 
 import { ParksMetadataGate } from '@/parks-industrial/components/layout/ParksMetadataGate';
+import { getParksIndustrialPageSubtitle } from '@/parks-industrial/constants/parks-tenant.constants';
 import { ParksPageShell } from '@/parks-industrial/components/layout/ParksPageShell';
 import { ParksStackingPlanContent } from '@/parks-industrial/components/stacking-plan/ParksStackingPlanContent';
 
@@ -15,7 +16,9 @@ export const ParksStackingPlanPage = () => {
   return (
     <ParksPageShell
       title={t`Stacking Plan`}
-      subtitle={t`Ocupación y vencimientos por nave industrial`}
+      subtitle={getParksIndustrialPageSubtitle(
+        t`Ocupación y vencimientos por nave industrial`,
+      )}
       icon={<IconLayoutGrid size={theme.icon.size.md} />}
     >
       <ParksMetadataGate loadingVariant="list">

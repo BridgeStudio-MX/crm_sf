@@ -29,6 +29,7 @@ export enum AppPath {
   ParksStackingPlanIndex = '/parks/stacking-plan',
   ParksStackingPlan = '/parks/parque/:parqueId/stacking-plan',
   ParksPipeline = '/parks/pipeline',
+  ParksLeadsCem = '/parks/leads-cem',
   ParksContratos = '/parks/contratos',
   ParksContratoAprobacion = '/parks/contratos/:contratoId/aprobacion',
   ParksComisiones = '/parks/comisiones',
@@ -37,6 +38,7 @@ export enum AppPath {
   ParksMapa = '/parks/mapa',
   ParksNotificaciones = '/parks/notificaciones',
   ParksMiDesempeno = '/parks/mi-desempeno',
+  ParksInquilino360 = '/parks/inquilinos/:inquilinoId',
 
   Settings = `settings`,
   SettingsCatchAll = `/${Settings}/*`,

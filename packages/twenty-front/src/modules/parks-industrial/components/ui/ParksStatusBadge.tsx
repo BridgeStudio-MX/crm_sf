@@ -39,5 +39,10 @@ export const ParksStatusDot = ({
 }) => <StyledDot dotColor={getParksStackingStatusColor(color)} />;
 
 export const ParksStatusBadge = ({ label, color = 'gray' }: ParksStatusBadgeProps) => (
-  <Tag color={tagColorMap[color]} text={label} variant="solid" weight="medium" />
+  <Tag
+    color={tagColorMap[color] ?? color ?? 'gray'}
+    text={label}
+    variant="solid"
+    weight="medium"
+  />
 );

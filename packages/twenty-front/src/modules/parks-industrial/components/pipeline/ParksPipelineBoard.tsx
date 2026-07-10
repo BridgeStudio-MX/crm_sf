@@ -18,13 +18,28 @@ import {
   type ParksPipelineFilters,
   ParksPipelineToolbar,
 } from '@/parks-industrial/components/pipeline/ParksPipelineToolbar';
+import { ParksUnassignedLeadsBanner } from '@/parks-industrial/components/pipeline/ParksUnassignedLeadsBanner';
 import { ParksPipelineColumn } from '@/parks-industrial/components/pipeline/ParksPipelineColumn';
 import { ParksPipelineDealDetail } from '@/parks-industrial/components/pipeline/ParksPipelineDealDetail';
+import { ParksNewLeadModal } from '@/parks-industrial/components/pipeline/ParksNewLeadModal';
 import { ParksPipelineDragOverlay } from '@/parks-industrial/components/pipeline/ParksPipelineDragOverlay';
-import { ParksDetailDrawer } from '@/parks-industrial/components/ui/ParksDetailDrawer';
+import { ParksStageGateModal } from '@/parks-industrial/components/pipeline/ParksStageGateModal';
+import { ParksResponsiveSheet } from '@/parks-industrial/components/ui/ParksResponsiveSheet';
 import { useOpenRecordInSidePanel } from '@/side-panel/hooks/useOpenRecordInSidePanel';
 import { getParksOwnerName } from '@/parks-industrial/utils/parks-format.util';
 import { StyledParksPageStack } from '@/parks-industrial/components/ui/ParksSectionCard';
+import { validateParksStageGate } from '@/parks-industrial/services/parks-commercial.client';
+import {
+  buildParksStageGateOpportunityInput,
+  normalizeParksPipelineStageId,
+  type ParksStageGateResult,
+  validateParksStageTransition,
+} from '@/parks-industrial/utils/parksStageGateUtil';
+import {
+  buildOptimisticOpportunityRecord,
+  type ParksLeadCreatedPayload,
+} from '@/parks-industrial/utils/parks-pipeline.util';
+import { Button } from 'twenty-ui/input';
 
 const PIPELINE_DND_SENSORS = [
   PointerSensor.configure({
@@ -55,6 +70,7 @@ const StyledDragHint = styled.div`
 
 type ParksPipelineBoardProps = {
   opportunities: ParksOpportunityRecord[];
+  onOpportunitiesRefresh?: () => void;
 };
 
 const filterOpportunities = (
@@ -89,21 +105,33 @@ const filterOpportunities = (
 
 export const ParksPipelineBoard = ({
   opportunities,
+  onOpportunitiesRefresh,
 }: ParksPipelineBoardProps) => {
-  const [items, setItems] = useState(opportunities);
+  const safeOpportunities = opportunities ?? [];
+  const [items, setItems] = useState(safeOpportunities);
   const [filters, setFilters] = useState<ParksPipelineFilters>({
     searchQuery: '',
     ownerFilter: '',
   });
   const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
   const [draggingDealId, setDraggingDealId] = useState<string | null>(null);
+  const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
+  const [unassignedLeadsRefreshKey, setUnassignedLeadsRefreshKey] = useState(0);
+  const [stageGateBlocker, setStageGateBlocker] = useState<{
+    result: Extract<ParksStageGateResult, { ok: false }>;
+    dealName?: string;
+  } | null>(null);
   const prospectScoresById = useParksProspectScores(items);
   const { updateOneRecord } = useUpdateOneRecord();
   const { openRecordInSidePanel } = useOpenRecordInSidePanel();
 
   useEffect(() => {
-    setItems(opportunities);
-  }, [opportunities]);
+    if (safeOpportunities.length === 0) {
+      return;
+    }
+
+    setItems(safeOpportunities);
+  }, [safeOpportunities]);
 
   const filteredItems = useMemo(
     () => filterOpportunities(items, filters),
@@ -128,7 +156,7 @@ export const ParksPipelineBoard = ({
     }
 
     for (const opportunity of filteredItems) {
-      const stage = opportunity.stage ?? 'LEAD_RECIBIDO';
+      const stage = normalizeParksPipelineStageId(opportunity.stage);
       const bucket = map.get(stage) ?? map.get('LEAD_RECIBIDO')!;
       bucket.push(opportunity);
     }
@@ -142,6 +170,47 @@ export const ParksPipelineBoard = ({
 
       if (!opportunity || opportunity.stage === newStage) {
         return;
+      }
+
+      setStageGateBlocker(null);
+
+      const gateInput = buildParksStageGateOpportunityInput(opportunity);
+      const localGateResult = validateParksStageTransition(
+        opportunity.stage,
+        newStage,
+        gateInput,
+      );
+
+      if (!localGateResult.ok) {
+        setStageGateBlocker({
+          result: localGateResult,
+          dealName: opportunity.name,
+        });
+        return;
+      }
+
+      try {
+        const remoteGateResult = await validateParksStageGate({
+          targetStage: newStage,
+          opportunity: gateInput,
+        });
+
+        if (!remoteGateResult.ok) {
+          setStageGateBlocker({
+            result: {
+              ok: false,
+              error:
+                remoteGateResult.error ?? t`No se puede avanzar de etapa`,
+              missingRequirements: remoteGateResult.missingRequirements ?? [],
+              targetStageLabel: newStage,
+              actionHint: remoteGateResult.actionHint,
+            },
+            dealName: opportunity.name,
+          });
+          return;
+        }
+      } catch {
+        // Client gate already passed; allow move if parks service is unreachable
       }
 
       setItems((previous) =>
@@ -206,17 +275,78 @@ export const ParksPipelineBoard = ({
     [openRecordInSidePanel],
   );
 
+  const handleLeadCreated = useCallback(
+    (payload: ParksLeadCreatedPayload) => {
+      setItems((previous) => {
+        if (previous.some((item) => item.id === payload.opportunityId)) {
+          return previous;
+        }
+
+        return [...previous, buildOptimisticOpportunityRecord(payload)];
+      });
+      setUnassignedLeadsRefreshKey((previous) => previous + 1);
+      void Promise.resolve(onOpportunitiesRefresh?.()).catch(() => undefined);
+    },
+    [onOpportunitiesRefresh],
+  );
+
   if (items.length === 0) {
     return (
-      <ParksEmptyState
-        title={t`No hay deals en el pipeline`}
-        description={t`Los prospectos comerciales aparecerán aquí cuando se registren en Twenty.`}
-      />
+      <StyledParksPageStack>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 8,
+          }}
+        >
+          <Button
+            title={t`Nuevo lead`}
+            variant="primary"
+            onClick={() => setIsNewLeadModalOpen(true)}
+          />
+        </div>
+        <ParksUnassignedLeadsBanner refreshKey={unassignedLeadsRefreshKey} />
+        <ParksEmptyState
+          title={t`No hay deals en el pipeline`}
+          description={t`Los prospectos comerciales aparecerán aquí cuando se registren en Parks Industrial.`}
+        />
+        {isNewLeadModalOpen && (
+          <ParksNewLeadModal
+            onClose={() => setIsNewLeadModalOpen(false)}
+            onCreated={handleLeadCreated}
+          />
+        )}
+      </StyledParksPageStack>
     );
   }
 
   return (
     <StyledParksPageStack>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          gap: 8,
+        }}
+      >
+        <Button
+          title={t`Nuevo lead`}
+          variant="primary"
+          onClick={() => setIsNewLeadModalOpen(true)}
+        />
+      </div>
+
+      <ParksUnassignedLeadsBanner refreshKey={unassignedLeadsRefreshKey} />
+
+      {stageGateBlocker ? (
+        <ParksStageGateModal
+          gateResult={stageGateBlocker.result}
+          dealName={stageGateBlocker.dealName}
+          onClose={() => setStageGateBlocker(null)}
+        />
+      ) : null}
+
       <ParksPipelineToolbar
         opportunities={items}
         filters={filters}
@@ -225,7 +355,7 @@ export const ParksPipelineBoard = ({
       />
 
       <StyledDragHint>
-        {t`Arrastra cualquier card a otra columna para cambiar de etapa · Clic para detalle · Doble clic para abrir registro`}
+        {t`Arrastra cards solo entre etapas operativas · LOI, Legal y Ganado requieren Flujo comercial · Si falta algo, verás qué completar`}
       </StyledDragHint>
 
       {filteredItems.length === 0 ? (
@@ -253,9 +383,11 @@ export const ParksPipelineBoard = ({
             </StyledBoard>
           </StyledBoardLayout>
 
-          <ParksDetailDrawer
+          <ParksResponsiveSheet
             isOpen={selectedDeal !== null}
             onClose={() => setSelectedDealId(null)}
+            focusId="parks-pipeline-deal-detail"
+            ariaLabelledBy="parks-deal-detail-title"
           >
             {selectedDeal ? (
               <ParksPipelineDealDetail
@@ -266,13 +398,20 @@ export const ParksPipelineBoard = ({
                 }}
               />
             ) : null}
-          </ParksDetailDrawer>
+          </ParksResponsiveSheet>
 
           <ParksPipelineDragOverlay
             dealsById={dealsById}
             prospectScoresById={prospectScoresById}
           />
         </DragDropProvider>
+      )}
+
+      {isNewLeadModalOpen && (
+        <ParksNewLeadModal
+          onClose={() => setIsNewLeadModalOpen(false)}
+          onCreated={handleLeadCreated}
+        />
       )}
     </StyledParksPageStack>
   );

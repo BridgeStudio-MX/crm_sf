@@ -20,6 +20,9 @@ export const USER_WORKSPACE_DATA_SEED_IDS = {
   JONY_ACME: '20202020-e10a-4c27-a90b-b08c57b02d45',
   PHIL_ACME: '20202020-e10a-4c27-a90b-b08c57b02d46',
   SCOTT: '20202020-1111-4a01-8001-000000000002',
+  DIRECTOR_LEGAL: '20202020-1111-4a01-8001-000000000024',
+  SUBDIRECTOR_LEGAL: '20202020-1111-4a01-8001-000000000025',
+  ABOGADO: '20202020-1111-4a01-8001-000000000026',
 };
 
 const {
@@ -74,6 +77,24 @@ export const seedUserWorkspaces = async ({
       {
         id: USER_WORKSPACE_DATA_SEED_IDS.SCOTT,
         userId: USER_DATA_SEED_IDS.SCOTT,
+        workspaceId,
+        locale: 'es-ES',
+      },
+      {
+        id: USER_WORKSPACE_DATA_SEED_IDS.DIRECTOR_LEGAL,
+        userId: USER_DATA_SEED_IDS.DIRECTOR_LEGAL,
+        workspaceId,
+        locale: 'es-ES',
+      },
+      {
+        id: USER_WORKSPACE_DATA_SEED_IDS.SUBDIRECTOR_LEGAL,
+        userId: USER_DATA_SEED_IDS.SUBDIRECTOR_LEGAL,
+        workspaceId,
+        locale: 'es-ES',
+      },
+      {
+        id: USER_WORKSPACE_DATA_SEED_IDS.ABOGADO,
+        userId: USER_DATA_SEED_IDS.ABOGADO,
         workspaceId,
         locale: 'es-ES',
       },

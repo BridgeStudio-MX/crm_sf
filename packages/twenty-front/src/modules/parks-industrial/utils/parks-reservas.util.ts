@@ -39,7 +39,7 @@ const RESERVED_PIPELINE_STAGES = new Set([
   'TOUR_VISITA',
   'CALIFICADO',
   'LEAD_RECIBIDO',
-  'HOJA_FIRMADA',
+  'HOJA_DE_ACUERDOS_FIRMADA',
   'EN_PROCESO_LEGAL',
 ]);
 
@@ -61,7 +61,10 @@ const isOpportunityReservation = (
     return false;
   }
 
-  if (opportunity.stage === 'GANADO') {
+  if (
+    opportunity.stage === 'GANADO' ||
+    opportunity.stage === 'GANADO_CONTRATO_FIRMADO'
+  ) {
     return false;
   }
 

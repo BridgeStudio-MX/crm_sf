@@ -18,6 +18,10 @@ export const resolveParksAiScreenFromPath = (
     return 'pipeline';
   }
 
+  if (pathname.includes(AppPath.ParksLeadsCem)) {
+    return 'pipeline';
+  }
+
   if (pathname.includes(AppPath.ParksContratos)) {
     return 'contratos';
   }

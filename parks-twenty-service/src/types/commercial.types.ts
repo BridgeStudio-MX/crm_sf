@@ -1,3 +1,6 @@
+import { type DecisorCliente } from './decisor-cliente.types';
+import { type InquilinoRecord } from './parks.types';
+
 export type NaveMatchCandidate = {
   naveId: string;
   identificador: string;
@@ -5,6 +8,10 @@ export type NaveMatchCandidate = {
   parqueNombre?: string;
   ubicacion?: string;
   precioUsdM2?: number;
+  alturaLibreM?: number;
+  andenes?: number;
+  estatus?: string;
+  disponibilidadCondicional?: boolean;
   matchScore: number;
   matchReasons: string[];
 };
@@ -49,4 +56,56 @@ export type SalesScriptResult = {
   closingLine: string;
   usedLlm: boolean;
   generatedAt: string;
+};
+
+export type Account360Contrato = {
+  id: string;
+  numeroExpediente?: string;
+  fechaVencimiento?: string;
+  rentaMensualUsd?: number;
+  estatus?: string;
+  naveIdentificador?: string;
+  parqueNombre?: string;
+  esPropiedadFuno?: boolean;
+};
+
+export type Account360Oportunidad = {
+  id: string;
+  name?: string;
+  stage?: string;
+  tipoOperacion?: string;
+  m2Requeridos?: number;
+  ubicacionDeseada?: string;
+  updatedAt?: string;
+  createdAt?: string;
+  naveIdentificador?: string;
+  enProceso: boolean;
+};
+
+export type Account360Interaccion = {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  fecha: string;
+  tipo: 'oportunidad' | 'notificacion';
+};
+
+export type Account360EstadoPagos = {
+  alCorriente?: boolean;
+  ultimoPagoFecha?: string;
+  fuente: 'oracle' | 'sin-datos';
+};
+
+export type Account360Response = {
+  inquilinoId: string;
+  inquilino?: InquilinoRecord;
+  decisores: DecisorCliente[];
+  expedientesActivos: number;
+  contratos: Account360Contrato[];
+  oportunidades: Account360Oportunidad[];
+  oportunidadesEnProceso: number;
+  interacciones: Account360Interaccion[];
+  estadoPagos: Account360EstadoPagos;
+  tieneContratosFuno: boolean;
+  note?: string;
 };

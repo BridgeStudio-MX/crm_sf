@@ -5,6 +5,7 @@ import { TwentyWebhookPayload } from '../types/parks.types';
 import { handleCasoLegalWebhook } from './handlers/caso-legal.handler';
 import { handleContratoWebhook } from './handlers/contrato.handler';
 import { handleFlujoFirmasWebhook } from './handlers/flujo-firmas.handler';
+import { handleNaveWebhook } from './handlers/nave.handler';
 import { handleOportunidadWebhook } from './handlers/oportunidad.handler';
 import { parseTwentyWebhook } from './webhook-payload.util';
 import { verifyTwentyWebhookSignature } from './webhook-signature.util';
@@ -19,6 +20,7 @@ const HANDLERS_BY_OBJECT: Record<
   casoLegal: handleCasoLegalWebhook,
   flujoFirmas: handleFlujoFirmasWebhook,
   expedienteContrato: handleContratoWebhook,
+  nave: handleNaveWebhook,
 };
 
 webhookRouter.post('/twenty', async (request, response) => {

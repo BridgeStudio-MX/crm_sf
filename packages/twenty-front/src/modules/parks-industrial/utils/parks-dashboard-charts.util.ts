@@ -237,7 +237,9 @@ export const buildParksDashboardPipelineSummary = (
 ) => {
   const activeOpportunities = opportunities.filter(
     (opportunity) =>
-      opportunity.stage !== 'PERDIDO' && opportunity.stage !== 'GANADO',
+      opportunity.stage !== 'PERDIDO' &&
+      opportunity.stage !== 'GANADO' &&
+      opportunity.stage !== 'GANADO_CONTRATO_FIRMADO',
   );
 
   return {

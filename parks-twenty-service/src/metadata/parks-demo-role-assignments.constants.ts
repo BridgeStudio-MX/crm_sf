@@ -1,4 +1,4 @@
-import { PARKS_ROLE_LABEL_PREFIX } from './parks-role-definitions';
+import { PARKS_DEMO_USERS } from './parks-demo-users.constants';
 
 export type ParksDemoRoleAssignment = {
   userEmail: string;
@@ -6,31 +6,9 @@ export type ParksDemoRoleAssignment = {
   persona: string;
 };
 
-// Dev workspace (@apple.dev) users mapped to Parks demo personas
-export const PARKS_DEMO_ROLE_ASSIGNMENTS: ParksDemoRoleAssignment[] = [
-  {
-    userEmail: 'jane.austen@apple.dev',
-    roleLabel: `${PARKS_ROLE_LABEL_PREFIX}Admin Legal`,
-    persona: 'Catalina Moreno (Legal)',
-  },
-  {
-    userEmail: 'phil.schiler@apple.dev',
-    roleLabel: `${PARKS_ROLE_LABEL_PREFIX}Director Comercial`,
-    persona: 'Héctor Montelongo (Comercial)',
-  },
-  {
-    userEmail: 'jony.ive@apple.dev',
-    roleLabel: `${PARKS_ROLE_LABEL_PREFIX}CEO`,
-    persona: 'Charlie Meta (Ejecutivo)',
-  },
-  {
-    userEmail: 'scott.forstall@apple.dev',
-    roleLabel: `${PARKS_ROLE_LABEL_PREFIX}CxC`,
-    persona: 'CxC / Cobranza',
-  },
-  {
-    userEmail: 'tim@apple.dev',
-    roleLabel: `${PARKS_ROLE_LABEL_PREFIX}Ejecutivo Comercial`,
-    persona: 'Broker demo principal',
-  },
-];
+export const PARKS_DEMO_ROLE_ASSIGNMENTS: ParksDemoRoleAssignment[] =
+  PARKS_DEMO_USERS.map((demoUser) => ({
+    userEmail: demoUser.email,
+    roleLabel: demoUser.roleLabel,
+    persona: demoUser.persona,
+  }));

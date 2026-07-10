@@ -10,6 +10,10 @@ import { BlankLayout } from '@/ui/layout/page/components/BlankLayout';
 import { DefaultLayout } from '@/ui/layout/page/components/DefaultLayout';
 import { MainAppLayoutWithSidePanel } from '@/ui/layout/page/components/MainAppLayoutWithSidePanel';
 import { AppPath } from 'twenty-shared/types';
+import {
+  PARKS_INQUILINO_360_PATH,
+  PARKS_LEADS_CEM_PATH,
+} from '@/parks-industrial/constants/parks-routes.constants';
 
 import { lazy } from 'react';
 import {
@@ -134,6 +138,12 @@ const ParksPipelinePage = lazy(() =>
   })),
 );
 
+const ParksLeadsCemPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksLeadsCemPage').then((module) => ({
+    default: module.ParksLeadsCemPage,
+  })),
+);
+
 const ParksContratosPage = lazy(() =>
   import('~/pages/parks-industrial/ParksContratosPage').then((module) => ({
     default: module.ParksContratosPage,
@@ -169,6 +179,12 @@ const ParksMiDesempenoPage = lazy(() =>
 const ParksNotificacionesPage = lazy(() =>
   import('~/pages/parks-industrial/ParksNotificacionesPage').then((module) => ({
     default: module.ParksNotificacionesPage,
+  })),
+);
+
+const ParksInquilino360Page = lazy(() =>
+  import('~/pages/parks-industrial/ParksInquilino360Page').then((module) => ({
+    default: module.ParksInquilino360Page,
   })),
 );
 
@@ -346,6 +362,14 @@ export const useCreateAppRouter = (
               }
             />
             <Route
+              path={PARKS_LEADS_CEM_PATH}
+              element={
+                <LazyRoute>
+                  <ParksLeadsCemPage />
+                </LazyRoute>
+              }
+            />
+            <Route
               path={AppPath.ParksNotificaciones}
               element={
                 <LazyRoute>
@@ -382,6 +406,14 @@ export const useCreateAppRouter = (
               element={
                 <LazyRoute>
                   <ParksMiDesempenoPage />
+                </LazyRoute>
+              }
+            />
+            <Route
+              path={PARKS_INQUILINO_360_PATH}
+              element={
+                <LazyRoute>
+                  <ParksInquilino360Page />
                 </LazyRoute>
               }
             />

@@ -86,11 +86,20 @@ export const DEMO_PARQUES = [
 
 export const DEMO_BROKERS = [
   {
+    key: 'brokerChristianLua',
+    empresa: 'Christian Lua Brokers',
+    contacto: 'Christian Lua',
+    email: 'christian.lua@brokers.mx',
+    firma: 'Independiente',
+    clasificacion: 'Top 10',
+  },
+  {
     key: 'brokerNewmark',
     empresa: 'Newmark',
     contacto: 'Carlos Mendoza',
     email: 'cmendoza@newmark.mx',
     firma: 'Newmark',
+    clasificacion: 'Top 10',
   },
   {
     key: 'brokerCbre',
@@ -98,6 +107,7 @@ export const DEMO_BROKERS = [
     contacto: 'Ana Ruiz',
     email: 'aruiz@cbre.com',
     firma: 'CBRE',
+    clasificacion: 'Top 10',
   },
   {
     key: 'brokerIndependiente',
@@ -105,5 +115,6 @@ export const DEMO_BROKERS = [
     contacto: 'Jorge Vega',
     email: 'jorge@industrialibre.mx',
     firma: 'Independiente',
+    clasificacion: 'No top 10',
   },
 ] as const;

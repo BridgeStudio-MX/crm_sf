@@ -10,6 +10,9 @@ export const USER_DATA_SEED_IDS = {
   JONY: '20202020-3957-4908-9c36-2929a23f8357',
   PHIL: '20202020-7169-42cf-bc47-1cfef15264b8',
   SCOTT: '20202020-1111-4a01-8001-000000000001',
+  DIRECTOR_LEGAL: '20202020-1111-4a01-8001-000000000004',
+  SUBDIRECTOR_LEGAL: '20202020-1111-4a01-8001-000000000005',
+  ABOGADO: '20202020-1111-4a01-8001-000000000006',
 };
 
 const { users: randomUsers, userIds: randomUserIds } = generateRandomUsers();
@@ -72,6 +75,39 @@ export const seedUsers = async ({ queryRunner, schemaName }: SeedUsersArgs) => {
       firstName: 'Scott',
       lastName: 'Forstall',
       email: 'scott.forstall@apple.dev',
+      passwordHash:
+        '$2b$10$3LwXjJRtLsfx4hLuuXhxt.3mWgismTiZFCZSG3z9kDrSfsrBl0fT6', // tim@apple.dev
+      canImpersonate: false,
+      canAccessFullAdminPanel: false,
+      isEmailVerified: true,
+    },
+    {
+      id: USER_DATA_SEED_IDS.DIRECTOR_LEGAL,
+      firstName: 'Roberto',
+      lastName: 'Salinas',
+      email: 'roberto.salinas@apple.dev',
+      passwordHash:
+        '$2b$10$3LwXjJRtLsfx4hLuuXhxt.3mWgismTiZFCZSG3z9kDrSfsrBl0fT6', // tim@apple.dev
+      canImpersonate: false,
+      canAccessFullAdminPanel: false,
+      isEmailVerified: true,
+    },
+    {
+      id: USER_DATA_SEED_IDS.SUBDIRECTOR_LEGAL,
+      firstName: 'Patricia',
+      lastName: 'Núñez',
+      email: 'patricia.nunez@apple.dev',
+      passwordHash:
+        '$2b$10$3LwXjJRtLsfx4hLuuXhxt.3mWgismTiZFCZSG3z9kDrSfsrBl0fT6', // tim@apple.dev
+      canImpersonate: false,
+      canAccessFullAdminPanel: false,
+      isEmailVerified: true,
+    },
+    {
+      id: USER_DATA_SEED_IDS.ABOGADO,
+      firstName: 'Miguel',
+      lastName: 'Soto',
+      email: 'miguel.soto@apple.dev',
       passwordHash:
         '$2b$10$3LwXjJRtLsfx4hLuuXhxt.3mWgismTiZFCZSG3z9kDrSfsrBl0fT6', // tim@apple.dev
       canImpersonate: false,

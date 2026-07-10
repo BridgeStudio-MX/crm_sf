@@ -141,7 +141,7 @@ export const ParksComisionesTable = ({
         onChange={(event) => setBrokerFilter(event.target.value)}
       />
 
-      <ParksSectionCard title={t`Comisiones registradas`}>
+      <ParksSectionCard title={t`Comisiones registradas`} accent="green">
         {filtered.length === 0 ? (
           <ParksEmptyState title={t`No hay comisiones para mostrar`} />
         ) : (

@@ -11,10 +11,32 @@ Documento de seguimiento de trabajo pendiente tras completar los módulos base d
 
 | Área | Estado general |
 | --- | --- |
-| Backend (microservicio + metadata Twenty) | ✅ Base completa (fases A–C del blueprint §9) |
-| UI integrada en Twenty (`packages/twenty-front`) | ✅ 11 módulos operativos (+ Sprint A comercial) |
-| Demo lista para cliente | 🔄 Falta operación (roles, commit) |
+| Backend (microservicio + metadata Twenty) | ✅ Base completa + flujo comercial US |
+| UI integrada en Twenty (`packages/twenty-front`) | ✅ Pipeline comercial hasta Hoja (Legal off) |
+| Demo lista para cliente | 🔄 Flujo comercial A–C+E–F listo; Legal handoff gated |
 | Producción / integraciones reales | ⬜ Pendiente |
+
+---
+
+## Flujo comercial US (Jul 2026)
+
+Acoplado a `Parks_Industrial_Comercial_UserStories_Cursor.md` (escenarios A–C, E–F) y al documento maestro `Parks_Industrial_Salesforce_ProyectoCompleto.md` (copiados en `docs/parks-industrial/`):
+
+- [x] Campos Opportunity/Broker/Hoja extendidos
+- [x] Crear lead + cola CEM + asignación LO
+- [x] **Decisores del cliente (§4.8)** — panel en deal + Cuenta 360 + tour
+- [x] Tour, cotización formal, aprobaciones, pérdida/reactivación
+- [x] Hoja desde oportunidad + firma CEM/cliente
+- [x] `PARKS_LEGAL_HANDOFF_ENABLED=false` (no crea casoLegal)
+- [x] Cuenta 360 `/parks/inquilinos/:id`
+- [x] Stage gates en kanban
+
+Ver [FLUJO-COMERCIAL-DEMO.md](./FLUJO-COMERCIAL-DEMO.md).
+
+**Documentos fuente de negocio (Jul 2026):**
+
+- [Parks_Industrial_Salesforce_ProyectoCompleto.md](./Parks_Industrial_Salesforce_ProyectoCompleto.md) — discovery maestro (incl. §4.8 decisores)
+- [Parks_Industrial_Comercial_UserStories_Cursor.md](./Parks_Industrial_Comercial_UserStories_Cursor.md) — US escenarios A–G
 
 ---
 
@@ -40,7 +62,8 @@ Según [PROGRESS.md](./PROGRESS.md):
 | --- | --- | --- |
 | Dashboard ejecutivo | `/parks/dashboard` | KPIs, gráficas, embudo pipeline |
 | Stacking Plan | `/parks/stacking-plan` | Export CSV, leyenda de colores |
-| Pipeline comercial | `/parks/pipeline` | Kanban con drag-and-drop |
+| Pipeline comercial | `/parks/pipeline` | Kanban con drag-and-drop · banner CEM si hay pendientes |
+| Leads CEM | `/parks/leads-cem` | Cola completa de asignación (US-COM-002) |
 | Contratos | `/parks/contratos` | Lista de expedientes |
 | Aprobación legal | `/parks/contratos/:contratoId/aprobacion` | Timeline + acciones |
 | Comisiones | `/parks/comisiones` | Tabla y resumen |

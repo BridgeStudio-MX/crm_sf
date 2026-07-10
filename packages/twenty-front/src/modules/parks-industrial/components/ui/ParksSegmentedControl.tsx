@@ -14,9 +14,10 @@ type ParksSegmentedControlProps<T extends string> = {
 };
 
 const StyledControl = styled.div`
-  background: ${themeCssVariables.background.tertiary};
-  border: 1px solid ${themeCssVariables.border.color.light};
+  background: ${themeCssVariables.background.primary};
+  border: 1px solid ${themeCssVariables.color.blue3};
   border-radius: ${themeCssVariables.border.radius.pill};
+  box-shadow: ${themeCssVariables.boxShadow.light};
   display: inline-flex;
   gap: 2px;
   padding: 3px;
@@ -24,14 +25,18 @@ const StyledControl = styled.div`
 
 const StyledOption = styled.button<{ isActive: boolean }>`
   background: ${({ isActive }) =>
-    isActive ? themeCssVariables.background.primary : 'transparent'};
-  border: none;
+    isActive
+      ? `linear-gradient(135deg, ${themeCssVariables.color.blue1} 0%, ${themeCssVariables.background.primary} 100%)`
+      : 'transparent'};
+  border: 1px solid
+    ${({ isActive }) =>
+      isActive ? themeCssVariables.color.blue3 : 'transparent'};
   border-radius: ${themeCssVariables.border.radius.pill};
   box-shadow: ${({ isActive }) =>
     isActive ? themeCssVariables.boxShadow.light : 'none'};
   color: ${({ isActive }) =>
     isActive
-      ? themeCssVariables.font.color.primary
+      ? themeCssVariables.color.blue
       : themeCssVariables.font.color.secondary};
   cursor: pointer;
   font-family: inherit;
@@ -43,18 +48,25 @@ const StyledOption = styled.button<{ isActive: boolean }>`
   padding: 6px 14px;
   transition:
     background 0.15s ease,
+    border-color 0.15s ease,
     color 0.15s ease;
   white-space: nowrap;
 
   &:hover {
-    color: ${themeCssVariables.font.color.primary};
+    color: ${({ isActive }) =>
+      isActive
+        ? themeCssVariables.color.blue
+        : themeCssVariables.font.color.primary};
   }
 `;
 
 const StyledCount = styled.span`
-  color: ${themeCssVariables.font.color.tertiary};
+  background: ${themeCssVariables.background.transparent.blue};
+  border-radius: ${themeCssVariables.border.radius.pill};
+  color: ${themeCssVariables.color.blue};
   font-size: ${themeCssVariables.font.size.xs};
   margin-left: 6px;
+  padding: 1px 6px;
 `;
 
 export const ParksSegmentedControl = <T extends string>({

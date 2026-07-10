@@ -32,6 +32,9 @@ export const WORKSPACE_MEMBER_DATA_SEED_IDS = {
   PHIL: '20202020-1553-45c6-a028-5a9064cce07f',
   JANE: '20202020-463f-435b-828c-107e007a2711',
   SCOTT: '20202020-1111-4a01-8001-000000000003',
+  DIRECTOR_LEGAL: '20202020-1111-4a01-8001-000000000014',
+  SUBDIRECTOR_LEGAL: '20202020-1111-4a01-8001-000000000015',
+  ABOGADO: '20202020-1111-4a01-8001-000000000016',
 };
 
 const {
@@ -91,6 +94,33 @@ const appleOnlyWorkspaceMembers: WorkspaceMemberDataSeed[] = [
     colorScheme: 'Light',
     userEmail: 'scott.forstall@apple.dev',
     userId: USER_DATA_SEED_IDS.SCOTT,
+  },
+  {
+    id: WORKSPACE_MEMBER_DATA_SEED_IDS.DIRECTOR_LEGAL,
+    nameFirstName: 'Roberto',
+    nameLastName: 'Salinas',
+    locale: 'es-ES',
+    colorScheme: 'Light',
+    userEmail: 'roberto.salinas@apple.dev',
+    userId: USER_DATA_SEED_IDS.DIRECTOR_LEGAL,
+  },
+  {
+    id: WORKSPACE_MEMBER_DATA_SEED_IDS.SUBDIRECTOR_LEGAL,
+    nameFirstName: 'Patricia',
+    nameLastName: 'Núñez',
+    locale: 'es-ES',
+    colorScheme: 'Light',
+    userEmail: 'patricia.nunez@apple.dev',
+    userId: USER_DATA_SEED_IDS.SUBDIRECTOR_LEGAL,
+  },
+  {
+    id: WORKSPACE_MEMBER_DATA_SEED_IDS.ABOGADO,
+    nameFirstName: 'Miguel',
+    nameLastName: 'Soto',
+    locale: 'es-ES',
+    colorScheme: 'Light',
+    userEmail: 'miguel.soto@apple.dev',
+    userId: USER_DATA_SEED_IDS.ABOGADO,
   },
 ];
 

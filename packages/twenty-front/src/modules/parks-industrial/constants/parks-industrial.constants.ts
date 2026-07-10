@@ -14,9 +14,9 @@ export const PARKS_PIPELINE_STAGES = [
   { id: 'TOUR_VISITA', label: 'Visita agendada', color: 'blue' },
   { id: 'COTIZACION_ENVIADA', label: 'Propuesta enviada', color: 'turquoise' },
   { id: 'EN_NEGOCIACION', label: 'Negociación', color: 'purple' },
-  { id: 'HOJA_FIRMADA', label: 'Letter of Intent (LOI)', color: 'orange' },
+  { id: 'HOJA_DE_ACUERDOS_FIRMADA', label: 'Letter of Intent (LOI)', color: 'orange' },
   { id: 'EN_PROCESO_LEGAL', label: 'Contrato en revisión legal', color: 'yellow' },
-  { id: 'GANADO', label: 'Contrato firmado', color: 'green' },
+  { id: 'GANADO_CONTRATO_FIRMADO', label: 'Contrato firmado', color: 'green' },
   { id: 'PERDIDO', label: 'Cancelado', color: 'gray' },
 ] as const satisfies ReadonlyArray<{
   id: string;

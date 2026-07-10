@@ -101,7 +101,7 @@ export const ParksComisionesSummary = ({
   const maxTotal = Math.max(...brokerRanking.map((item) => item.total), 1);
 
   return (
-    <ParksSectionCard title={t`Ranking de brokers`}>
+    <ParksSectionCard title={t`Ranking de brokers`} accent="yellow">
       <StyledList>
         {brokerRanking.length === 0 ? (
           <StyledAmount>{t`Sin comisiones registradas`}</StyledAmount>

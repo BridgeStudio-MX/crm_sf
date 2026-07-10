@@ -336,6 +336,53 @@ export const GET_OPPORTUNITIES_SUMMARY = `
   }
 `;
 
+export const GET_INQUILINO_BY_ID = `
+  query GetInquilinoById($inquilinoId: UUID!) {
+    inquilino(filter: { id: { eq: $inquilinoId } }) {
+      id
+      empresa
+      rfc
+      contactoPrincipal
+      emailContacto
+      telefono
+      repLegalNombre
+      repLegalEmail
+      sector
+      estatus
+      oracleClienteId
+      ultimoPagoFecha
+      pagosAlCorriente
+    }
+  }
+`;
+
+export const FIND_OPPORTUNITIES_BY_INQUILINO = `
+  query FindOpportunitiesByInquilino($inquilinoId: UUID!) {
+    opportunities(
+      filter: { inquilinoVinculadoId: { eq: $inquilinoId } }
+      first: 50
+      orderBy: [{ updatedAt: DescNullsLast }]
+    ) {
+      edges {
+        node {
+          id
+          name
+          stage
+          tipoOperacion
+          m2Requeridos
+          ubicacionDeseada
+          updatedAt
+          createdAt
+          naveVinculada {
+            id
+            identificador
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const GET_OPPORTUNITY_BY_ID = `
   query GetOpportunityById($opportunityId: UUID!) {
     opportunity(filter: { id: { eq: $opportunityId } }) {
@@ -344,6 +391,16 @@ export const GET_OPPORTUNITY_BY_ID = `
       stage
       etapaRenovacion
       tipoOperacion
+      m2Requeridos
+      m2Ofertados
+      precioPorM2Usd
+      plazoContratoMeses
+      periodoGraciaMeses
+      depositoGarantiaMeses
+      rentasAdelantadasMeses
+      escalacionAnual
+      aprobacionRequerida
+      estatusAprobacion
       inquilinoVinculadoId
       naveVinculadaId
       brokerVinculadoId
@@ -455,6 +512,11 @@ export const GET_EXPEDIENTES_ACTIVOS = `
           nave {
             id
             identificador
+            esPropiedadFuno
+            parque {
+              id
+              nombre
+            }
           }
         }
       }
@@ -532,6 +594,39 @@ export const GET_NAVES_DISPONIBLES = `
           identificador
           m2
           estatus
+          alturaLibreM
+          andenes
+          parque {
+            id
+            nombre
+            ubicacion
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_NAVES_MATCHING_CATALOG = `
+  query GetNavesMatchingCatalog {
+    naves(
+      filter: {
+        or: [
+          { estatus: { eq: "DISPONIBLE" } }
+          { estatus: { eq: "EN_NEGOCIACION" } }
+        ]
+      }
+      first: 200
+      orderBy: [{ m2: DescNullsLast }]
+    ) {
+      edges {
+        node {
+          id
+          identificador
+          m2
+          estatus
+          alturaLibreM
+          andenes
           parque {
             id
             nombre

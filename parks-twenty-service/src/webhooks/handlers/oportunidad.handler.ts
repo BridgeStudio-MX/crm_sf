@@ -1,3 +1,4 @@
+import { envConfig } from '../../config/env.config';
 import {
   OPPORTUNITY_STAGE_EN_PROCESO_LEGAL,
   OPPORTUNITY_STAGE_HOJA_FIRMADA,
@@ -59,6 +60,22 @@ const handleNewLead = async (
 const handleLegalHandoff = async (
   parsedWebhook: NonNullable<ReturnType<typeof parseTwentyWebhook>>,
 ): Promise<void> => {
+  if (!envConfig.parksLegalHandoffEnabled) {
+    if (wasFieldUpdated(parsedWebhook, 'stage')) {
+      const stage =
+        typeof parsedWebhook.record.stage === 'string'
+          ? parsedWebhook.record.stage
+          : undefined;
+
+      if (isSelectValueEqual(stage, OPPORTUNITY_STAGE_HOJA_FIRMADA)) {
+        console.log(
+          `[oportunidad.handler] Legal handoff skipped (PARKS_LEGAL_HANDOFF_ENABLED=false) for ${parsedWebhook.recordId}`,
+        );
+      }
+    }
+    return;
+  }
+
   if (!wasFieldUpdated(parsedWebhook, 'stage')) {
     return;
   }
@@ -90,7 +107,7 @@ const handleLegalHandoff = async (
 
   if (!hojaDeAcuerdos) {
     console.warn(
-      `[oportunidad.handler] No hoja de acuerdos found for opportunity ${opportunity.id}`,
+      `[oportunidad.handler] No hoja de acuerdos found for opportunity ${parsedWebhook.recordId}`,
     );
     return;
   }

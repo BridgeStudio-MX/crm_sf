@@ -19,7 +19,7 @@ const parseErrorMessage = async (response: Response): Promise<string> => {
   } | null;
 
   return (
-    errorBody?.error ?? `Error del servicio Parks Legal (${response.status})`
+    errorBody?.error ?? `Error del servicio Parks Industrial (${response.status})`
   );
 };
 

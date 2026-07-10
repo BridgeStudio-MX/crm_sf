@@ -4,6 +4,7 @@ import { useContext } from 'react';
 import { ThemeContext } from 'twenty-ui/theme-constants';
 
 import { ParksNotificacionesContent } from '@/parks-industrial/components/notificaciones/ParksNotificacionesContent';
+import { getParksIndustrialPageSubtitle } from '@/parks-industrial/constants/parks-tenant.constants';
 import { ParksPageShell } from '@/parks-industrial/components/layout/ParksPageShell';
 
 export const ParksNotificacionesPage = () => {
@@ -12,7 +13,9 @@ export const ParksNotificacionesPage = () => {
   return (
     <ParksPageShell
       title={t`Notificaciones`}
-      subtitle={t`Tareas automáticas, enriquecimiento IA y alertas comerciales`}
+      subtitle={getParksIndustrialPageSubtitle(
+        t`Tareas automáticas, enriquecimiento IA y alertas comerciales`,
+      )}
       icon={<IconBell size={theme.icon.size.md} />}
     >
       <ParksNotificacionesContent />

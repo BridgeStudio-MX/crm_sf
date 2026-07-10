@@ -4,6 +4,7 @@ import { useContext } from 'react';
 import { ThemeContext } from 'twenty-ui/theme-constants';
 
 import { ParksContratosList } from '@/parks-industrial/components/contratos/ParksContratosList';
+import { getParksIndustrialPageSubtitle } from '@/parks-industrial/constants/parks-tenant.constants';
 import { ParksMetadataGate } from '@/parks-industrial/components/layout/ParksMetadataGate';
 import { ParksPageShell } from '@/parks-industrial/components/layout/ParksPageShell';
 import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
@@ -25,7 +26,9 @@ export const ParksContratosPage = () => {
   return (
     <ParksPageShell
       title={t`Contratos en aprobación`}
-      subtitle={t`Casos legales ordenados por prioridad y semáforo`}
+      subtitle={getParksIndustrialPageSubtitle(
+        t`Casos legales ordenados por prioridad y semáforo`,
+      )}
       icon={<IconFileText size={theme.icon.size.md} />}
     >
       <ParksMetadataGate loadingVariant="list">

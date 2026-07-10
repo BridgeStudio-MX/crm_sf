@@ -49,7 +49,22 @@ describe('title-utils', () => {
     expect(getPageTitleFromPath('/settings/general')).toBe(
       'General - Settings',
     );
-    expect(getPageTitleFromPath('/')).toBe('Twenty');
-    expect(getPageTitleFromPath('/random')).toBe('Twenty');
+    expect(getPageTitleFromPath('/')).toBe('Parks Industrial');
+    expect(getPageTitleFromPath('/random')).toBe('Parks Industrial');
+    expect(getPageTitleFromPath('/parks/dashboard')).toBe(
+      'Dashboard ejecutivo · Parks Industrial',
+    );
+    expect(getPageTitleFromPath('/parks/pipeline')).toBe(
+      'Pipeline comercial · Parks Industrial',
+    );
+    expect(getPageTitleFromPath('/parks/leads-cem')).toBe(
+      'Leads CEM · Parks Industrial',
+    );
+    expect(getPageTitleFromPath('/parks/notificaciones')).toBe(
+      'Notificaciones · Parks Industrial',
+    );
+    expect(getPageTitleFromPath('/parks/mi-desempeno')).toBe(
+      'Mi desempeño · Parks Industrial',
+    );
   });
 });

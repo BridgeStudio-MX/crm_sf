@@ -97,8 +97,8 @@ export const ParksAiAssistantButton = () => {
     <StyledButtonWrapper>
       <StyledButton
         type="button"
-        title={t`Asistente Parks`}
-        aria-label={t`Asistente Parks`}
+        title={t`Asistente Parks Industrial`}
+        aria-label={t`Asistente Parks Industrial`}
         onClick={() => openAssistant()}
       >
         <StyledIconWrap>

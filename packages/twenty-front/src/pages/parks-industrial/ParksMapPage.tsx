@@ -4,6 +4,7 @@ import { useContext } from 'react';
 import { ThemeContext } from 'twenty-ui/theme-constants';
 
 import { ParksMapContent } from '@/parks-industrial/components/mapa/ParksMapContent';
+import { getParksIndustrialPageSubtitle } from '@/parks-industrial/constants/parks-tenant.constants';
 import { ParksMetadataGate } from '@/parks-industrial/components/layout/ParksMetadataGate';
 import { ParksPageShell } from '@/parks-industrial/components/layout/ParksPageShell';
 import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
@@ -27,7 +28,9 @@ export const ParksMapPage = () => {
   return (
     <ParksPageShell
       title={t`Mapa de parques`}
-      subtitle={t`Explora la cartera en mapa, revisa ocupación y accede al stacking plan de cada parque`}
+      subtitle={getParksIndustrialPageSubtitle(
+        t`Explora la cartera en mapa, revisa ocupación y accede al stacking plan de cada parque`,
+      )}
       icon={<IconMap size={theme.icon.size.md} />}
     >
       <ParksMetadataGate loadingVariant="dashboard">
