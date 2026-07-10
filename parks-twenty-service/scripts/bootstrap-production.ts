@@ -5,6 +5,11 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const USER_CONTEXT_STEPS = new Set([
+  'setup:assign-roles',
+  'setup:workspace-branding',
+]);
+
 const STEPS = [
   'setup:objects',
   'setup:opportunity',
@@ -56,28 +61,33 @@ const main = async (): Promise<void> => {
     process.exit(1);
   }
 
-  if (hasApiKey && !process.env.TWENTY_BOOTSTRAP_EMAIL) {
-    console.error(
-      '[bootstrap] TWENTY_BOOTSTRAP_EMAIL is missing — required for role assignment and workspace branding.',
-    );
-    console.error(
-      '[bootstrap] Add TWENTY_BOOTSTRAP_EMAIL + TWENTY_BOOTSTRAP_PASSWORD (workspace admin) to GitHub Secrets.',
-    );
-    process.exit(1);
-  }
+  const hasBootstrapCredentials = Boolean(
+    process.env.TWENTY_BOOTSTRAP_EMAIL &&
+      process.env.TWENTY_BOOTSTRAP_PASSWORD,
+  );
 
-  if (hasApiKey && !process.env.TWENTY_BOOTSTRAP_PASSWORD) {
-    console.error(
-      '[bootstrap] TWENTY_BOOTSTRAP_PASSWORD is missing — required with TWENTY_BOOTSTRAP_EMAIL.',
+  if (hasApiKey && !hasBootstrapCredentials) {
+    console.warn(
+      '[bootstrap] TWENTY_BOOTSTRAP_EMAIL/PASSWORD not set — skipping assign-roles and workspace-branding.',
     );
-    process.exit(1);
+    console.warn(
+      '[bootstrap] Add both secrets in GitHub Actions to auto-assign Parks demo roles.',
+    );
   }
 
   if (process.env.RESET_DEMO_SEED !== 'false') {
     process.env.RESET_DEMO_SEED = 'true';
   }
 
-  for (const stepName of STEPS) {
+  const stepsToRun = STEPS.filter((stepName) => {
+    if (!hasApiKey || hasBootstrapCredentials) {
+      return true;
+    }
+
+    return !USER_CONTEXT_STEPS.has(stepName);
+  });
+
+  for (const stepName of stepsToRun) {
     console.log(`\n[bootstrap] === ${stepName} ===`);
     await runStep(stepName);
   }

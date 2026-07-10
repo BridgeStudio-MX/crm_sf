@@ -115,6 +115,17 @@ dataset.
 Sin ese secret, el deploy de Twenty sigue funcionando; solo falla el seed demo
 automatico.
 
+`TWENTY_BOOTSTRAP_EMAIL` y `TWENTY_BOOTSTRAP_PASSWORD` son **opcionales** pero
+recomendados: sin ellos el bootstrap omite la asignación de roles demo y el
+branding del workspace. Usa el email/contraseña del **admin original** del
+workspace (quien creó parks.bridgehub.mx), no los usuarios `@apple.dev`.
+
+Para resetear la contraseña del admin en el droplet:
+
+```bash
+bash deploy/reset-user-password.sh tu-admin@email.com 'TuPassword'
+```
+
 ---
 
 # REFERENCIA

@@ -114,8 +114,8 @@ jobs:
             exit 1
           fi
           if [ -z "$TWENTY_BOOTSTRAP_EMAIL" ] || [ -z "$TWENTY_BOOTSTRAP_PASSWORD" ]; then
-            echo "::error::TWENTY_BOOTSTRAP_EMAIL y TWENTY_BOOTSTRAP_PASSWORD son requeridos (admin del workspace con permiso ROLES)."
-            exit 1
+            echo "::warning::TWENTY_BOOTSTRAP_EMAIL/PASSWORD no configurados — se omitirán assign-roles y workspace-branding."
+            echo "::warning::Agrega ambos secrets (admin del workspace con permiso ROLES) para asignar roles demo automáticamente."
           fi
 
       - name: Bootstrap Parks metadata + demo seed
