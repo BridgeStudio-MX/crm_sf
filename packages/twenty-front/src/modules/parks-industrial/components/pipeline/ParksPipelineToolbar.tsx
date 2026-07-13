@@ -83,6 +83,8 @@ type ParksPipelineToolbarProps = {
   filters: ParksPipelineFilters;
   onFiltersChange: (filters: ParksPipelineFilters) => void;
   filteredCount: number;
+  viewerName?: string | null;
+  isLeasingOfficer?: boolean;
 };
 
 export const ParksPipelineToolbar = ({
@@ -90,10 +92,14 @@ export const ParksPipelineToolbar = ({
   filters,
   onFiltersChange,
   filteredCount,
+  viewerName,
+  isLeasingOfficer = false,
 }: ParksPipelineToolbarProps) => {
   const ownerOptions = Array.from(
     new Set(opportunities.map((opportunity) => getParksOwnerName(opportunity))),
-  ).sort();
+  )
+    .filter((ownerName) => ownerName !== 'Sin asignar')
+    .sort();
 
   const pipelineValue = opportunities.reduce(
     (sum, opportunity) =>
@@ -149,7 +155,11 @@ export const ParksPipelineToolbar = ({
             })
           }
         >
-          <option value="">{t`Todos los responsables`}</option>
+          <option value="">{t`Todos los deals`}</option>
+          {isLeasingOfficer && viewerName ? (
+            <option value="__MINE__">{t`Mis asignados`}</option>
+          ) : null}
+          <option value="__UNASSIGNED__">{t`Sin asignar`}</option>
           {ownerOptions.map((ownerName) => (
             <option key={ownerName} value={ownerName}>
               {ownerName}

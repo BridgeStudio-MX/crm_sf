@@ -16,6 +16,10 @@ export type BrokerNotification = {
   area?: string;
   opportunityId?: string;
   opportunityName?: string;
+  actionPath?: string;
+  actionLabel?: string;
+  audienceRoleLabels?: string[];
+  audienceNames?: string[];
   read: boolean;
   createdAt: string;
 };
@@ -52,6 +56,7 @@ export type NaveMatchCandidate = {
   alturaLibreM?: number;
   andenes?: number;
   estatus?: string;
+  fotoInmuebleUrl?: string;
   disponibilidadCondicional?: boolean;
   matchScore: number;
   matchReasons: string[];
@@ -212,4 +217,76 @@ export type ParksAccount360Response = {
   estadoPagos: ParksAccount360EstadoPagos;
   tieneContratosFuno: boolean;
   note?: string;
+};
+
+export type DemandSearchFilters = {
+  m2Min?: number;
+  m2Max?: number;
+  cityFilter?: string;
+  sectorFilter?: string;
+  canalOrigen?: string;
+  minAlturaLibre?: number;
+  minAndenes?: number;
+  limit?: number;
+};
+
+export type DemandSearchProspect = {
+  opportunityId: string;
+  companyName: string;
+  stage?: string;
+  m2Requeridos?: number;
+  ubicacionDeseada?: string;
+  sector?: string;
+  canalOrigen?: string;
+  plazoContratoMeses?: number;
+  presupuestoMensualUsd?: number;
+  inquilinoId?: string;
+  naveVinculadaIdentificador?: string;
+  updatedAt?: string;
+  matchingNaves: NaveMatchCandidate[];
+};
+
+export type DemandSearchResult = {
+  filters: DemandSearchFilters;
+  totalMatches: number;
+  prospects: DemandSearchProspect[];
+  searchedAt: string;
+};
+
+export type ComposerTemplateType = 'brochure' | 'listing-report';
+
+export type ComposerGenerateResult = {
+  templateType: ComposerTemplateType;
+  html: string;
+  fileName: string;
+  filePath: string;
+  generatedAt: string;
+};
+
+export type ActivityTimelineEntry = {
+  id: string;
+  type: 'email' | 'call' | 'task' | 'meeting';
+  direction: 'inbound' | 'outbound' | 'internal';
+  subject: string;
+  summary: string;
+  participant: string;
+  occurredAt: string;
+  source: 'gmail' | 'crm' | 'email-parser';
+};
+
+export type ActivityTimelineResult = {
+  opportunityId: string;
+  companyName: string;
+  entries: ActivityTimelineEntry[];
+  gmailConnected: boolean;
+};
+
+export type DealWinPreview = {
+  opportunityId: string;
+  companyName: string;
+  naveIdentificador?: string;
+  willCreateCasoLegal: boolean;
+  willReserveNave: boolean;
+  willOpenExpedienteOnClose: boolean;
+  steps: string[];
 };

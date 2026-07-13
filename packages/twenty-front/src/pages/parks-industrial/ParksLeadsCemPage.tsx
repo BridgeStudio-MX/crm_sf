@@ -4,7 +4,7 @@ import { IconUserPlus } from 'twenty-ui/icon';
 import { ThemeContext } from 'twenty-ui/theme-constants';
 
 import { ParksPageShell } from '@/parks-industrial/components/layout/ParksPageShell';
-import { ParksUnassignedLeadsPanel } from '@/parks-industrial/components/pipeline/ParksUnassignedLeadsPanel';
+import { ParksLeadsCemContent } from '@/parks-industrial/components/pipeline/ParksLeadsCemContent';
 import { getParksIndustrialPageSubtitle } from '@/parks-industrial/constants/parks-tenant.constants';
 
 export const ParksLeadsCemPage = () => {
@@ -18,7 +18,7 @@ export const ParksLeadsCemPage = () => {
       )}
       icon={<IconUserPlus size={theme.icon.size.md} />}
     >
-      <ParksUnassignedLeadsPanel variant="full" />
+      <ParksLeadsCemContent />
     </ParksPageShell>
   );
 };

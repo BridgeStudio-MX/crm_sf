@@ -6,13 +6,16 @@ import { useParksObjectMetadataItem } from '@/parks-industrial/hooks/useParksObj
 type ParksMetadataGateProps = {
   children: ReactNode;
   loadingVariant?: 'dashboard' | 'list' | 'table';
+  objectNameSingular?: string;
 };
 
 export const ParksMetadataGate = ({
   children,
   loadingVariant = 'dashboard',
+  objectNameSingular = 'parque',
 }: ParksMetadataGateProps) => {
-  const { isParksMetadataReady } = useParksObjectMetadataItem('parque');
+  const { isParksMetadataReady } =
+    useParksObjectMetadataItem(objectNameSingular);
 
   if (!isParksMetadataReady) {
     return <ParksLoadingSkeleton variant={loadingVariant} />;

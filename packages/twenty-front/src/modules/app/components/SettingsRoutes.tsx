@@ -597,11 +597,18 @@ type SettingsRoutesProps = {
 export const SettingsRoutes = ({ isAdminPageEnabled }: SettingsRoutesProps) => (
   <Suspense fallback={<SettingsSkeletonLoader />}>
     <Routes>
+      <Route
+        index
+        element={<Navigate to={SettingsPath.ProfilePage} replace />}
+      />
+      {/* Absolute + relative paths: descendant splat matching can use either */}
+      <Route path="/settings/profile" element={<SettingsProfile />} />
       <Route path={SettingsPath.ProfilePage} element={<SettingsProfile />} />
       <Route
         path={SettingsPath.TwoFactorAuthenticationStrategyConfig}
         element={<SettingsTwoFactorAuthenticationMethod />}
       />
+      <Route path="/settings/experience" element={<SettingsExperience />} />
       <Route path={SettingsPath.Experience} element={<SettingsExperience />} />
       <Route
         element={

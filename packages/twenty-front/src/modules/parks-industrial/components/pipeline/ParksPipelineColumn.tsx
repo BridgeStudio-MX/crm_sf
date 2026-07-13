@@ -108,6 +108,7 @@ type ParksPipelineColumnProps = {
   selectedDealId: string | null;
   draggingDealId: string | null;
   prospectScoresById: Record<string, ProspectScoreResult>;
+  viewerName?: string | null;
   onSelectDeal: (dealId: string) => void;
   onOpenRecord: (dealId: string) => void;
 };
@@ -118,6 +119,7 @@ export const ParksPipelineColumn = ({
   selectedDealId,
   draggingDealId,
   prospectScoresById,
+  viewerName,
   onSelectDeal,
   onOpenRecord,
 }: ParksPipelineColumnProps) => {
@@ -171,6 +173,7 @@ export const ParksPipelineColumn = ({
               stageTheme={stageTheme}
               isSelected={selectedDealId === deal.id}
               isOverlayPreview={false}
+              viewerName={viewerName}
               prospectScore={prospectScoresById[deal.id]}
               onSelect={onSelectDeal}
               onOpenRecord={onOpenRecord}

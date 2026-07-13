@@ -8,6 +8,7 @@ type ParksDashboardDonutChartProps = {
   slices: ParksDashboardChartSlice[];
   centerLabel: string;
   centerValue: string;
+  variant?: 'default' | 'inverted';
 };
 
 const StyledChartLayout = styled.div`
@@ -18,7 +19,7 @@ const StyledChartLayout = styled.div`
   min-height: 220px;
 `;
 
-const StyledDonut = styled.div<{ gradient: string }>`
+const StyledDonut = styled.div<{ gradient: string; variant: 'default' | 'inverted' }>`
   background: ${({ gradient }) => gradient};
   border-radius: 50%;
   flex-shrink: 0;
@@ -27,7 +28,12 @@ const StyledDonut = styled.div<{ gradient: string }>`
   width: 168px;
 
   &::after {
-    background: ${themeCssVariables.background.primary};
+    background: ${({ variant }) =>
+      variant === 'inverted'
+        ? 'rgba(255, 255, 255, 0.12)'
+        : themeCssVariables.background.primary};
+    border: ${({ variant }) =>
+      variant === 'inverted' ? '1px solid rgba(255, 255, 255, 0.18)' : 'none'};
     border-radius: 50%;
     content: '';
     inset: 28%;
@@ -46,13 +52,20 @@ const StyledDonutCenter = styled.div`
   z-index: 1;
 `;
 
-const StyledCenterValue = styled.div`
+const StyledCenterValue = styled.div<{ variant: 'default' | 'inverted' }>`
+  color: ${({ variant }) =>
+    variant === 'inverted'
+      ? themeCssVariables.font.color.inverted
+      : themeCssVariables.font.color.primary};
   font-size: ${themeCssVariables.font.size.lg};
   font-weight: ${themeCssVariables.font.weight.semiBold};
 `;
 
-const StyledCenterLabel = styled.div`
-  color: ${themeCssVariables.font.color.tertiary};
+const StyledCenterLabel = styled.div<{ variant: 'default' | 'inverted' }>`
+  color: ${({ variant }) =>
+    variant === 'inverted'
+      ? 'rgba(255, 255, 255, 0.72)'
+      : themeCssVariables.font.color.tertiary};
   font-size: ${themeCssVariables.font.size.xs};
   margin-top: 2px;
   max-width: 88px;
@@ -83,12 +96,19 @@ const StyledLegendText = styled.div`
   min-width: 0;
 `;
 
-const StyledLegendLabel = styled.div`
-  color: ${themeCssVariables.font.color.secondary};
+const StyledLegendLabel = styled.div<{ variant: 'default' | 'inverted' }>`
+  color: ${({ variant }) =>
+    variant === 'inverted'
+      ? 'rgba(255, 255, 255, 0.72)'
+      : themeCssVariables.font.color.secondary};
   font-size: ${themeCssVariables.font.size.xs};
 `;
 
-const StyledLegendValue = styled.div`
+const StyledLegendValue = styled.div<{ variant: 'default' | 'inverted' }>`
+  color: ${({ variant }) =>
+    variant === 'inverted'
+      ? themeCssVariables.font.color.inverted
+      : themeCssVariables.font.color.primary};
   font-size: ${themeCssVariables.font.size.sm};
   font-weight: ${themeCssVariables.font.weight.medium};
 `;
@@ -117,16 +137,17 @@ export const ParksDashboardDonutChart = ({
   slices,
   centerLabel,
   centerValue,
+  variant = 'default',
 }: ParksDashboardDonutChartProps) => {
   const visibleSlices = slices.filter((slice) => slice.value > 0);
   const total = visibleSlices.reduce((sum, slice) => sum + slice.value, 0);
 
   return (
     <StyledChartLayout>
-      <StyledDonut gradient={buildConicGradient(visibleSlices)}>
+      <StyledDonut gradient={buildConicGradient(visibleSlices)} variant={variant}>
         <StyledDonutCenter>
-          <StyledCenterValue>{centerValue}</StyledCenterValue>
-          <StyledCenterLabel>{centerLabel}</StyledCenterLabel>
+          <StyledCenterValue variant={variant}>{centerValue}</StyledCenterValue>
+          <StyledCenterLabel variant={variant}>{centerLabel}</StyledCenterLabel>
         </StyledDonutCenter>
       </StyledDonut>
       <StyledLegend>
@@ -134,8 +155,8 @@ export const ParksDashboardDonutChart = ({
           <StyledLegendItem key={slice.id}>
             <StyledLegendSwatch color={slice.color} />
             <StyledLegendText>
-              <StyledLegendLabel>{slice.label}</StyledLegendLabel>
-              <StyledLegendValue>
+              <StyledLegendLabel variant={variant}>{slice.label}</StyledLegendLabel>
+              <StyledLegendValue variant={variant}>
                 {formatParksNumber(slice.value)}
                 {total > 0
                   ? ` · ${Math.round((slice.value / total) * 100)}%`

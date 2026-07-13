@@ -405,7 +405,12 @@ const seedCasosLegales = async (ids: DemoIdMap): Promise<void> => {
         tipoDocumento: toSelectValue(caso.tipoDocumento),
         estatus: toSelectValue(caso.estatus),
         semaforo: caso.semaforo,
-        abogadoAsignado: 'Catalina Moreno',
+        abogadoAsignado:
+          caso.key === 'casoLogiMex'
+            ? 'Miguel Soto'
+            : caso.key === 'casoManufactura'
+              ? 'Miguel Soto'
+              : 'Catalina Moreno',
         fechaHojaAcuerdos: isoDaysFromToday(-caso.diasTranscurridos),
         slaDiasHabiles: caso.slaDias,
         diasTranscurridos: caso.diasTranscurridos,

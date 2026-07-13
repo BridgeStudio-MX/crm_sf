@@ -7,6 +7,8 @@ import { themeCssVariables } from 'twenty-ui/theme-constants';
 import {
   StyledParksSelect,
 } from '@/parks-industrial/components/ui/parks-form-control.styles';
+import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
+import { useParksLeasingOfficerOptions } from '@/parks-industrial/hooks/useParksLeasingOfficerOptions';
 import { useParksUnassignedLeads } from '@/parks-industrial/hooks/useParksUnassignedLeads';
 import {
   assignParksLead,
@@ -15,7 +17,6 @@ import {
   formatParksCanalOrigenLabel,
   formatParksLeadAgeLabel,
   formatParksUbicacionDeseadaLabel,
-  PARKS_LEASING_OFFICER_OPTIONS,
   PARKS_UNASSIGNED_LEADS_PREVIEW_COUNT,
 } from '@/parks-industrial/utils/parks-unassigned-leads.util';
 import { PARKS_LEADS_CEM_PATH } from '@/parks-industrial/constants/parks-routes.constants';
@@ -156,10 +157,17 @@ export const ParksUnassignedLeadsPanel = ({
     errorMessage,
     setErrorMessage,
   } = useParksUnassignedLeads(refreshKey);
+  const leasingOfficerOptions = useParksLeasingOfficerOptions();
+  const { displayName, primaryParksRoleLabel } = useParksAccess();
   const [selectedLoByLeadId, setSelectedLoByLeadId] = useState<
     Record<string, string>
   >({});
   const [assigningLeadId, setAssigningLeadId] = useState<string | null>(null);
+
+  const defaultLeasingOfficer = leasingOfficerOptions[0] ?? 'Edgard Vargas';
+  const assignedByLabel = displayName
+    ? `${displayName}${primaryParksRoleLabel ? ' (CEM)' : ''}`
+    : 'Héctor Montelongo (CEM)';
 
   const isCompact = variant === 'compact';
 
@@ -172,7 +180,7 @@ export const ParksUnassignedLeadsPanel = ({
 
   const handleAssign = async (opportunityId: string) => {
     const leasingOfficerName =
-      selectedLoByLeadId[opportunityId] ?? PARKS_LEASING_OFFICER_OPTIONS[0];
+      selectedLoByLeadId[opportunityId] ?? defaultLeasingOfficer;
 
     setAssigningLeadId(opportunityId);
     setErrorMessage(null);
@@ -181,7 +189,7 @@ export const ParksUnassignedLeadsPanel = ({
       await assignParksLead({
         opportunityId,
         leasingOfficerName,
-        assignedBy: 'Héctor Montelongo (CEM)',
+        assignedBy: assignedByLabel,
       });
 
       setLeads((previous) =>
@@ -276,8 +284,7 @@ export const ParksUnassignedLeadsPanel = ({
               <StyledActions>
                 <StyledParksSelect
                   value={
-                    selectedLoByLeadId[lead.id] ??
-                    PARKS_LEASING_OFFICER_OPTIONS[0]
+                    selectedLoByLeadId[lead.id] ?? defaultLeasingOfficer
                   }
                   disabled={isAssigning || assigningLeadId !== null}
                   onChange={(event) =>
@@ -287,7 +294,7 @@ export const ParksUnassignedLeadsPanel = ({
                     }))
                   }
                 >
-                  {PARKS_LEASING_OFFICER_OPTIONS.map((option) => (
+                  {leasingOfficerOptions.map((option) => (
                     <option key={option} value={option}>
                       {option}
                     </option>

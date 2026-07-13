@@ -28,6 +28,8 @@ export const NavigationDrawerOtherSection = () => {
     'Other',
   );
 
+  // onClick-only: useMouseDownNavigation ignores `to` when onClick is set.
+  // navigateSettings memorizes the current Parks URL then goes to /settings/profile.
   const handleSettingsClick = () => {
     navigateSettings(SettingsPath.ProfilePage);
   };

@@ -15,7 +15,6 @@ import { DropdownMenuHeaderLeftComponent } from '@/ui/layout/dropdown/components
 import { DropdownMenuItemsContainer } from '@/ui/layout/dropdown/components/DropdownMenuItemsContainer';
 import { DropdownMenuSeparator } from '@/ui/layout/dropdown/components/DropdownMenuSeparator';
 import { useCloseDropdown } from '@/ui/layout/dropdown/hooks/useCloseDropdown';
-import { useOpenSettingsMenu } from '@/navigation/hooks/useOpenSettings';
 import { MULTI_WORKSPACE_DROPDOWN_ID } from '@/ui/navigation/navigation-drawer/constants/MultiWorkspaceDropdownId';
 import { multiWorkspaceDropdownState } from '@/ui/navigation/navigation-drawer/states/multiWorkspaceDropdownState';
 import { useColorScheme } from '@/ui/theme/hooks/useColorScheme';
@@ -44,6 +43,7 @@ import {
   UndecoratedLink,
 } from 'twenty-ui/navigation';
 import { type AvailableWorkspace } from '~/generated-metadata/graphql';
+import { useNavigateSettings } from '~/hooks/useNavigateSettings';
 import { getWorkspaceUrl } from '~/utils/getWorkspaceUrl';
 
 const StyledDescription = styled.div`
@@ -72,11 +72,16 @@ export const MultiWorkspaceDropdownDefaultComponents = () => {
     multiWorkspaceDropdownState,
   );
 
-  const { openSettingsMenu } = useOpenSettingsMenu();
+  const navigateSettings = useNavigateSettings();
 
   const handleSupport = () => {
     window.FrontChat?.('show');
     closeDropdown(MULTI_WORKSPACE_DROPDOWN_ID);
+  };
+
+  const handleOpenSettings = () => {
+    closeDropdown(MULTI_WORKSPACE_DROPDOWN_ID);
+    navigateSettings(SettingsPath.ProfilePage);
   };
 
   const handleChange = async (availableWorkspace: AvailableWorkspace) => {
@@ -209,15 +214,11 @@ export const MultiWorkspaceDropdownDefaultComponents = () => {
             onClick={handleSupport}
           />
         )}
-        <UndecoratedLink
-          to={getSettingsPath(SettingsPath.ProfilePage)}
-          onClick={() => {
-            openSettingsMenu();
-            closeDropdown(MULTI_WORKSPACE_DROPDOWN_ID);
-          }}
-        >
-          <MenuItem LeftIcon={IconSettings} text={t`Settings`} />
-        </UndecoratedLink>
+        <MenuItem
+          LeftIcon={IconSettings}
+          text={t`Settings`}
+          onClick={handleOpenSettings}
+        />
       </DropdownMenuItemsContainer>
     </DropdownContent>
   );

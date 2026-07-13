@@ -26,5 +26,15 @@ export const PARKS_RESERVAS_PATH = resolveParksPath(
   '/parks/reservas',
 );
 
+export const PARKS_LEGAL_PIPELINE_PATH = resolveParksPath(
+  AppPath.ParksLegalPipeline,
+  '/parks/legal-pipeline',
+);
+
+export const PARKS_LEGAL_DASHBOARD_PATH = resolveParksPath(
+  AppPath.ParksLegalDashboard,
+  '/parks/legal-dashboard',
+);
+
 export const getParksInquilino360Path = (inquilinoId: string): string =>
   generatePath(PARKS_INQUILINO_360_PATH, { inquilinoId });

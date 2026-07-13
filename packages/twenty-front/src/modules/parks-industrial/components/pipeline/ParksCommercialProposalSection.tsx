@@ -1,133 +1,95 @@
 import { styled } from '@linaria/react';
 import { t } from '@lingui/core/macro';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  IconChevronDown,
+  IconChevronUp,
   IconCopy,
-  IconEye,
   IconFileText,
-  IconMail,
-  IconMap,
-  IconMessage,
-  IconRefresh,
+  IconShare,
 } from 'twenty-ui/icon';
 import { Button } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
+import { ParksComposerPanel } from '@/parks-industrial/components/pipeline/ParksComposerPanel';
+import { ParksNaveMatchPanel } from '@/parks-industrial/components/pipeline/ParksNaveMatchPanel';
+import { ParksTourSchedulePanel } from '@/parks-industrial/components/pipeline/ParksTourSchedulePanel';
 import { ParksFormField } from '@/parks-industrial/components/ui/ParksFormField';
-import {
-  StyledParksLinkValue,
-  StyledParksReadOnlyValue,
-} from '@/parks-industrial/components/ui/parks-form-control.styles';
-import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
-import { ParksProgressBar } from '@/parks-industrial/components/ui/ParksProgressBar';
+import { StyledParksLinkValue } from '@/parks-industrial/components/ui/parks-form-control.styles';
 import { ParksStatusBadge } from '@/parks-industrial/components/ui/ParksStatusBadge';
 import { ParksToolSection } from '@/parks-industrial/components/ui/ParksToolSection';
+import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRecords';
 import {
   createParksFichaTecnica,
   fetchCachedProspectEnrichment,
-  generateParksSalesScript,
   markParksFichaSent,
-  matchParksNaves,
-  simulateParksFichaView,
 } from '@/parks-industrial/services/parks-commercial.client';
+import { type FichaTecnicaLink } from '@/parks-industrial/types/parks-commercial.types';
 import {
-  type FichaTecnicaLink,
-  type NaveMatchCandidate,
-  type SalesScriptResult,
-} from '@/parks-industrial/types/parks-commercial.types';
-import { formatParksNumber } from '@/parks-industrial/utils/parks-format.util';
+  formatParksTourNavesLabel,
+  parseParksTourNavesMostradas,
+} from '@/parks-industrial/utils/parks-tour-naves.util';
 
-const StyledMatchList = styled.div`
+const StyledStepRail = styled.div`
   display: flex;
-  flex-direction: column;
   gap: ${themeCssVariables.spacing[2]};
+  margin-bottom: ${themeCssVariables.spacing[1]};
 `;
 
-const StyledMatchCard = styled.button<{ isSelected: boolean }>`
-  background: ${({ isSelected }) =>
-    isSelected
-      ? themeCssVariables.color.blue1
-      : themeCssVariables.background.secondary};
+const StyledStepPill = styled.button<{ isActive: boolean; isDone: boolean }>`
+  background: ${({ isActive, isDone }) => {
+    if (isActive) {
+      return themeCssVariables.color.blue1;
+    }
+
+    if (isDone) {
+      return themeCssVariables.color.green1;
+    }
+
+    return themeCssVariables.background.secondary;
+  }};
   border: 1px solid
-    ${({ isSelected }) =>
-      isSelected
-        ? themeCssVariables.color.blue3
-        : themeCssVariables.border.color.light};
+    ${({ isActive, isDone }) => {
+      if (isActive) {
+        return themeCssVariables.color.blue;
+      }
+
+      if (isDone) {
+        return themeCssVariables.color.green;
+      }
+
+      return themeCssVariables.border.color.light;
+    }};
   border-radius: ${themeCssVariables.border.radius.md};
+  color: ${themeCssVariables.font.color.primary};
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: ${themeCssVariables.spacing[2]};
-  padding: ${themeCssVariables.spacing[3]};
+  flex: 1;
+  font-family: inherit;
+  font-size: ${themeCssVariables.font.size.xs};
+  font-weight: ${themeCssVariables.font.weight.medium};
+  padding: ${themeCssVariables.spacing[2]};
   text-align: left;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
-  width: 100%;
-
-  &:hover {
-    border-color: ${themeCssVariables.color.blue3};
-  }
 `;
 
-const StyledMatchHeader = styled.div`
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-`;
-
-const StyledMatchTitle = styled.span`
-  font-size: ${themeCssVariables.font.size.sm};
-  font-weight: ${themeCssVariables.font.weight.semiBold};
-`;
-
-const StyledMatchMeta = styled.div`
-  color: ${themeCssVariables.font.color.secondary};
-  font-size: ${themeCssVariables.font.size.xs};
-  line-height: 1.4;
-`;
-
-const StyledMatchReason = styled.div`
-  color: ${themeCssVariables.font.color.tertiary};
-  font-size: ${themeCssVariables.font.size.xs};
-  line-height: 1.35;
-`;
-
-const StyledActionGrid = styled.div`
-  display: grid;
-  gap: ${themeCssVariables.spacing[2]};
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-`;
-
-const StyledScriptBlock = styled.div`
+const StyledSummary = styled.div`
   background: ${themeCssVariables.background.secondary};
   border: 1px solid ${themeCssVariables.border.color.light};
-  border-radius: ${themeCssVariables.border.radius.sm};
-  color: ${themeCssVariables.font.color.secondary};
-  font-size: ${themeCssVariables.font.size.sm};
-  line-height: 1.45;
+  border-radius: ${themeCssVariables.border.radius.md};
+  display: flex;
+  flex-direction: column;
+  gap: ${themeCssVariables.spacing[2]};
   padding: ${themeCssVariables.spacing[3]};
 `;
 
-const StyledScriptTitle = styled.div`
-  color: ${themeCssVariables.font.color.primary};
+const StyledSummaryTitle = styled.div`
   font-size: ${themeCssVariables.font.size.sm};
   font-weight: ${themeCssVariables.font.weight.semiBold};
-  margin-bottom: ${themeCssVariables.spacing[2]};
 `;
 
-const StyledList = styled.ul`
+const StyledSummaryMeta = styled.div`
   color: ${themeCssVariables.font.color.secondary};
   font-size: ${themeCssVariables.font.size.sm};
-  margin: ${themeCssVariables.spacing[1]} 0 0;
-  padding-left: ${themeCssVariables.spacing[4]};
-`;
-
-const StyledEmptyHint = styled.p`
-  color: ${themeCssVariables.font.color.tertiary};
-  font-size: ${themeCssVariables.font.size.sm};
-  line-height: 1.45;
-  margin: 0;
+  line-height: 1.4;
 `;
 
 const StyledError = styled.div`
@@ -135,11 +97,26 @@ const StyledError = styled.div`
   font-size: ${themeCssVariables.font.size.sm};
 `;
 
+const StyledMaterialsActions = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${themeCssVariables.spacing[2]};
+`;
+
+type ProposalStep = 'naves' | 'agendar' | 'listo';
+
 type ParksCommercialProposalSectionProps = {
   opportunityId: string;
   companyName: string;
   m2Requeridos?: number;
   industry?: string;
+  inquilinoId?: string;
+  linkedNaveId?: string | null;
+  linkedNaveIdentificador?: string | null;
+  tourNavesMostradas?: string | null;
+  tourFecha?: string | null;
+  onNaveLinked?: (update: Partial<ParksOpportunityRecord>) => void;
+  onTourScheduled?: (update: Partial<ParksOpportunityRecord>) => void;
 };
 
 export const ParksCommercialProposalSection = ({
@@ -147,20 +124,52 @@ export const ParksCommercialProposalSection = ({
   companyName,
   m2Requeridos,
   industry,
+  inquilinoId,
+  linkedNaveId,
+  linkedNaveIdentificador,
+  tourNavesMostradas,
+  tourFecha,
+  onNaveLinked,
+  onTourScheduled,
 }: ParksCommercialProposalSectionProps) => {
-  const [matches, setMatches] = useState<NaveMatchCandidate[]>([]);
-  const [selectedMatch, setSelectedMatch] =
-    useState<NaveMatchCandidate | null>(null);
+  const hasSavedNaves = Boolean(tourNavesMostradas || linkedNaveId);
+  const hasScheduledTour = Boolean(tourFecha);
+
+  const [step, setStep] = useState<ProposalStep>(() => {
+    if (hasScheduledTour) {
+      return 'listo';
+    }
+
+    if (hasSavedNaves) {
+      return 'agendar';
+    }
+
+    return 'naves';
+  });
+  const [showMaterials, setShowMaterials] = useState(false);
   const [fichaLink, setFichaLink] = useState<FichaTecnicaLink | null>(null);
-  const [salesScript, setSalesScript] = useState<SalesScriptResult | null>(
-    null,
-  );
-  const [loadingMatches, setLoadingMatches] = useState(false);
   const [loadingFicha, setLoadingFicha] = useState(false);
-  const [loadingScript, setLoadingScript] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copyMessage, setCopyMessage] = useState<string | null>(null);
   const [resolvedIndustry, setResolvedIndustry] = useState(industry);
+  const [tourNavesDraft, setTourNavesDraft] = useState(tourNavesMostradas);
+  const [primaryNaveId, setPrimaryNaveId] = useState(linkedNaveId);
+  const [primaryNaveIdentificador, setPrimaryNaveIdentificador] = useState(
+    linkedNaveIdentificador,
+  );
+  const [tourFechaDraft, setTourFechaDraft] = useState(tourFecha);
+
+  useEffect(() => {
+    setPrimaryNaveId(linkedNaveId);
+    setPrimaryNaveIdentificador(linkedNaveIdentificador);
+    setTourNavesDraft(tourNavesMostradas);
+    setTourFechaDraft(tourFecha);
+  }, [
+    linkedNaveId,
+    linkedNaveIdentificador,
+    tourNavesMostradas,
+    tourFecha,
+  ]);
 
   useEffect(() => {
     if (industry) {
@@ -175,74 +184,16 @@ export const ParksCommercialProposalSection = ({
     });
   }, [industry, opportunityId]);
 
-  const loadMatches = useCallback(async () => {
-    if (!m2Requeridos || m2Requeridos <= 0) {
-      return;
-    }
-
-    setLoadingMatches(true);
-    setError(null);
-
-    try {
-      const result = await matchParksNaves({
-        opportunityId,
-        m2Requeridos,
-        industry: resolvedIndustry,
-      });
-      setMatches(result.matches);
-      setSelectedMatch(result.matches[0] ?? null);
-    } catch (matchError) {
-      const message =
-        matchError instanceof Error
-          ? matchError.message
-          : 'No se pudo cargar matching';
-      setError(message);
-    } finally {
-      setLoadingMatches(false);
-    }
-  }, [m2Requeridos, opportunityId, resolvedIndustry]);
-
-  const loadSalesScript = useCallback(async () => {
-    setLoadingScript(true);
-
-    try {
-      const script = await generateParksSalesScript({
-        opportunityId,
-        companyName,
-        industry: resolvedIndustry,
-        m2Requeridos,
-        naveDestacada: selectedMatch?.identificador,
-      });
-      setSalesScript(script);
-    } catch (scriptError) {
-      const message =
-        scriptError instanceof Error
-          ? scriptError.message
-          : 'No se pudo generar el guion';
-      setError(message);
-    } finally {
-      setLoadingScript(false);
-    }
-  }, [
-    companyName,
-    resolvedIndustry,
-    m2Requeridos,
-    opportunityId,
-    selectedMatch?.identificador,
-  ]);
-
-  useEffect(() => {
-    void loadMatches();
-  }, [loadMatches]);
-
-  useEffect(() => {
-    if (selectedMatch) {
-      void loadSalesScript();
-    }
-  }, [loadSalesScript, selectedMatch]);
+  const navesLabel =
+    formatParksTourNavesLabel(
+      parseParksTourNavesMostradas(tourNavesDraft),
+    ) ||
+    primaryNaveIdentificador ||
+    t`Sin naves`;
 
   const handleCreateFicha = async () => {
-    if (!selectedMatch) {
+    if (!primaryNaveId || !primaryNaveIdentificador) {
+      setError(t`Guarda primero una nave`);
       return;
     }
 
@@ -250,22 +201,24 @@ export const ParksCommercialProposalSection = ({
     setError(null);
 
     try {
+      const tourNaves = parseParksTourNavesMostradas(tourNavesDraft);
+      const primaryTourNave =
+        tourNaves.find((nave) => nave.id === primaryNaveId) ?? tourNaves[0];
+
       const link = await createParksFichaTecnica({
         opportunityId,
         opportunityName: companyName,
-        naveId: selectedMatch.naveId,
-        naveIdentificador: selectedMatch.identificador,
-        parqueNombre: selectedMatch.parqueNombre,
-        ubicacion: selectedMatch.ubicacion,
-        m2: selectedMatch.m2,
-        precioUsdM2: selectedMatch.precioUsdM2,
+        naveId: primaryNaveId,
+        naveIdentificador: primaryNaveIdentificador,
+        parqueNombre: primaryTourNave?.parqueNombre,
+        m2: primaryTourNave?.m2 ?? m2Requeridos ?? 0,
       });
       setFichaLink(link);
     } catch (fichaError) {
       const message =
         fichaError instanceof Error
           ? fichaError.message
-          : 'No se pudo generar la ficha';
+          : t`No se pudo generar la ficha`;
       setError(message);
     } finally {
       setLoadingFicha(false);
@@ -282,205 +235,177 @@ export const ParksCommercialProposalSection = ({
     setCopyMessage(t`Link copiado`);
   };
 
-  const handleSimulateView = async () => {
-    if (!fichaLink) {
-      return;
-    }
-
-    const updatedLink = await simulateParksFichaView(fichaLink.token);
-    setFichaLink(updatedLink);
-    setCopyMessage(t`Vista simulada — revisa Notificaciones`);
-  };
-
-  if (!m2Requeridos || m2Requeridos <= 0) {
-    return (
-      <ParksToolSection title={t`Matching IA de naves`} icon={IconMap}>
-        <StyledEmptyHint>
-          {t`Registra m² requeridos en el deal para activar matching de naves.`}
-        </StyledEmptyHint>
-      </ParksToolSection>
-    );
-  }
-
   return (
     <>
-      <ParksToolSection
-        title={t`Matching IA de naves`}
-        icon={IconMap}
-        hint={t`Selecciona la nave con mejor fit para generar ficha y guion`}
-        action={
-          <Button
-            variant="secondary"
-            Icon={IconRefresh}
-            title={t`Actualizar`}
-            onClick={() => void loadMatches()}
-            disabled={loadingMatches}
-          />
-        }
-      >
-        {loadingMatches ? <ParksLoadingSkeleton variant="list" /> : null}
-
-        {!loadingMatches && matches.length === 0 ? (
-          <StyledEmptyHint>
-            {t`Sin naves disponibles para este criterio.`}
-          </StyledEmptyHint>
-        ) : null}
-
-        <StyledMatchList>
-          {matches.map((match) => (
-            <StyledMatchCard
-              key={match.naveId}
-              type="button"
-              isSelected={selectedMatch?.naveId === match.naveId}
-              onClick={() => setSelectedMatch(match)}
-            >
-              <StyledMatchHeader>
-                <StyledMatchTitle>{match.identificador}</StyledMatchTitle>
-                <ParksStatusBadge
-                  color="blue"
-                  label={`${match.matchScore}%`}
-                />
-              </StyledMatchHeader>
-              <StyledMatchMeta>
-                {formatParksNumber(match.m2)} m² ·{' '}
-                {match.parqueNombre ?? t`Parque`} · {match.ubicacion ?? '—'}
-              </StyledMatchMeta>
-              <ParksProgressBar
-                label={t`Match`}
-                valueLabel={`${match.matchScore}%`}
-                percentage={match.matchScore}
-              />
-              <StyledMatchReason>
-                {match.matchReasons.join(' · ')}
-              </StyledMatchReason>
-            </StyledMatchCard>
-          ))}
-        </StyledMatchList>
-      </ParksToolSection>
-
-      {selectedMatch ? (
-        <ParksToolSection
-          title={t`Ficha técnica + link tracker`}
-          icon={IconFileText}
-          hint={t`Genera el link público y registra envíos por email o WhatsApp`}
+      <StyledStepRail>
+        <StyledStepPill
+          type="button"
+          isActive={step === 'naves'}
+          isDone={step !== 'naves' && Boolean(primaryNaveId || tourNavesDraft)}
+          onClick={() => setStep('naves')}
         >
-          <StyledActionGrid>
-            <Button
-              variant="primary"
-              title={t`Generar ficha y link`}
-              onClick={() => void handleCreateFicha()}
-              disabled={loadingFicha}
-            />
-            {fichaLink ? (
-              <>
-                <Button
-                  variant="secondary"
-                  Icon={IconCopy}
-                  title={t`Copiar link`}
-                  onClick={() => void handleCopyLink()}
-                />
-                <Button
-                  variant="secondary"
-                  Icon={IconMail}
-                  title={t`Marcar enviado email`}
-                  onClick={() =>
-                    void markParksFichaSent({
-                      token: fichaLink.token,
-                      sentVia: 'email',
-                    }).then(setFichaLink)
-                  }
-                />
-                <Button
-                  variant="secondary"
-                  Icon={IconMessage}
-                  title={t`Marcar enviado WhatsApp`}
-                  onClick={() =>
-                    void markParksFichaSent({
-                      token: fichaLink.token,
-                      sentVia: 'whatsapp',
-                    }).then(setFichaLink)
-                  }
-                />
-                <Button
-                  variant="secondary"
-                  accent="blue"
-                  Icon={IconEye}
-                  title={t`Simular apertura prospecto`}
-                  onClick={() => void handleSimulateView()}
-                />
-              </>
-            ) : null}
-          </StyledActionGrid>
+          {t`1 · Naves`}
+        </StyledStepPill>
+        <StyledStepPill
+          type="button"
+          isActive={step === 'agendar'}
+          isDone={step === 'listo'}
+          onClick={() => {
+            if (primaryNaveId || tourNavesDraft) {
+              setStep('agendar');
+            }
+          }}
+        >
+          {t`2 · Agendar`}
+        </StyledStepPill>
+        <StyledStepPill
+          type="button"
+          isActive={step === 'listo'}
+          isDone={step === 'listo'}
+          onClick={() => {
+            if (tourFechaDraft) {
+              setStep('listo');
+            }
+          }}
+        >
+          {t`3 · Listo`}
+        </StyledStepPill>
+      </StyledStepRail>
 
-          {fichaLink ? (
-            <>
-              <ParksFormField label={t`Link público`} hint={t`Comparte con el prospecto`}>
-                <StyledParksLinkValue title={fichaLink.publicUrl}>
-                  {fichaLink.publicUrl}
-                </StyledParksLinkValue>
-              </ParksFormField>
-              <ParksFormField label={t`Estado del tracker`}>
-                <StyledParksReadOnlyValue>
-                  {t`Vistas:`} {fichaLink.viewCount}
-                  {fichaLink.sentVia
-                    ? ` · ${t`Enviado por`} ${fichaLink.sentVia}`
-                    : ''}
-                </StyledParksReadOnlyValue>
-              </ParksFormField>
-            </>
-          ) : null}
-
-          {copyMessage ? (
-            <ParksStatusBadge color="green" label={copyMessage} />
-          ) : null}
-        </ParksToolSection>
+      {step === 'naves' ? (
+        <ParksNaveMatchPanel
+          opportunityId={opportunityId}
+          m2Requeridos={m2Requeridos}
+          industry={resolvedIndustry}
+          linkedNaveId={primaryNaveId}
+          tourNavesMostradas={tourNavesDraft}
+          continueLabel={t`Continuar a agendar`}
+          onNavesSaved={(update) => {
+            setPrimaryNaveId(
+              update.naveVinculadaId ?? update.naveVinculada?.id ?? null,
+            );
+            setPrimaryNaveIdentificador(
+              update.naveVinculada?.identificador ?? null,
+            );
+            setTourNavesDraft(update.tourNavesMostradas ?? null);
+            onNaveLinked?.(update);
+            setStep('agendar');
+          }}
+        />
       ) : null}
 
-      <ParksToolSection
-        title={t`Guion comercial`}
-        icon={IconFileText}
-        hint={t`Generado con contexto del prospecto y nave seleccionada`}
-        action={
-          <Button
-            variant="secondary"
-            Icon={IconRefresh}
-            title={t`Regenerar`}
-            onClick={() => void loadSalesScript()}
-            disabled={loadingScript}
-          />
-        }
-      >
-        {loadingScript ? <ParksLoadingSkeleton variant="list" /> : null}
+      {step === 'agendar' ? (
+        <ParksTourSchedulePanel
+          opportunityId={opportunityId}
+          companyName={companyName}
+          inquilinoId={inquilinoId}
+          linkedNaveIdentificador={primaryNaveIdentificador}
+          tourNavesMostradas={tourNavesDraft}
+          onBack={() => setStep('naves')}
+          onTourScheduled={(update) => {
+            setTourFechaDraft(update.tourFecha ?? null);
+            onTourScheduled?.(update);
+            setStep('listo');
+          }}
+        />
+      ) : null}
 
-        {salesScript ? (
-          <>
-            <StyledScriptTitle>{salesScript.scriptTitle}</StyledScriptTitle>
-            <StyledScriptBlock>{salesScript.openingLine}</StyledScriptBlock>
-            <StyledScriptBlock>
-              <strong>{t`Preguntas de descubrimiento`}</strong>
-              <StyledList>
-                {salesScript.discoveryQuestions.map((question) => (
-                  <li key={question}>{question}</li>
-                ))}
-              </StyledList>
-            </StyledScriptBlock>
-            <StyledScriptBlock>{salesScript.valueProposition}</StyledScriptBlock>
-            <StyledScriptBlock>
-              <strong>{t`Agenda de visita`}</strong>
-              <StyledList>
-                {salesScript.visitAgenda.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </StyledList>
-            </StyledScriptBlock>
-            <StyledScriptBlock>{salesScript.closingLine}</StyledScriptBlock>
-            <ParksStatusBadge
-              color={salesScript.usedLlm ? 'green' : 'blue'}
-              label={salesScript.usedLlm ? t`OpenAI` : t`Demo mock`}
+      {step === 'listo' ? (
+        <StyledSummary>
+          <StyledSummaryTitle>{t`Visita lista`}</StyledSummaryTitle>
+          <StyledSummaryMeta>
+            {t`Naves:`} {navesLabel}
+          </StyledSummaryMeta>
+          {tourFechaDraft ? (
+            <StyledSummaryMeta>
+              {t`Fecha:`} {tourFechaDraft}
+            </StyledSummaryMeta>
+          ) : null}
+          <ParksStatusBadge color="green" label={t`Etapa: Visita agendada`} />
+          <StyledMaterialsActions>
+            <Button
+              variant="secondary"
+              title={t`Editar naves`}
+              onClick={() => setStep('naves')}
             />
-          </>
-        ) : null}
-      </ParksToolSection>
+            <Button
+              variant="secondary"
+              title={t`Reagendar`}
+              onClick={() => setStep('agendar')}
+            />
+          </StyledMaterialsActions>
+        </StyledSummary>
+      ) : null}
+
+      {(primaryNaveId || tourNavesDraft) && (
+        <ParksToolSection
+          title={t`Materiales (opcional)`}
+          icon={IconShare}
+          hint={t`Ficha y brochure para compartir con el prospecto`}
+          action={
+            <Button
+              variant="secondary"
+              Icon={showMaterials ? IconChevronUp : IconChevronDown}
+              title={showMaterials ? t`Ocultar` : t`Mostrar`}
+              onClick={() => setShowMaterials((previous) => !previous)}
+            />
+          }
+        >
+          {showMaterials ? (
+            <>
+              <StyledMaterialsActions>
+                <Button
+                  variant="primary"
+                  Icon={IconFileText}
+                  title={t`Generar ficha`}
+                  disabled={loadingFicha || !primaryNaveId}
+                  onClick={() => void handleCreateFicha()}
+                />
+                {fichaLink ? (
+                  <Button
+                    variant="secondary"
+                    Icon={IconCopy}
+                    title={t`Copiar link`}
+                    onClick={() => void handleCopyLink()}
+                  />
+                ) : null}
+              </StyledMaterialsActions>
+
+              {fichaLink ? (
+                <ParksFormField label={t`Link público`}>
+                  <StyledParksLinkValue title={fichaLink.publicUrl}>
+                    {fichaLink.publicUrl}
+                  </StyledParksLinkValue>
+                </ParksFormField>
+              ) : null}
+
+              {copyMessage ? (
+                <ParksStatusBadge color="green" label={copyMessage} />
+              ) : null}
+
+              <ParksComposerPanel
+                opportunityId={opportunityId}
+                companyName={companyName}
+                selectedNave={
+                  primaryNaveId && primaryNaveIdentificador
+                    ? {
+                        naveId: primaryNaveId,
+                        identificador: primaryNaveIdentificador,
+                        m2: m2Requeridos ?? 0,
+                        matchScore: 0,
+                        matchReasons: [],
+                      }
+                    : undefined
+                }
+              />
+            </>
+          ) : (
+            <StyledSummaryMeta>
+              {t`Ábrelo cuando quieras compartir ficha o brochure.`}
+            </StyledSummaryMeta>
+          )}
+        </ParksToolSection>
+      )}
 
       {error ? <StyledError>{error}</StyledError> : null}
     </>

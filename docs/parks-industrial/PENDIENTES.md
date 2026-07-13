@@ -1,6 +1,6 @@
 # Parks Industrial — Qué falta
 
-> **Última actualización:** 2026-06-25  
+> **Última actualización:** 2026-07-10  
 > **Referencia:** [PROGRESS.md](./PROGRESS.md) · [DASHBOARD_PROGRESS.md](./DASHBOARD_PROGRESS.md) · [FLUJO-COMERCIAL-DEMO.md](./FLUJO-COMERCIAL-DEMO.md) · [Blueprint UI](../../Parks_Industrial_Cursor_Blueprint.md)
 
 Documento de seguimiento de trabajo pendiente tras completar los módulos base de UI en Twenty (`/parks/*`), el microservicio `parks-twenty-service` y las vistas **Renovaciones** y **Reservas**.
@@ -12,8 +12,8 @@ Documento de seguimiento de trabajo pendiente tras completar los módulos base d
 | Área | Estado general |
 | --- | --- |
 | Backend (microservicio + metadata Twenty) | ✅ Base completa + flujo comercial US |
-| UI integrada en Twenty (`packages/twenty-front`) | ✅ Pipeline comercial hasta Hoja (Legal off) |
-| Demo lista para cliente | 🔄 Flujo comercial A–C+E–F listo; Legal handoff gated |
+| UI integrada en Twenty (`packages/twenty-front`) | ✅ Flujo comercial + legal completo US-LEG-001…012 |
+| Demo lista para cliente | ✅ Flujo comercial + legal end-to-end |
 | Producción / integraciones reales | ⬜ Pendiente |
 
 ---
@@ -37,8 +37,27 @@ Ver [FLUJO-COMERCIAL-DEMO.md](./FLUJO-COMERCIAL-DEMO.md).
 
 - [Parks_Industrial_Salesforce_ProyectoCompleto.md](./Parks_Industrial_Salesforce_ProyectoCompleto.md) — discovery maestro (incl. §4.8 decisores)
 - [Parks_Industrial_Comercial_UserStories_Cursor.md](./Parks_Industrial_Comercial_UserStories_Cursor.md) — US escenarios A–G
+- [Parks_Industrial_Legal_UserStories_Cursor.md](./Parks_Industrial_Legal_UserStories_Cursor.md) — US área legal US-LEG-001…012
 
 ---
+
+## Flujo legal US (Jul 2026) — Completo
+
+Acoplado a `Parks_Industrial_Legal_UserStories_Cursor.md` (US-LEG-001…012):
+
+- [x] Handoff comercial→legal (`PARKS_LEGAL_HANDOFF_ENABLED=true` por defecto)
+- [x] `legal-workflow.service` — checklist, abogado, versiones, cotejo, firmas, SLA pause/resume, NDA
+- [x] API `/legal/*` — dashboard, workload, metrics, reporte quincenal, acta restitución, condonación holdover
+- [x] UI `/parks/contratos/:id/aprobacion` — pipeline 12 etapas + todos los paneles
+- [x] `/parks/legal-pipeline` — Kanban legal
+- [x] `/parks/legal-dashboard` — director legal + métricas abogados + reporte quincenal
+- [x] Objeto `actaRestitucion` + flujo depósito/devolución
+- [x] Condonación CEO holdover (solicitud + aprobación)
+- [x] Crons: reporte quincenal, seguimiento versiones sin respuesta, acumulado holdover
+- [x] Holdover US-LEG-010: scanner + Facturación + montos acumulados vs cobrados
+
+**Nota:** Permisos por rol en UI Parks implementados (Jul 2026): menú filtrado, rutas protegidas, abogado ve solo casos asignados, contratos en solo lectura para Comercial/CxC/CEO. Requiere `npm run setup:demo-users` + logout/login por usuario.
+
 
 ## Lo que ya está hecho
 
@@ -64,8 +83,9 @@ Según [PROGRESS.md](./PROGRESS.md):
 | Stacking Plan | `/parks/stacking-plan` | Export CSV, leyenda de colores |
 | Pipeline comercial | `/parks/pipeline` | Kanban con drag-and-drop · banner CEM si hay pendientes |
 | Leads CEM | `/parks/leads-cem` | Cola completa de asignación (US-COM-002) |
+| Prospectos | `/parks/prospectos` | Búsqueda demanda + matching naves (Ascendix-style) |
 | Contratos | `/parks/contratos` | Lista de expedientes |
-| Aprobación legal | `/parks/contratos/:contratoId/aprobacion` | Timeline + acciones |
+| Aprobación legal | `/parks/contratos/:contratoId/aprobacion` | Pipeline legal 9 etapas + checklist/firmas/versiones |
 | Comisiones | `/parks/comisiones` | Tabla y resumen |
 | Mapa | `/parks/mapa` | Google Maps + panel lateral |
 | Renovaciones | `/parks/renovaciones` | Cola de vencimientos + holdovers |
@@ -206,6 +226,17 @@ En el front, `VITE_PARKS_SERVICE_URL=http://localhost:3002` (ver `.env.example`)
 | Tracker vistas | `POST /commercial/ficha/:token/view` |
 | Guion comercial | `POST /commercial/sales-script` |
 
+### Sprint E — Inspirado en Ascendix (completado 2026-07-10)
+
+| Entregable | Ubicación |
+| --- | --- |
+| OCR legal → aplicar al expediente | `POST /legal/extract-document` + `apply-extraction` · panel en aprobación |
+| Búsqueda de demanda + matching | `/parks/prospectos` · `POST /commercial/demand-search` |
+| Composer (brochure + reporte listing) | `ParksComposerPanel` · `POST /commercial/composer/generate` |
+| Timeline Gmail + CRM | Tab Actividad en deal · `GET /commercial/activity-timeline/:id` |
+| Deal win → reserva nave + expediente | Webhook oportunidad · preview `GET /commercial/deal-win-preview/:id` |
+| Acciones masivas seguimiento | `POST /commercial/bulk-follow-up` |
+
 ---
 
 ## Prioridad 3 — Fuera de alcance demo (producción / negocio)
@@ -295,6 +326,7 @@ npx nx build twenty-shared
 
 | Fecha | Cambio |
 | --- | --- |
+| 2026-07-10 | Sprint E Ascendix: OCR, prospect search, Composer, timeline, deal-win |
 | 2026-06-25 | Scoring pipeline + secuencia nurture simulada; seed verificado |
 | 2026-06-20 | Creación inicial tras fix Renovaciones/Reservas y revisión de roadmap |
 

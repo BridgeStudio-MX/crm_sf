@@ -10,10 +10,12 @@ import {
   formatParksNumber,
   formatParksUsd,
   getParksAmountFromMicros,
+  getParksAssignedLeasingOfficerName,
   getParksDaysInStage,
   getParksDaysInStageColor,
   getParksOwnerInitials,
   getParksOwnerName,
+  isParksOpportunityAssignedToViewer,
   type ParksPipelineStageTheme,
 } from '@/parks-industrial/utils/parks-format.util';
 import {
@@ -28,24 +30,41 @@ const StyledDealCard = styled.div<{
   isDragging: boolean;
   isSelected: boolean;
   isOverlayPreview: boolean;
+  isAssignedToMe: boolean;
 }>`
-  background: ${({ backgroundTint, isOverlayPreview }) =>
-    isOverlayPreview
-      ? themeCssVariables.background.primary
-      : backgroundTint};
+  background: ${({ backgroundTint, isOverlayPreview, isAssignedToMe }) => {
+    if (isOverlayPreview) {
+      return themeCssVariables.background.primary;
+    }
+
+    if (isAssignedToMe) {
+      return `color-mix(in srgb, ${themeCssVariables.color.green1} 55%, ${backgroundTint})`;
+    }
+
+    return backgroundTint;
+  }};
   border: 1px solid
-    ${({ isSelected, accentColor, isDragging, isOverlayPreview }) =>
-      isDragging || isSelected || isOverlayPreview
-        ? accentColor
-        : themeCssVariables.border.color.medium};
-  border-left: 4px solid ${({ accentColor }) => accentColor};
+    ${({ isSelected, accentColor, isDragging, isOverlayPreview, isAssignedToMe }) => {
+      if (isDragging || isSelected || isOverlayPreview) {
+        return accentColor;
+      }
+
+      if (isAssignedToMe) {
+        return themeCssVariables.color.green;
+      }
+
+      return themeCssVariables.border.color.medium;
+    }};
+  border-left: 4px solid
+    ${({ accentColor, isAssignedToMe }) =>
+      isAssignedToMe ? themeCssVariables.color.green : accentColor};
   border-radius: ${themeCssVariables.border.radius.md};
-  box-shadow: ${({ isDragging, isSelected, isOverlayPreview }) => {
+  box-shadow: ${({ isDragging, isSelected, isOverlayPreview, isAssignedToMe }) => {
     if (isOverlayPreview || isDragging) {
       return themeCssVariables.boxShadow.strong;
     }
 
-    if (isSelected) {
+    if (isSelected || isAssignedToMe) {
       return themeCssVariables.boxShadow.light;
     }
 
@@ -141,6 +160,7 @@ export type ParksPipelineDealCardViewProps = {
   isDragging: boolean;
   isSelected: boolean;
   isOverlayPreview: boolean;
+  viewerName?: string | null;
   prospectScore?: ProspectScoreResult;
   onSelect?: (dealId: string) => void;
   onOpenRecord?: (dealId: string) => void;
@@ -152,12 +172,16 @@ export const ParksPipelineDealCardView = ({
   isDragging,
   isSelected,
   isOverlayPreview,
+  viewerName,
   prospectScore,
   onSelect,
   onOpenRecord,
 }: ParksPipelineDealCardViewProps) => {
   const daysColor = getParksDaysInStageColor(deal.updatedAt);
   const daysInStage = getParksDaysInStage(deal.updatedAt);
+  const leasingOfficerName = getParksAssignedLeasingOfficerName(deal);
+  const isAssignedToMe = isParksOpportunityAssignedToViewer(deal, viewerName);
+  const ownerLabel = getParksOwnerName(deal);
 
   return (
     <StyledDealCard
@@ -166,6 +190,7 @@ export const ParksPipelineDealCardView = ({
       isDragging={isDragging}
       isSelected={isSelected}
       isOverlayPreview={isOverlayPreview}
+      isAssignedToMe={isAssignedToMe}
       onClick={() => {
         if (!isOverlayPreview) {
           onSelect?.(deal.id);
@@ -199,7 +224,13 @@ export const ParksPipelineDealCardView = ({
       <StyledCardContent>
         <StyledDealHeader>
           <StyledDealTitle>{deal.name}</StyledDealTitle>
-          <StyledOwnerAvatar avatarColor={stageTheme.accent}>
+          <StyledOwnerAvatar
+            avatarColor={
+              isAssignedToMe
+                ? themeCssVariables.color.green
+                : stageTheme.accent
+            }
+          >
             {getParksOwnerInitials(deal)}
           </StyledOwnerAvatar>
         </StyledDealHeader>
@@ -214,6 +245,16 @@ export const ParksPipelineDealCardView = ({
           {formatParksNumber(deal.m2Requeridos)} m²
         </StyledDealMeta>
         <StyledDealFooter>
+          {isAssignedToMe ? (
+            <ParksStatusBadge color="green" label={t`Asignado a ti`} />
+          ) : leasingOfficerName ? (
+            <ParksStatusBadge
+              color="blue"
+              label={t`LO · ${leasingOfficerName}`}
+            />
+          ) : (
+            <ParksStatusBadge color="gray" label={t`Sin asignar`} />
+          )}
           {prospectScore ? (
             <ParksStatusBadge
               color={getParksProspectScoreBadgeColor(prospectScore.tier)}
@@ -224,7 +265,7 @@ export const ParksPipelineDealCardView = ({
             color={daysColor}
             label={t`${daysInStage}d en etapa`}
           />
-          <StyledDealMeta>{getParksOwnerName(deal)}</StyledDealMeta>
+          <StyledDealMeta>{ownerLabel}</StyledDealMeta>
         </StyledDealFooter>
       </StyledCardContent>
     </StyledDealCard>
@@ -236,6 +277,7 @@ type ParksPipelineDealCardProps = {
   stageTheme: ParksPipelineStageTheme;
   isSelected: boolean;
   isOverlayPreview: boolean;
+  viewerName?: string | null;
   prospectScore?: ProspectScoreResult;
   onSelect?: (dealId: string) => void;
   onOpenRecord?: (dealId: string) => void;
@@ -246,6 +288,7 @@ export const ParksPipelineDealCard = ({
   stageTheme,
   isSelected,
   isOverlayPreview,
+  viewerName,
   prospectScore,
   onSelect,
   onOpenRecord,
@@ -268,6 +311,7 @@ export const ParksPipelineDealCard = ({
         isDragging={isDragging}
         isSelected={isSelected}
         isOverlayPreview={isOverlayPreview}
+        viewerName={viewerName}
         prospectScore={prospectScore}
         onSelect={onSelect}
         onOpenRecord={onOpenRecord}

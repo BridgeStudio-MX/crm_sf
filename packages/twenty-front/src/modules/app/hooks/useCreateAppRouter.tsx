@@ -9,16 +9,21 @@ import { RecordIndexSkeletonLoader } from '@/object-record/record-index/componen
 import { BlankLayout } from '@/ui/layout/page/components/BlankLayout';
 import { DefaultLayout } from '@/ui/layout/page/components/DefaultLayout';
 import { MainAppLayoutWithSidePanel } from '@/ui/layout/page/components/MainAppLayoutWithSidePanel';
-import { AppPath } from 'twenty-shared/types';
+import { AppPath, SettingsPath } from 'twenty-shared/types';
+import { getSettingsPath } from 'twenty-shared/utils';
 import {
   PARKS_INQUILINO_360_PATH,
   PARKS_LEADS_CEM_PATH,
+  PARKS_LEGAL_DASHBOARD_PATH,
+  PARKS_LEGAL_PIPELINE_PATH,
 } from '@/parks-industrial/constants/parks-routes.constants';
+import { ParksProtectedRoute } from '@/parks-industrial/components/navigation/ParksProtectedRoute';
 
-import { lazy } from 'react';
+import { lazy, type ReactNode } from 'react';
 import {
   createBrowserRouter,
   createRoutesFromElements,
+  Navigate,
   Route,
 } from 'react-router-dom';
 
@@ -112,6 +117,12 @@ const NotFound = lazy(() =>
   })),
 );
 
+const ParksLazyRoute = ({ children }: { children: ReactNode }) => (
+  <ParksProtectedRoute>
+    <LazyRoute>{children}</LazyRoute>
+  </ParksProtectedRoute>
+);
+
 const ParksDashboardPage = lazy(() =>
   import('~/pages/parks-industrial/ParksDashboardPage').then((module) => ({
     default: module.ParksDashboardPage,
@@ -144,6 +155,12 @@ const ParksLeadsCemPage = lazy(() =>
   })),
 );
 
+const ParksProspectSearchPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksProspectSearchPage').then((module) => ({
+    default: module.ParksProspectSearchPage,
+  })),
+);
+
 const ParksContratosPage = lazy(() =>
   import('~/pages/parks-industrial/ParksContratosPage').then((module) => ({
     default: module.ParksContratosPage,
@@ -158,6 +175,18 @@ const ParksContratoAprobacionPage = lazy(() =>
   ),
 );
 
+const ParksLegalPipelinePage = lazy(() =>
+  import('~/pages/parks-industrial/ParksLegalPipelinePage').then((module) => ({
+    default: module.ParksLegalPipelinePage,
+  })),
+);
+
+const ParksLegalDashboardPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksLegalDashboardPage').then((module) => ({
+    default: module.ParksLegalDashboardPage,
+  })),
+);
+
 const ParksComisionesPage = lazy(() =>
   import('~/pages/parks-industrial/ParksComisionesPage').then((module) => ({
     default: module.ParksComisionesPage,
@@ -167,6 +196,12 @@ const ParksComisionesPage = lazy(() =>
 const ParksMapPage = lazy(() =>
   import('~/pages/parks-industrial/ParksMapPage').then((module) => ({
     default: module.ParksMapPage,
+  })),
+);
+
+const SettingsProfilePage = lazy(() =>
+  import('~/pages/settings/profile/SettingsProfile').then((module) => ({
+    default: module.SettingsProfile,
   })),
 );
 
@@ -332,112 +367,153 @@ export const useCreateAppRouter = (
             <Route
               path={AppPath.ParksDashboard}
               element={
-                <LazyRoute>
+                <ParksLazyRoute>
                   <ParksDashboardPage />
-                </LazyRoute>
+                </ParksLazyRoute>
               }
             />
             <Route
               path={AppPath.ParksStackingPlanIndex}
               element={
-                <LazyRoute>
+                <ParksLazyRoute>
                   <ParksStackingPlanIndexPage />
-                </LazyRoute>
+                </ParksLazyRoute>
               }
             />
             <Route
               path={AppPath.ParksStackingPlan}
               element={
-                <LazyRoute>
+                <ParksLazyRoute>
                   <ParksStackingPlanPage />
-                </LazyRoute>
+                </ParksLazyRoute>
               }
             />
             <Route
               path={AppPath.ParksPipeline}
               element={
-                <LazyRoute>
+                <ParksLazyRoute>
                   <ParksPipelinePage />
-                </LazyRoute>
+                </ParksLazyRoute>
               }
             />
             <Route
               path={PARKS_LEADS_CEM_PATH}
               element={
-                <LazyRoute>
+                <ParksLazyRoute>
                   <ParksLeadsCemPage />
-                </LazyRoute>
+                </ParksLazyRoute>
+              }
+            />
+            <Route
+              path={AppPath.ParksProspectos}
+              element={
+                <ParksLazyRoute>
+                  <ParksProspectSearchPage />
+                </ParksLazyRoute>
               }
             />
             <Route
               path={AppPath.ParksNotificaciones}
               element={
-                <LazyRoute>
+                <ParksLazyRoute>
                   <ParksNotificacionesPage />
-                </LazyRoute>
+                </ParksLazyRoute>
               }
             />
             <Route
               path={AppPath.ParksContratos}
               element={
-                <LazyRoute>
+                <ParksLazyRoute>
                   <ParksContratosPage />
-                </LazyRoute>
+                </ParksLazyRoute>
               }
             />
             <Route
               path={AppPath.ParksContratoAprobacion}
               element={
-                <LazyRoute>
+                <ParksLazyRoute>
                   <ParksContratoAprobacionPage />
-                </LazyRoute>
+                </ParksLazyRoute>
+              }
+            />
+            <Route
+              path={PARKS_LEGAL_PIPELINE_PATH}
+              element={
+                <ParksLazyRoute>
+                  <ParksLegalPipelinePage />
+                </ParksLazyRoute>
+              }
+            />
+            <Route
+              path={PARKS_LEGAL_DASHBOARD_PATH}
+              element={
+                <ParksLazyRoute>
+                  <ParksLegalDashboardPage />
+                </ParksLazyRoute>
               }
             />
             <Route
               path={AppPath.ParksComisiones}
               element={
-                <LazyRoute>
+                <ParksLazyRoute>
                   <ParksComisionesPage />
-                </LazyRoute>
+                </ParksLazyRoute>
               }
             />
             <Route
               path={AppPath.ParksMiDesempeno}
               element={
-                <LazyRoute>
+                <ParksLazyRoute>
                   <ParksMiDesempenoPage />
-                </LazyRoute>
+                </ParksLazyRoute>
               }
             />
             <Route
               path={PARKS_INQUILINO_360_PATH}
               element={
-                <LazyRoute>
+                <ParksLazyRoute>
                   <ParksInquilino360Page />
-                </LazyRoute>
+                </ParksLazyRoute>
               }
             />
             <Route
               path={AppPath.ParksRenovaciones}
               element={
-                <LazyRoute>
+                <ParksLazyRoute>
                   <ParksRenovacionesPage />
-                </LazyRoute>
+                </ParksLazyRoute>
               }
             />
             <Route
               path={AppPath.ParksReservas}
               element={
-                <LazyRoute>
+                <ParksLazyRoute>
                   <ParksReservasPage />
-                </LazyRoute>
+                </ParksLazyRoute>
               }
             />
             <Route
               path={AppPath.ParksMapa}
               element={
-                <LazyRoute>
+                <ParksLazyRoute>
                   <ParksMapPage />
+                </ParksLazyRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <Navigate
+                  to={getSettingsPath(SettingsPath.ProfilePage)}
+                  replace
+                />
+              }
+            />
+            <Route
+              path="/settings/profile"
+              element={
+                <LazyRoute>
+                  <SettingsProfilePage />
                 </LazyRoute>
               }
             />

@@ -9,6 +9,7 @@ import { LayoutCustomizationBar } from '@/layout-customization/components/Layout
 import { AppNavigationDrawer } from '@/navigation/components/AppNavigationDrawer';
 import { MobileNavigationBar } from '@/navigation/components/MobileNavigationBar';
 import { PageDragDropProvider } from '@/navigation-menu-item/display/dnd/providers/PageDragDropProvider';
+import { SettingsEntryEffect } from '@/settings/components/SettingsEntryEffect';
 import { BackgroundMockNavigationDrawer } from '@/sign-in-background-mock/components/BackgroundMockNavigationDrawer';
 import { Suspense, lazy } from 'react';
 
@@ -65,6 +66,7 @@ export const DefaultLayout = () => {
 
   return (
     <>
+      <SettingsEntryEffect />
       <FileUploadProvider>
         <StyledLayout>
           <AppErrorBoundary FallbackComponent={AppFullScreenErrorFallback}>

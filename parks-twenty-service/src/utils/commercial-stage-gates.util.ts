@@ -5,6 +5,7 @@ export type StageGateOpportunity = {
   plazoContratoMeses?: number | null;
   presupuestoMensualUsd?: number | null;
   naveVinculadaId?: string | null;
+  tourNavesMostradas?: string | null;
   motivoSinNave?: string | null;
   precioPorM2Usd?: number | null;
   m2Ofertados?: number | null;
@@ -116,12 +117,13 @@ const collectTourRequirements = (
 ): string[] => {
   if (
     hasValue(opportunity.naveVinculadaId) ||
+    hasValue(opportunity.tourNavesMostradas) ||
     hasValue(opportunity.motivoSinNave)
   ) {
     return [];
   }
 
-  return ['Nave vinculada o motivo documentado de “sin nave”'];
+  return ['Nave(s) del tour o motivo documentado de “sin nave”'];
 };
 
 const collectCotizacionRequirements = (

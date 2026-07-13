@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reporte de actividad — {{naveIdentificador}}</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      color: #111827;
+      margin: 0;
+      padding: 32px;
+      line-height: 1.5;
+    }
+    .header {
+      border-bottom: 3px solid #0f766e;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+    }
+    .header h1 { font-size: 24px; margin: 0 0 8px; }
+    .header p { color: #6b7280; margin: 0; }
+    .metrics {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin: 24px 0;
+    }
+    .metric {
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    .metric-value { font-size: 28px; font-weight: 700; color: #0f766e; }
+    .metric-label { color: #6b7280; font-size: 12px; text-transform: uppercase; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 8px; }
+    .footer {
+      border-top: 1px solid #e5e7eb;
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 32px;
+      padding-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Reporte de actividad de listing</h1>
+    <p>{{naveIdentificador}} · {{parqueNombre}} · {{ubicacion}}</p>
+    <p>Propietario: {{ownerName}} · Periodo: {{periodLabel}}</p>
+  </div>
+
+  <p>Resumen de actividad comercial y marketing para la nave <strong>{{naveIdentificador}}</strong> ({{m2}} m²).</p>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-value">{{inquiriesCount}}</div>
+      <div class="metric-label">Inquiries</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">{{toursCount}}</div>
+      <div class="metric-label">Tours</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">{{proposalsCount}}</div>
+      <div class="metric-label">Propuestas</div>
+    </div>
+  </div>
+
+  <h2>Actividades realizadas</h2>
+  <ul>
+    {{#each activities}}
+      <li>{{this}}</li>
+    {{/each}}
+  </ul>
+
+  <div class="footer">
+    Generado {{generationDate}} · Parks Industrial · Reporte para propietario
+  </div>
+</body>
+</html>

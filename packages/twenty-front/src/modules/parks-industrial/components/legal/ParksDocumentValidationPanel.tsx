@@ -1,18 +1,25 @@
 import { styled } from '@linaria/react';
 import { t } from '@lingui/core/macro';
-import { useState } from 'react';
-import { IconAlertTriangle, IconCheck, IconSearch } from 'twenty-ui/icon';
+import { useState, type ChangeEvent } from 'react';
+import { IconAlertTriangle, IconCheck, IconSearch, IconUpload } from 'twenty-ui/icon';
 import { Button } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
 import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
 import { ParksSectionCard } from '@/parks-industrial/components/ui/ParksSectionCard';
 import { ParksStatusBadge } from '@/parks-industrial/components/ui/ParksStatusBadge';
+import { ParksFormField } from '@/parks-industrial/components/ui/ParksFormField';
+import { StyledParksSelect } from '@/parks-industrial/components/ui/parks-form-control.styles';
 import {
+  applyParksDocumentExtraction,
+  extractParksDocument,
   preSendParksToLegal,
   validateParksDocuments,
 } from '@/parks-industrial/services/parks-legal.client';
-import { type DocumentValidationResult } from '@/parks-industrial/types/parks-legal.types';
+import {
+  type DocumentExtractionResult,
+  type DocumentValidationResult,
+} from '@/parks-industrial/types/parks-legal.types';
 
 const StyledDocumentRow = styled.div`
   align-items: center;
@@ -49,6 +56,19 @@ const StyledSummary = styled.p`
   font-size: ${themeCssVariables.font.size.sm};
   line-height: 1.45;
   margin: ${themeCssVariables.spacing[2]} 0 0;
+`;
+
+const StyledExtractedField = styled.div`
+  color: ${themeCssVariables.font.color.secondary};
+  font-size: ${themeCssVariables.font.size.xs};
+  margin-top: ${themeCssVariables.spacing[1]};
+`;
+
+const StyledOcrSection = styled.div`
+  border: 1px dashed ${themeCssVariables.border.color.medium};
+  border-radius: ${themeCssVariables.border.radius.sm};
+  margin-bottom: ${themeCssVariables.spacing[3]};
+  padding: ${themeCssVariables.spacing[3]};
 `;
 
 const StyledActions = styled.div`
@@ -90,8 +110,69 @@ export const ParksDocumentValidationPanel = ({
 }: ParksDocumentValidationPanelProps) => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DocumentValidationResult | null>(null);
+  const [extraction, setExtraction] = useState<DocumentExtractionResult | null>(
+    null,
+  );
+  const [ocrDocumentType, setOcrDocumentType] = useState('Acta constitutiva');
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [applyMessage, setApplyMessage] = useState<string | null>(null);
   const [handoffMessage, setHandoffMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    setUploadedFileName(file?.name ?? null);
+  };
+
+  const runOcrExtraction = async () => {
+    setLoading(true);
+    setError(null);
+    setApplyMessage(null);
+
+    try {
+      const extractionResult = await extractParksDocument({
+        casoLegalId,
+        documentType: ocrDocumentType,
+        fileName: uploadedFileName ?? undefined,
+      });
+
+      setExtraction(extractionResult);
+    } catch (extractionError) {
+      const message =
+        extractionError instanceof Error
+          ? extractionError.message
+          : 'No se pudo extraer documento';
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const applyExtraction = async () => {
+    if (!extraction) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const applyResult = await applyParksDocumentExtraction({
+        casoLegalId,
+        extractedFields: extraction.extractedFields,
+      });
+
+      setApplyMessage(applyResult.message);
+    } catch (applyError) {
+      const message =
+        applyError instanceof Error
+          ? applyError.message
+          : 'No se pudo aplicar extracción';
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const runValidation = async (simulateMismatch: boolean) => {
     setLoading(true);
@@ -145,6 +226,56 @@ export const ParksDocumentValidationPanel = ({
       <StyledSummary>
         {t`Simula la carga de documentos y la IA extrae campos para detectar conflictos antes de legal.`}
       </StyledSummary>
+
+      <StyledOcrSection>
+        <ParksFormField label={t`OCR — documento legal México`}>
+          <StyledParksSelect
+            value={ocrDocumentType}
+            onChange={(event) => setOcrDocumentType(event.target.value)}
+          >
+            {VALIDATION_DOCUMENTS.map((documentType) => (
+              <option key={documentType} value={documentType}>
+                {documentType}
+              </option>
+            ))}
+          </StyledParksSelect>
+        </ParksFormField>
+        <ParksFormField label={t`Archivo (simulado)`}>
+          <input type="file" accept=".pdf,.jpg,.png" onChange={handleFileSelect} />
+        </ParksFormField>
+        <StyledActions>
+          <Button
+            variant="secondary"
+            Icon={IconUpload}
+            title={t`Extraer campos (OCR)`}
+            onClick={() => void runOcrExtraction()}
+            disabled={loading}
+          />
+          <Button
+            variant="primary"
+            Icon={IconCheck}
+            title={t`Aplicar al expediente`}
+            onClick={() => void applyExtraction()}
+            disabled={loading || !extraction}
+          />
+        </StyledActions>
+        {extraction ? (
+          <>
+            <ParksStatusBadge
+              color="blue"
+              label={`${extraction.summary} (${Math.round(extraction.confidence * 100)}%)`}
+            />
+            {Object.entries(extraction.extractedFields).map(([field, value]) => (
+              <StyledExtractedField key={field}>
+                {field}: {value}
+              </StyledExtractedField>
+            ))}
+          </>
+        ) : null}
+        {applyMessage ? (
+          <ParksStatusBadge color="green" label={applyMessage} />
+        ) : null}
+      </StyledOcrSection>
 
       <StyledActions>
         <Button

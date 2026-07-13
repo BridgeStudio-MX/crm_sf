@@ -7,6 +7,7 @@ import {
 import { styled } from '@linaria/react';
 import { t } from '@lingui/core/macro';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
@@ -26,9 +27,19 @@ import { ParksPipelineDragOverlay } from '@/parks-industrial/components/pipeline
 import { ParksStageGateModal } from '@/parks-industrial/components/pipeline/ParksStageGateModal';
 import { ParksResponsiveSheet } from '@/parks-industrial/components/ui/ParksResponsiveSheet';
 import { useOpenRecordInSidePanel } from '@/side-panel/hooks/useOpenRecordInSidePanel';
-import { getParksOwnerName } from '@/parks-industrial/utils/parks-format.util';
+import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
+import {
+  getParksAssignedLeasingOfficerName,
+  getParksOwnerName,
+  isParksOpportunityAssignedToViewer,
+} from '@/parks-industrial/utils/parks-format.util';
+import { ParksRoleLabel } from '@/parks-industrial/constants/parks-role-access.constants';
 import { StyledParksPageStack } from '@/parks-industrial/components/ui/ParksSectionCard';
 import { validateParksStageGate } from '@/parks-industrial/services/parks-commercial.client';
+import {
+  PARKS_FLUJO_SECTION_IDS,
+  type ParksDealGuideTab,
+} from '@/parks-industrial/utils/parks-stage-guide.util';
 import {
   buildParksStageGateOpportunityInput,
   normalizeParksPipelineStageId,
@@ -76,6 +87,7 @@ type ParksPipelineBoardProps = {
 const filterOpportunities = (
   opportunities: ParksOpportunityRecord[],
   filters: ParksPipelineFilters,
+  viewerName?: string | null,
 ): ParksOpportunityRecord[] =>
   opportunities.filter((opportunity) => {
     if (opportunity.stage === 'PERDIDO') {
@@ -83,11 +95,13 @@ const filterOpportunities = (
     }
 
     const ownerName = getParksOwnerName(opportunity);
+    const leasingOfficerName = getParksAssignedLeasingOfficerName(opportunity);
     const searchTarget = [
       opportunity.name,
       opportunity.inquilinoVinculado?.empresa,
       opportunity.naveVinculada?.identificador,
       ownerName,
+      leasingOfficerName,
     ]
       .filter(Boolean)
       .join(' ')
@@ -97,8 +111,18 @@ const filterOpportunities = (
       filters.searchQuery.length === 0 ||
       searchTarget.includes(filters.searchQuery.toLowerCase());
 
-    const matchesOwner =
-      filters.ownerFilter.length === 0 || ownerName === filters.ownerFilter;
+    let matchesOwner = true;
+
+    if (filters.ownerFilter === '__MINE__') {
+      matchesOwner = isParksOpportunityAssignedToViewer(
+        opportunity,
+        viewerName,
+      );
+    } else if (filters.ownerFilter === '__UNASSIGNED__') {
+      matchesOwner = !leasingOfficerName;
+    } else if (filters.ownerFilter.length > 0) {
+      matchesOwner = ownerName === filters.ownerFilter;
+    }
 
     return matchesSearch && matchesOwner;
   });
@@ -107,13 +131,22 @@ export const ParksPipelineBoard = ({
   opportunities,
   onOpportunitiesRefresh,
 }: ParksPipelineBoardProps) => {
+  const { displayName, parksRoleLabels } = useParksAccess();
+  const isLeasingOfficer = parksRoleLabels.includes(
+    ParksRoleLabel.EjecutivoComercial,
+  );
   const safeOpportunities = opportunities ?? [];
   const [items, setItems] = useState(safeOpportunities);
   const [filters, setFilters] = useState<ParksPipelineFilters>({
     searchQuery: '',
     ownerFilter: '',
   });
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
+  const [deepLinkTab, setDeepLinkTab] = useState<ParksDealGuideTab | undefined>();
+  const [deepLinkScrollTarget, setDeepLinkScrollTarget] = useState<
+    string | undefined
+  >();
   const [draggingDealId, setDraggingDealId] = useState<string | null>(null);
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
   const [unassignedLeadsRefreshKey, setUnassignedLeadsRefreshKey] = useState(0);
@@ -133,9 +166,102 @@ export const ParksPipelineBoard = ({
     setItems(safeOpportunities);
   }, [safeOpportunities]);
 
+  useEffect(() => {
+    const dealIdFromQuery = searchParams.get('dealId');
+
+    if (!dealIdFromQuery) {
+      return;
+    }
+
+    setSelectedDealId(dealIdFromQuery);
+
+    const tabFromQuery = searchParams.get('tab');
+    const sectionFromQuery = searchParams.get('section');
+
+    const resolveDeepLinkTab = (): ParksDealGuideTab | undefined => {
+      if (
+        tabFromQuery === 'resumen' ||
+        tabFromQuery === 'prospecto' ||
+        tabFromQuery === 'propuesta' ||
+        tabFromQuery === 'actividad' ||
+        tabFromQuery === 'decisores' ||
+        tabFromQuery === 'guion' ||
+        tabFromQuery === 'cotizacion' ||
+        tabFromQuery === 'aprobacion' ||
+        tabFromQuery === 'hoja'
+      ) {
+        return tabFromQuery;
+      }
+
+      // Legacy deep-links still use tab=flujo&section=...
+      if (tabFromQuery === 'flujo') {
+        if (sectionFromQuery === 'aprobacion') {
+          return 'aprobacion';
+        }
+
+        if (sectionFromQuery === 'hoja') {
+          return 'hoja';
+        }
+
+        return 'cotizacion';
+      }
+
+      if (sectionFromQuery === 'aprobacion') {
+        return 'aprobacion';
+      }
+
+      if (sectionFromQuery === 'hoja') {
+        return 'hoja';
+      }
+
+      if (
+        sectionFromQuery === 'tour' ||
+        sectionFromQuery === 'cotizacion'
+      ) {
+        return 'cotizacion';
+      }
+
+      return undefined;
+    };
+
+    const resolvedTab = resolveDeepLinkTab();
+
+    if (resolvedTab) {
+      setDeepLinkTab(resolvedTab);
+    }
+
+    if (sectionFromQuery === 'hoja') {
+      setDeepLinkScrollTarget(PARKS_FLUJO_SECTION_IDS.hoja);
+    } else if (sectionFromQuery === 'cotizacion') {
+      setDeepLinkScrollTarget(PARKS_FLUJO_SECTION_IDS.cotizacion);
+    } else if (sectionFromQuery === 'aprobacion') {
+      setDeepLinkScrollTarget(PARKS_FLUJO_SECTION_IDS.aprobacion);
+    } else if (sectionFromQuery === 'tour') {
+      setDeepLinkScrollTarget(PARKS_FLUJO_SECTION_IDS.tour);
+    }
+  }, [searchParams]);
+
+  const clearDealDeepLink = () => {
+    setSelectedDealId(null);
+    setDeepLinkTab(undefined);
+    setDeepLinkScrollTarget(undefined);
+
+    if (
+      searchParams.has('dealId') ||
+      searchParams.has('tab') ||
+      searchParams.has('section')
+    ) {
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete('dealId');
+      nextParams.delete('tab');
+      nextParams.delete('section');
+      setSearchParams(nextParams, { replace: true });
+    }
+  };
+
   const filteredItems = useMemo(
-    () => filterOpportunities(items, filters),
-    [filters, items],
+    () => filterOpportunities(items, filters, displayName),
+    [displayName, filters, items],
   );
 
   const dealsById = useMemo(
@@ -352,10 +478,14 @@ export const ParksPipelineBoard = ({
         filters={filters}
         onFiltersChange={setFilters}
         filteredCount={filteredItems.length}
+        viewerName={displayName}
+        isLeasingOfficer={isLeasingOfficer}
       />
 
       <StyledDragHint>
-        {t`Arrastra cards solo entre etapas operativas · LOI, Legal y Ganado requieren Flujo comercial · Si falta algo, verás qué completar`}
+        {isLeasingOfficer
+          ? t`Verde = asignado a ti · Usa el filtro para ver todos o solo sin asignar · Arrastra entre etapas operativas`
+          : t`Arrastra cards solo entre etapas operativas · LOI, Legal y Ganado requieren tab Hoja · Si falta algo, verás qué completar`}
       </StyledDragHint>
 
       {filteredItems.length === 0 ? (
@@ -376,6 +506,7 @@ export const ParksPipelineBoard = ({
                   selectedDealId={selectedDealId}
                   draggingDealId={draggingDealId}
                   prospectScoresById={prospectScoresById}
+                  viewerName={displayName}
                   onSelectDeal={setSelectedDealId}
                   onOpenRecord={handleOpenRecord}
                 />
@@ -385,16 +516,25 @@ export const ParksPipelineBoard = ({
 
           <ParksResponsiveSheet
             isOpen={selectedDeal !== null}
-            onClose={() => setSelectedDealId(null)}
+            onClose={clearDealDeepLink}
             focusId="parks-pipeline-deal-detail"
             ariaLabelledBy="parks-deal-detail-title"
           >
             {selectedDeal ? (
               <ParksPipelineDealDetail
                 deal={selectedDeal}
-                onClose={() => setSelectedDealId(null)}
+                onClose={clearDealDeepLink}
+                initialTab={deepLinkTab}
+                initialScrollTarget={deepLinkScrollTarget}
                 onMoveToStage={(dealId, stageId) => {
                   void handleDrop(dealId, stageId);
+                }}
+                onDealUpdated={(dealId, update) => {
+                  setItems((previous) =>
+                    previous.map((item) =>
+                      item.id === dealId ? { ...item, ...update } : item,
+                    ),
+                  );
                 }}
               />
             ) : null}
@@ -403,6 +543,7 @@ export const ParksPipelineBoard = ({
           <ParksPipelineDragOverlay
             dealsById={dealsById}
             prospectScoresById={prospectScoresById}
+            viewerName={displayName}
           />
         </DragDropProvider>
       )}

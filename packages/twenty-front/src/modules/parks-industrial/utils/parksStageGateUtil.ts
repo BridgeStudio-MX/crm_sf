@@ -15,6 +15,7 @@ export type ParksStageGateOpportunityInput = {
   plazoContratoMeses?: number | null;
   presupuestoMensualUsd?: number | null;
   naveVinculadaId?: string | null;
+  tourNavesMostradas?: string | null;
   motivoSinNave?: string | null;
   precioPorM2Usd?: number | null;
   m2Ofertados?: number | null;
@@ -91,8 +92,8 @@ export const buildParksStageGateOpportunityInput = (
   plazoContratoMeses: opportunity.plazoContratoMeses,
   presupuestoMensualUsd: opportunity.presupuestoMensualUsd,
   naveVinculadaId:
-    opportunity.naveVinculada?.id ??
-    (opportunity as { naveVinculadaId?: string }).naveVinculadaId,
+    opportunity.naveVinculada?.id ?? opportunity.naveVinculadaId,
+  tourNavesMostradas: opportunity.tourNavesMostradas,
   motivoSinNave: opportunity.motivoSinNave,
   precioPorM2Usd: opportunity.precioPorM2Usd,
   m2Ofertados: opportunity.m2Ofertados,
@@ -134,12 +135,13 @@ const collectTourRequirements = (
 ): string[] => {
   if (
     hasNonEmptyString(opportunity.naveVinculadaId) ||
+    hasNonEmptyString(opportunity.tourNavesMostradas) ||
     hasNonEmptyString(opportunity.motivoSinNave)
   ) {
     return [];
   }
 
-  return [t`Nave vinculada o motivo documentado de “sin nave”`];
+  return [t`Nave(s) del tour o motivo documentado de “sin nave”`];
 };
 
 const collectCotizacionRequirements = (
@@ -214,7 +216,7 @@ const collectRequirementsUpToStage = (
 
 const getWorkflowOnlyStageHint = (stageId: string): string | undefined => {
   if (stageId === 'HOJA_DE_ACUERDOS_FIRMADA') {
-    return t`Abre el deal → tab Flujo comercial → Generar Hoja de Acuerdos`;
+    return t`Abre el deal → tab Hoja → Generar Hoja de Acuerdos`;
   }
 
   if (stageId === 'EN_PROCESO_LEGAL') {
@@ -307,7 +309,7 @@ export const validateParksStageTransition = (
         error: t`No puedes mover a “${targetStageLabel}” todavía`,
         missingRequirements,
         targetStageLabel,
-        actionHint: t`Completa los campos en el detalle del deal o usa el tab Flujo comercial`,
+        actionHint: t`Completa los campos en el detalle del deal o usa los tabs Cotización / Aprobación / Hoja`,
       };
     }
   }

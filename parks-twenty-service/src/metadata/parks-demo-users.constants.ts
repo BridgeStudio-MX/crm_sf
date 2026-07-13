@@ -51,7 +51,7 @@ export const PARKS_DEMO_USERS: ParksDemoUser[] = [
     firstName: 'Miguel',
     lastName: 'Soto',
     roleLabel: `${PARKS_ROLE_LABEL_PREFIX}Abogado asignado`,
-    persona: 'Abogado asignado',
+    persona: 'Miguel Soto (Abogado)',
   },
   {
     email: 'tim@apple.dev',

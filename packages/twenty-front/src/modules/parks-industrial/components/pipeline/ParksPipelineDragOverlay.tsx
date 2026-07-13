@@ -16,11 +16,13 @@ const StyledOverlay = styled.div`
 type ParksPipelineDragOverlayProps = {
   dealsById: Map<string, ParksOpportunityRecord>;
   prospectScoresById: Record<string, ProspectScoreResult>;
+  viewerName?: string | null;
 };
 
 export const ParksPipelineDragOverlay = ({
   dealsById,
   prospectScoresById,
+  viewerName,
 }: ParksPipelineDragOverlayProps) => {
   const { source } = useDragOperation();
   const dealId = source?.id != null ? String(source.id) : null;
@@ -38,6 +40,7 @@ export const ParksPipelineDragOverlay = ({
             isDragging={false}
             isSelected={false}
             isOverlayPreview
+            viewerName={viewerName}
             prospectScore={prospectScoresById[deal.id]}
           />
         </StyledOverlay>

@@ -8,7 +8,11 @@ import { commercialLeadService } from '../services/commercial-lead.service';
 import { commercialLostService } from '../services/commercial-lost.service';
 import { commercialQuotationService } from '../services/commercial-quotation.service';
 import { commercialTourService } from '../services/commercial-tour.service';
+import { activityTimelineService } from '../services/activity-timeline.service';
 import { brokerNotificationStore } from '../services/broker-notification.store';
+import { composerService } from '../services/composer.service';
+import { dealWinService } from '../services/deal-win.service';
+import { demandSearchService } from '../services/demand-search.service';
 import { emailSequenceService } from '../services/email-sequence.service';
 import { fichaTecnicaService } from '../services/ficha-tecnica.service';
 import { naveMatchingService } from '../services/nave-matching.service';
@@ -242,6 +246,82 @@ commercialRouter.post('/hoja-acuerdos', async (request, response) => {
     response.status(400).json({ error: message });
   }
 });
+
+commercialRouter.get(
+  '/hoja-acuerdos/by-opportunity/:opportunityId',
+  async (request, response) => {
+    try {
+      const hoja = await commercialHojaService.findByOpportunity(
+        request.params.opportunityId,
+      );
+
+      response.json({ hoja });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      response.status(500).json({ error: message });
+    }
+  },
+);
+
+commercialRouter.get('/hoja-acuerdos/:hojaId', async (request, response) => {
+  try {
+    const hoja = await commercialHojaService.getById(request.params.hojaId);
+
+    response.json({ hoja });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    response.status(404).json({ error: message });
+  }
+});
+
+commercialRouter.patch(
+  '/hoja-acuerdos/:hojaId',
+  async (request, response) => {
+    try {
+      const body = request.body as {
+        m2Acordados?: number;
+        precioUsdM2?: number;
+        plazoMeses?: number;
+        fechaInicio?: string | null;
+        periodoGraciaMeses?: number;
+        depositoMeses?: number;
+        escalacionAnualPct?: number;
+        condicionesEspeciales?: string;
+        tipoContrato?: string;
+        esquemaComision?: string;
+        ejecutivoAsignado?: string;
+        brokerComisionPct?: number;
+        brokerComisionMonto?: number;
+      };
+
+      const hoja = await commercialHojaService.updateDraft({
+        hojaId: request.params.hojaId,
+        ...body,
+      });
+
+      response.json({ hoja });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      response.status(400).json({ error: message });
+    }
+  },
+);
+
+commercialRouter.post(
+  '/hoja-acuerdos/:hojaId/generate-copy',
+  async (request, response) => {
+    try {
+      const result = await commercialHojaService.generateCopy(
+        request.params.hojaId,
+      );
+
+      response.json(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      response.status(400).json({ error: message });
+    }
+  },
+);
 
 commercialRouter.post(
   '/hoja-acuerdos/:hojaId/sign',
@@ -523,11 +603,35 @@ commercialRouter.post(
 
 commercialRouter.get('/notifications', (request, response) => {
   const unreadOnly = request.query.unreadOnly === 'true';
-  const notifications = brokerNotificationStore.list({ unreadOnly });
+  const viewerName =
+    typeof request.query.viewerName === 'string'
+      ? request.query.viewerName
+      : undefined;
+  const viewerEmail =
+    typeof request.query.viewerEmail === 'string'
+      ? request.query.viewerEmail
+      : undefined;
+  const viewerRoleLabelsRaw = request.query.viewerRoleLabels;
+  const viewerRoleLabels = Array.isArray(viewerRoleLabelsRaw)
+    ? viewerRoleLabelsRaw.filter(
+        (roleLabel): roleLabel is string => typeof roleLabel === 'string',
+      )
+    : typeof viewerRoleLabelsRaw === 'string'
+      ? viewerRoleLabelsRaw
+          .split(',')
+          .map((roleLabel) => roleLabel.trim())
+          .filter((roleLabel) => roleLabel.length > 0)
+      : undefined;
+
+  const viewer = { viewerName, viewerEmail, viewerRoleLabels };
+  const notifications = brokerNotificationStore.list({
+    unreadOnly,
+    ...viewer,
+  });
 
   response.json({
     notifications,
-    unreadCount: brokerNotificationStore.getUnreadCount(),
+    unreadCount: brokerNotificationStore.getUnreadCount(viewer),
   });
 });
 
@@ -541,18 +645,52 @@ commercialRouter.patch('/notifications/:notificationId/read', (request, response
     return;
   }
 
+  const viewerName =
+    typeof request.query.viewerName === 'string'
+      ? request.query.viewerName
+      : undefined;
+  const viewerEmail =
+    typeof request.query.viewerEmail === 'string'
+      ? request.query.viewerEmail
+      : undefined;
+  const viewerRoleLabelsRaw = request.query.viewerRoleLabels;
+  const viewerRoleLabels = Array.isArray(viewerRoleLabelsRaw)
+    ? viewerRoleLabelsRaw.filter(
+        (roleLabel): roleLabel is string => typeof roleLabel === 'string',
+      )
+    : typeof viewerRoleLabelsRaw === 'string'
+      ? viewerRoleLabelsRaw
+          .split(',')
+          .map((roleLabel) => roleLabel.trim())
+          .filter((roleLabel) => roleLabel.length > 0)
+      : undefined;
+
   response.json({
     notification,
-    unreadCount: brokerNotificationStore.getUnreadCount(),
+    unreadCount: brokerNotificationStore.getUnreadCount({
+      viewerName,
+      viewerEmail,
+      viewerRoleLabels,
+    }),
   });
 });
 
-commercialRouter.post('/notifications/mark-all-read', (_request, response) => {
-  const updatedCount = brokerNotificationStore.markAllRead();
+commercialRouter.post('/notifications/mark-all-read', (request, response) => {
+  const body = (request.body ?? {}) as {
+    viewerName?: string;
+    viewerEmail?: string;
+    viewerRoleLabels?: string[];
+  };
+  const viewer = {
+    viewerName: body.viewerName,
+    viewerEmail: body.viewerEmail,
+    viewerRoleLabels: body.viewerRoleLabels,
+  };
+  const updatedCount = brokerNotificationStore.markAllRead(viewer);
 
   response.json({
     updatedCount,
-    unreadCount: brokerNotificationStore.getUnreadCount(),
+    unreadCount: brokerNotificationStore.getUnreadCount(viewer),
   });
 });
 
@@ -683,7 +821,7 @@ commercialRouter.post('/match-naves', async (request, response) => {
       cityFilter: body.cityFilter,
       minAlturaLibre: body.minAlturaLibre,
       minAndenes: body.minAndenes,
-      limit: body.limit ?? 3,
+      limit: body.limit ?? 50,
     });
 
     response.json(result);
@@ -854,6 +992,111 @@ commercialRouter.post('/sales-script', async (request, response) => {
     });
 
     response.json(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    response.status(500).json({ error: message });
+  }
+});
+
+commercialRouter.post('/demand-search', async (request, response) => {
+  try {
+    const body = request.body as Parameters<
+      typeof demandSearchService.search
+    >[0];
+
+    const result = await demandSearchService.search(body ?? {});
+    response.json(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    response.status(500).json({ error: message });
+  }
+});
+
+commercialRouter.post('/composer/generate', async (request, response) => {
+  try {
+    const body = request.body as Parameters<
+      typeof composerService.generate
+    >[0];
+
+    if (!body.templateType || !body.naveIdentificador) {
+      response.status(400).json({
+        error: 'templateType and naveIdentificador are required',
+      });
+      return;
+    }
+
+    const result = await composerService.generate(body);
+    response.json(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    response.status(500).json({ error: message });
+  }
+});
+
+commercialRouter.get(
+  '/activity-timeline/:opportunityId',
+  async (request, response) => {
+    try {
+      const result = await activityTimelineService.getForOpportunity(
+        request.params.opportunityId,
+      );
+
+      response.json(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      response.status(500).json({ error: message });
+    }
+  },
+);
+
+commercialRouter.get(
+  '/deal-win-preview/:opportunityId',
+  async (request, response) => {
+    try {
+      const result = await dealWinService.getPreview(
+        request.params.opportunityId,
+      );
+
+      response.json(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      response.status(500).json({ error: message });
+    }
+  },
+);
+
+commercialRouter.post('/bulk-follow-up', async (request, response) => {
+  try {
+    const body = request.body as {
+      opportunityIds?: string[];
+      actionLabel?: string;
+    };
+
+    if (!body.opportunityIds || body.opportunityIds.length === 0) {
+      response.status(400).json({ error: 'opportunityIds array is required' });
+      return;
+    }
+
+    for (const opportunityId of body.opportunityIds) {
+      await twentyDataService.createTask(
+        body.actionLabel ?? '[Comercial] Seguimiento prospecto',
+        `Seguimiento masivo desde búsqueda de demanda. Opportunity: ${opportunityId}`,
+      );
+
+      brokerNotificationStore.add({
+        type: 'task',
+        priority: 'normal',
+        title: 'Tarea de seguimiento creada',
+        body: `Prospecto seleccionado en búsqueda de demanda.`,
+        area: 'Comercial',
+        opportunityId,
+      });
+    }
+
+    response.json({
+      tasksCreated: body.opportunityIds.length,
+      message: `Se crearon ${body.opportunityIds.length} tareas de seguimiento.`,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     response.status(500).json({ error: message });

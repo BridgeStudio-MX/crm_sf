@@ -39,6 +39,9 @@ export enum AppPath {
   ParksNotificaciones = '/parks/notificaciones',
   ParksMiDesempeno = '/parks/mi-desempeno',
   ParksInquilino360 = '/parks/inquilinos/:inquilinoId',
+  ParksProspectos = '/parks/prospectos',
+  ParksLegalPipeline = '/parks/legal-pipeline',
+  ParksLegalDashboard = '/parks/legal-dashboard',
 
   Settings = `settings`,
   SettingsCatchAll = `/${Settings}/*`,

@@ -6,11 +6,22 @@ import {
   PARKS_COMMERCIAL_NOTIFICATIONS_ENDPOINT,
   PARKS_COMMERCIAL_PROSPECT_SCORES_ENDPOINT,
   PARKS_COMMERCIAL_SALES_SCRIPT_ENDPOINT,
+  PARKS_COMMERCIAL_DEMAND_SEARCH_ENDPOINT,
+  PARKS_COMMERCIAL_COMPOSER_ENDPOINT,
+  PARKS_COMMERCIAL_ACTIVITY_TIMELINE_ENDPOINT,
+  PARKS_COMMERCIAL_DEAL_WIN_PREVIEW_ENDPOINT,
+  PARKS_COMMERCIAL_BULK_FOLLOW_UP_ENDPOINT,
   PARKS_SERVICE_URL,
 } from '@/parks-industrial/constants/parks-commercial.constants';
 import {
+  type ActivityTimelineResult,
   type BrokerNotification,
   type BrokerNotificationsResponse,
+  type ComposerGenerateResult,
+  type ComposerTemplateType,
+  type DealWinPreview,
+  type DemandSearchFilters,
+  type DemandSearchResult,
   type EmailSequenceResult,
   type FichaTecnicaLink,
   type FichaTecnicaSentVia,
@@ -195,6 +206,7 @@ export const sendParksQuotation = async (
     periodoGraciaMeses?: number;
     depositoGarantiaMeses?: number;
     companyName?: string;
+    naveVinculadaId?: string;
   },
 ): Promise<{
   rentaMensualCalculada: number;
@@ -282,7 +294,11 @@ export const markParksOpportunityLost = async (input: {
 export const createParksHojaAcuerdos = async (input: {
   opportunityId: string;
   ejecutivoAsignado?: string;
-}): Promise<{ hojaId: string; esquemaComision: string }> => {
+}): Promise<{
+  hojaId: string;
+  esquemaComision: string;
+  hoja: ParksHojaDeAcuerdosDraft;
+}> => {
   const response = await fetch(
     `${PARKS_SERVICE_URL}/commercial/hoja-acuerdos`,
     {
@@ -299,6 +315,111 @@ export const createParksHojaAcuerdos = async (input: {
   return (await response.json()) as {
     hojaId: string;
     esquemaComision: string;
+    hoja: ParksHojaDeAcuerdosDraft;
+  };
+};
+
+export type ParksHojaDeAcuerdosDraft = {
+  id: string;
+  referencia?: string;
+  tipoContrato?: string;
+  m2Acordados?: number;
+  precioUsdM2?: number;
+  plazoMeses?: number;
+  fechaInicio?: string;
+  fechaFirma?: string;
+  periodoGraciaMeses?: number;
+  depositoMeses?: number;
+  escalacionAnualPct?: number;
+  condicionesEspeciales?: string;
+  esquemaComision?: string;
+  estatus?: string;
+  firmadaPorCliente?: boolean;
+  firmadaPorCem?: boolean;
+  brokerComisionPct?: number;
+  brokerComisionMonto?: number;
+  ejecutivoAsignado?: string;
+  nave?: { id?: string; identificador?: string };
+  inquilino?: { id?: string; empresa?: string };
+};
+
+export type ParksHojaDeAcuerdosUpdateInput = {
+  m2Acordados?: number;
+  precioUsdM2?: number;
+  plazoMeses?: number;
+  fechaInicio?: string | null;
+  periodoGraciaMeses?: number;
+  depositoMeses?: number;
+  escalacionAnualPct?: number;
+  condicionesEspeciales?: string;
+  tipoContrato?: string;
+  esquemaComision?: string;
+  ejecutivoAsignado?: string;
+  brokerComisionPct?: number;
+  brokerComisionMonto?: number;
+};
+
+export const fetchParksHojaByOpportunity = async (
+  opportunityId: string,
+): Promise<ParksHojaDeAcuerdosDraft | null> => {
+  const response = await fetch(
+    `${PARKS_SERVICE_URL}/commercial/hoja-acuerdos/by-opportunity/${opportunityId}`,
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  const payload = (await response.json()) as {
+    hoja: ParksHojaDeAcuerdosDraft | null;
+  };
+
+  return payload.hoja;
+};
+
+export const updateParksHojaAcuerdos = async (
+  hojaId: string,
+  input: ParksHojaDeAcuerdosUpdateInput,
+): Promise<ParksHojaDeAcuerdosDraft> => {
+  const response = await fetch(
+    `${PARKS_SERVICE_URL}/commercial/hoja-acuerdos/${hojaId}`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  const payload = (await response.json()) as {
+    hoja: ParksHojaDeAcuerdosDraft;
+  };
+
+  return payload.hoja;
+};
+
+export const generateParksHojaCopy = async (
+  hojaId: string,
+): Promise<{ html: string; fileName: string; referencia: string }> => {
+  const response = await fetch(
+    `${PARKS_SERVICE_URL}/commercial/hoja-acuerdos/${hojaId}/generate-copy`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  return (await response.json()) as {
+    html: string;
+    fileName: string;
+    referencia: string;
   };
 };
 
@@ -310,7 +431,13 @@ export const signParksHojaAcuerdos = async (
     firmadaPorCem?: boolean;
     fechaFirma?: string;
   },
-): Promise<{ readyForLegal: boolean }> => {
+): Promise<{
+  readyForLegal: boolean;
+  firmadaPorCem: boolean;
+  firmadaPorCliente: boolean;
+  casoLegalId?: string;
+  nextStage?: string;
+}> => {
   const response = await fetch(
     `${PARKS_SERVICE_URL}/commercial/hoja-acuerdos/${hojaId}/sign`,
     {
@@ -324,7 +451,13 @@ export const signParksHojaAcuerdos = async (
     throw new Error(await parseErrorMessage(response));
   }
 
-  return (await response.json()) as { readyForLegal: boolean };
+  return (await response.json()) as {
+    readyForLegal: boolean;
+    firmadaPorCem: boolean;
+    firmadaPorCliente: boolean;
+    casoLegalId?: string;
+    nextStage?: string;
+  };
 };
 
 export const validateParksStageGate = async (input: {
@@ -499,12 +632,57 @@ export const setParksDecisorTourAttendance = async (input: {
   };
 };
 
-export const fetchParksNotifications = async ({
+type ParksNotificationViewerParams = {
+  viewerName?: string;
+  viewerEmail?: string;
+  viewerRoleLabels?: string[];
+};
+
+const buildNotificationsQuery = ({
   unreadOnly = false,
+  viewerName,
+  viewerEmail,
+  viewerRoleLabels,
 }: {
   unreadOnly?: boolean;
-} = {}): Promise<BrokerNotificationsResponse> => {
-  const query = unreadOnly ? '?unreadOnly=true' : '';
+} & ParksNotificationViewerParams): string => {
+  const params = new URLSearchParams();
+
+  if (unreadOnly) {
+    params.set('unreadOnly', 'true');
+  }
+
+  if (viewerName) {
+    params.set('viewerName', viewerName);
+  }
+
+  if (viewerEmail) {
+    params.set('viewerEmail', viewerEmail);
+  }
+
+  if (viewerRoleLabels && viewerRoleLabels.length > 0) {
+    params.set('viewerRoleLabels', viewerRoleLabels.join(','));
+  }
+
+  const query = params.toString();
+
+  return query ? `?${query}` : '';
+};
+
+export const fetchParksNotifications = async ({
+  unreadOnly = false,
+  viewerName,
+  viewerEmail,
+  viewerRoleLabels,
+}: {
+  unreadOnly?: boolean;
+} & ParksNotificationViewerParams = {}): Promise<BrokerNotificationsResponse> => {
+  const query = buildNotificationsQuery({
+    unreadOnly,
+    viewerName,
+    viewerEmail,
+    viewerRoleLabels,
+  });
   const response = await fetch(
     `${PARKS_COMMERCIAL_NOTIFICATIONS_ENDPOINT}${query}`,
   );
@@ -516,11 +694,24 @@ export const fetchParksNotifications = async ({
   return (await response.json()) as BrokerNotificationsResponse;
 };
 
-export const markParksNotificationRead = async (
-  notificationId: string,
-): Promise<{ notification: BrokerNotification; unreadCount: number }> => {
+export const markParksNotificationRead = async ({
+  notificationId,
+  viewerName,
+  viewerEmail,
+  viewerRoleLabels,
+}: {
+  notificationId: string;
+} & ParksNotificationViewerParams): Promise<{
+  notification: BrokerNotification;
+  unreadCount: number;
+}> => {
+  const query = buildNotificationsQuery({
+    viewerName,
+    viewerEmail,
+    viewerRoleLabels,
+  });
   const response = await fetch(
-    `${PARKS_COMMERCIAL_NOTIFICATIONS_ENDPOINT}/${notificationId}/read`,
+    `${PARKS_COMMERCIAL_NOTIFICATIONS_ENDPOINT}/${notificationId}/read${query}`,
     { method: 'PATCH' },
   );
 
@@ -534,10 +725,18 @@ export const markParksNotificationRead = async (
   };
 };
 
-export const markAllParksNotificationsRead = async (): Promise<number> => {
+export const markAllParksNotificationsRead = async ({
+  viewerName,
+  viewerEmail,
+  viewerRoleLabels,
+}: ParksNotificationViewerParams = {}): Promise<number> => {
   const response = await fetch(
     `${PARKS_COMMERCIAL_NOTIFICATIONS_ENDPOINT}/mark-all-read`,
-    { method: 'POST' },
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ viewerName, viewerEmail, viewerRoleLabels }),
+    },
   );
 
   if (!response.ok) {
@@ -603,6 +802,7 @@ export const matchParksNaves = async ({
   cityFilter,
   minAlturaLibre,
   minAndenes,
+  limit = 50,
 }: {
   opportunityId: string;
   m2Requeridos: number;
@@ -610,6 +810,7 @@ export const matchParksNaves = async ({
   cityFilter?: string;
   minAlturaLibre?: number;
   minAndenes?: number;
+  limit?: number;
 }): Promise<NaveMatchResult> => {
   const response = await fetch(PARKS_COMMERCIAL_MATCH_NAVES_ENDPOINT, {
     method: 'POST',
@@ -621,6 +822,7 @@ export const matchParksNaves = async ({
       cityFilter,
       minAlturaLibre,
       minAndenes,
+      limit,
     }),
   });
 
@@ -770,4 +972,111 @@ export const fetchParksEmailSequence = async ({
   }
 
   return (await response.json()) as EmailSequenceResult;
+};
+
+export const searchParksDemandProspects = async (
+  filters: DemandSearchFilters,
+): Promise<DemandSearchResult> => {
+  const response = await fetch(PARKS_COMMERCIAL_DEMAND_SEARCH_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(filters),
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  return (await response.json()) as DemandSearchResult;
+};
+
+export const generateParksComposerMaterial = async ({
+  templateType,
+  opportunityId,
+  opportunityName,
+  companyName,
+  naveIdentificador,
+  parqueNombre,
+  ubicacion,
+  m2,
+  precioUsdM2,
+}: {
+  templateType: ComposerTemplateType;
+  opportunityId?: string;
+  opportunityName?: string;
+  companyName?: string;
+  naveIdentificador: string;
+  parqueNombre?: string;
+  ubicacion?: string;
+  m2?: number;
+  precioUsdM2?: number;
+}): Promise<ComposerGenerateResult> => {
+  const response = await fetch(PARKS_COMMERCIAL_COMPOSER_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      templateType,
+      opportunityId,
+      opportunityName,
+      companyName,
+      naveIdentificador,
+      parqueNombre,
+      ubicacion,
+      m2,
+      precioUsdM2,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  return (await response.json()) as ComposerGenerateResult;
+};
+
+export const fetchParksActivityTimeline = async (
+  opportunityId: string,
+): Promise<ActivityTimelineResult> => {
+  const response = await fetch(
+    `${PARKS_COMMERCIAL_ACTIVITY_TIMELINE_ENDPOINT}/${opportunityId}`,
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  return (await response.json()) as ActivityTimelineResult;
+};
+
+export const fetchParksDealWinPreview = async (
+  opportunityId: string,
+): Promise<DealWinPreview> => {
+  const response = await fetch(
+    `${PARKS_COMMERCIAL_DEAL_WIN_PREVIEW_ENDPOINT}/${opportunityId}`,
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  return (await response.json()) as DealWinPreview;
+};
+
+export const createParksBulkFollowUp = async (
+  opportunityIds: string[],
+): Promise<{ tasksCreated: number; message: string }> => {
+  const response = await fetch(PARKS_COMMERCIAL_BULK_FOLLOW_UP_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ opportunityIds }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  return (await response.json()) as {
+    tasksCreated: number;
+    message: string;
+  };
 };

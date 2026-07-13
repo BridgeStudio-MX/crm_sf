@@ -1,5 +1,6 @@
 import { GET_NAVES_MATCHING_CATALOG } from '../graphql/queries';
 import { DEMO_NAVE_DEFINITIONS } from '../seed/demo-seed-naves.constants';
+import { resolveParksNavePropertyImageUrl } from '../seed/parks-demo-image.constants';
 import {
   type NaveMatchCandidate,
   type NaveMatchResult,
@@ -17,6 +18,7 @@ type NaveCatalogItem = {
   alturaLibreM?: number;
   andenes?: number;
   estatus?: string;
+  fotoInmuebleUrl?: string;
 };
 
 const DEMO_PARQUE_NAMES: Record<string, { nombre: string; ubicacion: string }> =
@@ -53,6 +55,7 @@ const loadNaveCatalog = async (): Promise<NaveCatalogItem[]> => {
         estatus?: string;
         alturaLibreM?: number;
         andenes?: number;
+        fotoInmuebleUrl?: string;
         parque?: { nombre?: string; ubicacion?: string };
       }>;
     }>(GET_NAVES_MATCHING_CATALOG);
@@ -73,6 +76,11 @@ const loadNaveCatalog = async (): Promise<NaveCatalogItem[]> => {
           alturaLibreM: nave.alturaLibreM,
           andenes: nave.andenes,
           estatus: nave.estatus,
+          fotoInmuebleUrl: resolveParksNavePropertyImageUrl({
+            fotoInmuebleUrl: nave.fotoInmuebleUrl,
+            identificador: nave.identificador,
+            recordId: nave.id,
+          }),
         }));
     }
   } catch {
@@ -91,12 +99,16 @@ const loadNaveCatalog = async (): Promise<NaveCatalogItem[]> => {
       m2: nave.m2,
       parqueNombre: parque?.nombre,
       ubicacion: parque?.ubicacion,
-          precioUsdM2: nave.precioBaseUsd,
-          alturaLibreM: 12,
-          andenes: 8,
-          estatus: nave.estatus,
-        };
-      });
+      precioUsdM2: nave.precioBaseUsd,
+      alturaLibreM: 12,
+      andenes: 8,
+      estatus: nave.estatus,
+      fotoInmuebleUrl: resolveParksNavePropertyImageUrl({
+        identificador: nave.identificador,
+        recordId: nave.key,
+      }),
+    };
+  });
 };
 
 const scoreM2Fit = (naveM2: number, requiredM2: number): number => {
@@ -195,7 +207,7 @@ export const naveMatchingService = {
     cityFilter,
     minAlturaLibre,
     minAndenes,
-    limit = 3,
+    limit = 50,
   }: {
     opportunityId?: string;
     m2Requeridos: number;
@@ -253,6 +265,7 @@ export const naveMatchingService = {
         alturaLibreM: nave.alturaLibreM,
         andenes: nave.andenes,
         estatus: nave.estatus,
+        fotoInmuebleUrl: nave.fotoInmuebleUrl,
         disponibilidadCondicional,
         matchScore,
         matchReasons: buildMatchReasons(nave, m2Score, industryFit.reason),
@@ -261,7 +274,7 @@ export const naveMatchingService = {
 
     const matches = scored
       .sort((left, right) => right.matchScore - left.matchScore)
-      .slice(0, limit);
+      .slice(0, Math.max(1, limit));
 
     return {
       opportunityId,

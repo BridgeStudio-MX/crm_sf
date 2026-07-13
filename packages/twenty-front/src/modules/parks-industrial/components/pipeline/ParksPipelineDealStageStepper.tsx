@@ -151,7 +151,7 @@ export const ParksPipelineDealStageStepper = ({
         })}
       </StyledTrack>
       <StyledStepperHint>
-        {t`Clic en un paso para cambiar de etapa · LOI, Legal y Ganado solo vía Flujo comercial`}
+        {t`Clic en un paso para cambiar de etapa · LOI, Legal y Ganado solo vía tab Hoja`}
       </StyledStepperHint>
     </StyledStepperSection>
   );

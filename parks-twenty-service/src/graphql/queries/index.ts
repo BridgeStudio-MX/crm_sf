@@ -20,11 +20,14 @@ export const GET_CASOS_LEGALES_ACTIVOS = `
           referencia
           tipoDocumento
           estatus
+          abogadoAsignado
           fechaHojaAcuerdos
           slaDiasHabiles
           slaFechaLimite
           diasTranscurridos
+          diasPausados
           documentacionCompleta
+          slaPausado
           esPropiedadFuno
           semaforo
           notasCatalina
@@ -41,6 +44,38 @@ export const GET_CASOS_LEGALES_ACTIVOS = `
             id
             identificador
             esPropiedadFuno
+            parque {
+              id
+              nombre
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_ALL_CASOS_LEGALES = `
+  query GetAllCasosLegales {
+    casosLegales(first: 250, orderBy: [{ updatedAt: DescNullsLast }]) {
+      edges {
+        node {
+          id
+          referencia
+          tipoDocumento
+          estatus
+          abogadoAsignado
+          slaDiasHabiles
+          diasTranscurridos
+          semaforo
+          inquilino {
+            empresa
+          }
+          nave {
+            identificador
+            parque {
+              nombre
+            }
           }
         }
       }
@@ -61,6 +96,7 @@ export const GET_CASO_LEGAL_BY_ID = `
       diasTranscurridos
       documentacionCompleta
       cotejoAprobado
+      abogadoAsignado
       esPropiedadFuno
       semaforo
       notasCatalina
@@ -125,26 +161,92 @@ export const GET_HOJA_DE_ACUERDOS_BY_ID = `
     hojaDeAcuerdos(filter: { id: { eq: $hojaDeAcuerdosId } }) {
       id
       referencia
+      tipoContrato
       m2Acordados
       precioUsdM2
       plazoMeses
       fechaInicio
       fechaFirma
+      periodoGraciaMeses
+      depositoMeses
+      escalacionAnualPct
+      condicionesEspeciales
+      esquemaComision
+      estatus
+      firmadaPorCliente
+      firmadaPorCem
       brokerComisionPct
       brokerComisionMonto
       ejecutivoAsignado
       naveId
       inquilinoId
       brokerId
+      oportunidadVinculadaId
       nave {
         id
         identificador
         esPropiedadFuno
       }
+      inquilino {
+        id
+        empresa
+      }
       broker {
         id
         empresa
         contacto
+      }
+    }
+  }
+`;
+
+export const FIND_HOJA_DE_ACUERDOS_BY_OPPORTUNITY = `
+  query FindHojaDeAcuerdosByOpportunity($opportunityId: UUID!) {
+    hojasDeAcuerdos(
+      filter: { oportunidadVinculadaId: { eq: $opportunityId } }
+      first: 5
+      orderBy: [{ createdAt: DescNullsLast }]
+    ) {
+      edges {
+        node {
+          id
+          referencia
+          tipoContrato
+          m2Acordados
+          precioUsdM2
+          plazoMeses
+          fechaInicio
+          fechaFirma
+          periodoGraciaMeses
+          depositoMeses
+          escalacionAnualPct
+          condicionesEspeciales
+          esquemaComision
+          estatus
+          firmadaPorCliente
+          firmadaPorCem
+          brokerComisionPct
+          brokerComisionMonto
+          ejecutivoAsignado
+          naveId
+          inquilinoId
+          brokerId
+          oportunidadVinculadaId
+          nave {
+            id
+            identificador
+            esPropiedadFuno
+          }
+          inquilino {
+            id
+            empresa
+          }
+          broker {
+            id
+            empresa
+            contacto
+          }
+        }
       }
     }
   }
@@ -286,6 +388,22 @@ export const GET_COMISIONES_BY_HOJA = `
   }
 `;
 
+export const FIND_CASO_LEGAL_BY_HOJA = `
+  query FindCasoLegalByHoja($hojaDeAcuerdosId: UUID!) {
+    casosLegales(
+      filter: { hojaDeAcuerdosId: { eq: $hojaDeAcuerdosId } }
+      first: 1
+    ) {
+      edges {
+        node {
+          id
+          referencia
+        }
+      }
+    }
+  }
+`;
+
 export const GET_ALL_COMISIONES = `
   query GetAllComisiones {
     comisiones(first: 200, orderBy: [{ updatedAt: DescNullsLast }]) {
@@ -329,6 +447,39 @@ export const GET_OPPORTUNITIES_SUMMARY = `
           amount {
             amountMicros
             currencyCode
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_OPPORTUNITIES_FOR_DEMAND_SEARCH = `
+  query GetOpportunitiesForDemandSearch {
+    opportunities(first: 200, orderBy: [{ updatedAt: DescNullsLast }]) {
+      edges {
+        node {
+          id
+          name
+          stage
+          m2Requeridos
+          ubicacionDeseada
+          canalOrigen
+          plazoContratoMeses
+          updatedAt
+          amount {
+            amountMicros
+            currencyCode
+          }
+          inquilinoVinculado {
+            id
+            empresa
+            sector
+            rfc
+          }
+          naveVinculada {
+            id
+            identificador
           }
         }
       }
@@ -454,7 +605,92 @@ export const GET_FLUJOS_FIRMAS_BY_CASO = `
           firmante
           rol
           estatus
+          fechaEnvio
+          fechaFirma
           casoLegalId
+        }
+      }
+    }
+  }
+`;
+
+export const GET_VERSIONES_BY_CASO = `
+  query GetVersionesByCaso($casoLegalId: UUID!) {
+    versionesDocumento(
+      filter: { casoLegalId: { eq: $casoLegalId } }
+      first: 50
+      orderBy: [{ numeroVersion: AscNullsLast }]
+    ) {
+      edges {
+        node {
+          id
+          titulo
+          numeroVersion
+          fechaEnvio
+          enviadoPor
+          dirigidoA
+          respuestaCliente
+          cambiosSolicitados
+          esVersionFinal
+          pdfUrl
+        }
+      }
+    }
+  }
+`;
+
+export const GET_ACTAS_BY_CASO = `
+  query GetActasByCaso($casoLegalId: UUID!) {
+    actasRestitucion(
+      filter: { casoLegalId: { eq: $casoLegalId } }
+      first: 10
+    ) {
+      edges {
+        node {
+          id
+          referencia
+          fechaSalidaCliente
+          fechaRecepcionActa
+          diasRetrasoActa
+          estadoNave
+          decisionDeposito
+          montoDepositoOriginal
+          montoADevolver
+          montoARetener
+          aprobadoPorComercial
+          actaFirmadaCliente
+        }
+      }
+    }
+  }
+`;
+
+export const GET_HOLDOVERS_ACTIVOS = `
+  query GetHoldoversActivos($resolucionActivo: String!) {
+    holdovers(
+      filter: { resolucion: { eq: $resolucionActivo } }
+      first: 100
+    ) {
+      edges {
+        node {
+          id
+          referencia
+          fechaInicioHoldover
+          montoHoldoverMensual
+          diasHoldoverAcumulados
+          montoAcumuladoUsd
+          montoCobradoUsd
+          condonacionSolicitada
+          condonacionMotivo
+          condonacionEstatus
+          condonacionAutorizada
+          montoCondonado
+          inquilino {
+            empresa
+          }
+          nave {
+            identificador
+          }
         }
       }
     }
@@ -627,6 +863,7 @@ export const GET_NAVES_MATCHING_CATALOG = `
           estatus
           alturaLibreM
           andenes
+          fotoInmuebleUrl
           parque {
             id
             nombre

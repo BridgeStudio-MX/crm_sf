@@ -42,6 +42,7 @@ export const EXPEDIENTE_ESTATUS_ARCHIVADO_FUNO = 'Archivado FUNO';
 
 export const INQUILINO_ESTATUS_HOLDOVER = 'En holdover';
 export const NAVE_ESTATUS_RENTADA = 'Rentada';
+export const NAVE_ESTATUS_DISPONIBLE = 'Disponible';
 
 export const HOLDOVER_ETAPA_DETECTADO = 'Detectado';
 export const HOLDOVER_RESOLUCION_ACTIVO = 'Activo';

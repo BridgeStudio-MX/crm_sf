@@ -1,6 +1,7 @@
 import { SidePanelToggleButton } from '@/side-panel/components/SidePanelToggleButton';
 import { ParksAiAssistantButton } from '@/parks-industrial/components/ai/ParksAiAssistantButton';
 import { ParksAiPanel } from '@/parks-industrial/components/ai/ParksAiPanel';
+import { ParksUserWelcomeBar } from '@/parks-industrial/components/layout/ParksUserWelcomeBar';
 import { ParksAiAssistantProvider } from '@/parks-industrial/hooks/useParksAiAssistant';
 import { StyledParksPageSubtitle } from '@/parks-industrial/components/ui/ParksPageSubtitle';
 import { PARKS_VISUAL_THEME } from '@/parks-industrial/constants/parks-theme.constants';
@@ -55,6 +56,7 @@ export const ParksPageShell = ({
           }
         />
       }
+      secondaryBar={<ParksUserWelcomeBar />}
     >
       <StyledContent>
         {subtitle ? (

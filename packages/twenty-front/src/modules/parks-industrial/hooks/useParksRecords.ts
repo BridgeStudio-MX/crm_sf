@@ -80,8 +80,16 @@ export type ParksOpportunityRecord = ObjectRecord & {
   createdAt?: string;
   tipoOperacion?: string;
   asignadoPor?: string;
+  leasingOfficerAsignado?: string;
+  tourNavesMostradas?: string;
+  tourFecha?: string;
+  tourAsistentes?: string;
+  tourFeedback?: string;
+  tourProximosPasos?: string;
+  cotizacionEnviadaEn?: string;
   updatedAt?: string;
   amount?: { amountMicros?: number; currencyCode?: string };
+  naveVinculadaId?: string;
   naveVinculada?: ObjectRecord & { identificador?: string; id?: string };
   inquilinoVinculado?: ObjectRecord & { empresa?: string; id?: string };
   owner?: ObjectRecord & {
@@ -107,6 +115,15 @@ export type ParksCasoLegalRecord = ObjectRecord & {
   notasCatalina?: string;
   semaforo?: string;
   estatus?: string;
+  abogadoAsignado?: string;
+  documentacionCompleta?: boolean;
+  cotejoAprobado?: boolean;
+  tipoDocumento?: string;
+  slaDiasHabiles?: number;
+  slaFechaLimite?: string;
+  diasTranscurridos?: number;
+  inquilinoId?: string;
+  naveId?: string;
   inquilino?: ObjectRecord & { empresa?: string };
   nave?: ObjectRecord & { identificador?: string };
   hojaDeAcuerdos?: ObjectRecord & {

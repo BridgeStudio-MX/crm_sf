@@ -35,6 +35,14 @@ export type CasoLegalRecord = {
   diasTranscurridos: number;
   documentacionCompleta?: boolean;
   cotejoAprobado?: boolean;
+  abogadoAsignado?: string;
+  slaPausado?: boolean;
+  fechaPausaSla?: string;
+  motivoPausa?: string;
+  diasPausados?: number;
+  versionActual?: number;
+  requiereConvenioConfidencialidad?: boolean;
+  ndaFirmado?: boolean;
   esPropiedadFuno?: boolean;
   holdoverActivo: boolean;
   clienteNoRenueva: boolean;
@@ -45,7 +53,9 @@ export type CasoLegalRecord = {
   inquilinoId?: string;
   naveId?: string;
   inquilino?: InquilinoRecord;
-  nave?: NaveRecord;
+  nave?: NaveRecord & {
+    parque?: { id?: string; nombre?: string };
+  };
   hojaDeAcuerdos?: HojaDeAcuerdosRecord;
 };
 
@@ -56,15 +66,25 @@ export type HojaDeAcuerdosRecord = {
   naveId?: string;
   inquilinoId?: string;
   brokerId?: string;
+  oportunidadVinculadaId?: string;
   precioUsdM2: number;
   m2Acordados: number;
   plazoMeses: number;
   fechaInicio?: string;
   fechaFirma?: string;
+  periodoGraciaMeses?: number;
+  depositoMeses?: number;
+  escalacionAnualPct?: number;
+  condicionesEspeciales?: string;
+  esquemaComision?: string;
+  estatus?: string;
+  firmadaPorCliente?: boolean;
+  firmadaPorCem?: boolean;
   brokerComisionPct?: number;
   brokerComisionMonto?: number;
   ejecutivoAsignado?: string;
   nave?: NaveRecord;
+  inquilino?: InquilinoRecord;
   broker?: BrokerRecord;
 };
 

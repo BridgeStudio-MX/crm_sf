@@ -293,11 +293,16 @@ export const commercialLeadService = {
     input: AssignLeadInput,
   ): Promise<{ opportunityId: string }> => {
     const today = twentyDataService.todayIsoDate();
-
+    // Keep asignadoPor as the durable signal ("CEM → LO") even if the
+    // dedicated LO field is not yet in workspace metadata.
     await twentyDataService.updateOpportunity(input.opportunityId, {
-      asignadoPor: input.assignedBy,
+      asignadoPor: `${input.assignedBy} → ${input.leasingOfficerName}`,
       asignadoEn: today,
       pointOfContactId: undefined,
+    });
+
+    await twentyDataService.updateOpportunity(input.opportunityId, {
+      leasingOfficerAsignado: input.leasingOfficerName,
     });
 
     // Store LO name in ejecutivo-style text field via note + notification
@@ -311,14 +316,11 @@ export const commercialLeadService = {
       priority: 'high',
       title: `Lead asignado a ${input.leasingOfficerName}`,
       body: `Asignado por ${input.assignedBy}. Contactar en máximo 24 horas.`,
-      area: 'Broker',
+      area: 'Comercial',
       opportunityId: input.opportunityId,
-    });
-
-    // Persist assignee name for audit trail on opportunity
-    await twentyDataService.updateOpportunity(input.opportunityId, {
-      asignadoPor: `${input.assignedBy} → ${input.leasingOfficerName}`,
-      asignadoEn: today,
+      audienceNames: [input.leasingOfficerName],
+      // Empty roles = only the named LO sees this (not all commercial / not Legal).
+      audienceRoleLabels: [],
     });
 
     return { opportunityId: input.opportunityId };

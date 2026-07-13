@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Brochure — {{naveIdentificador}}</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      color: #111827;
+      margin: 0;
+      padding: 32px;
+      line-height: 1.5;
+    }
+    .header {
+      border-bottom: 3px solid #2563eb;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+    }
+    .header h1 { font-size: 28px; margin: 0 0 8px; }
+    .header p { color: #6b7280; margin: 0; }
+    .hero {
+      background: linear-gradient(135deg, #eff6ff 0%, #f9fafb 100%);
+      border-radius: 12px;
+      margin-bottom: 24px;
+      padding: 24px;
+    }
+    .grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-bottom: 24px;
+    }
+    .card {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .label {
+      color: #6b7280;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .value {
+      font-size: 20px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    .description {
+      color: #374151;
+      font-size: 15px;
+    }
+    .footer {
+      border-top: 1px solid #e5e7eb;
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 32px;
+      padding-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>{{naveIdentificador}}</h1>
+    <p>{{parqueNombre}} · {{ubicacion}}</p>
+  </div>
+
+  <div class="hero">
+    <p class="label">Propuesta para</p>
+    <p class="value">{{companyName}}</p>
+    <p class="description">{{description}}</p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <p class="label">Superficie</p>
+      <p class="value">{{m2}} m²</p>
+    </div>
+    <div class="card">
+      <p class="label">Precio referencia</p>
+      <p class="value">USD {{precioUsdM2}} / m²</p>
+    </div>
+    <div class="card">
+      <p class="label">Renta mensual estimada</p>
+      <p class="value">USD {{rentaMensualEstimada}}</p>
+    </div>
+    <div class="card">
+      <p class="label">Parque</p>
+      <p class="value">{{parqueNombre}}</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    Generado {{generationDate}} · Parks Industrial · Material comercial personalizado
+  </div>
+</body>
+</html>

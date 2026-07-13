@@ -184,6 +184,11 @@ export const OPPORTUNITY_FIELD_DEFINITIONS: FieldDefinition[] = [
   { name: 'asignadoPor', label: 'Asignado por', type: 'TEXT' },
   { name: 'asignadoEn', label: 'Asignado en', type: 'DATE' },
   {
+    name: 'leasingOfficerAsignado',
+    label: 'Leasing Officer asignado',
+    type: 'TEXT',
+  },
+  {
     name: 'esquemaComision',
     label: 'Esquema comisión',
     type: 'SELECT',

@@ -111,6 +111,10 @@ export const holdoverService = {
       'CxC',
       `Emitir factura holdover — ${empresa}: ${montoHoldoverMensual.toFixed(2)} USD/mes`,
     );
+    await notificacionService.notifyArea(
+      'Facturación',
+      `Emitir factura holdover (Jesús) — ${empresa}: ${montoHoldoverMensual.toFixed(2)} USD/mes`,
+    );
 
     await oracleService.notifyHoldoverIniciado({
       id: holdover.id,

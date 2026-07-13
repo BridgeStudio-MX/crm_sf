@@ -31,6 +31,10 @@ const readReturnToPathFromUrlSearchParams = (): string | null => {
   return value && isValidReturnToPath(value) ? value : null;
 };
 
+const isSettingsLocation = (pathname: string): boolean =>
+  pathname === `/${AppPath.Settings}` ||
+  pathname.startsWith(`/${AppPath.Settings}/`);
+
 export const usePageChangeEffectNavigateLocation = () => {
   const hasAccessTokenPair = useHasAccessTokenPair();
   const currentWorkspace = useAtomStateValue(currentWorkspaceState);
@@ -76,6 +80,11 @@ export const usePageChangeEffectNavigateLocation = () => {
     ? returnToPath
     : readReturnToPathFromUrlSearchParams();
 
+  // Never bounce Settings → Parks home/dashboard. Parks default-home redirects
+  // made /settings feel broken when any effect remapped Index.
+  if (isSettingsLocation(location.pathname)) {
+    return;
+  }
   if (
     (!hasAccessTokenPair || !isOnAWorkspace || !isDefined(currentWorkspace)) &&
     !someMatchingLocationOf([

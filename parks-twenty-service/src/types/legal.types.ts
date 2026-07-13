@@ -85,3 +85,21 @@ export type PreSendLegalResult = {
   validation: DocumentValidationResult;
   message: string;
 };
+
+export type DocumentExtractionResult = {
+  casoLegalId: string;
+  documentType: string;
+  fileName?: string;
+  extractedFields: Record<string, string>;
+  suggestedInquilinoUpdates: Record<string, string>;
+  confidence: number;
+  summary: string;
+  extractedAt: string;
+};
+
+export type ApplyExtractionResult = {
+  casoLegalId: string;
+  inquilinoId: string;
+  appliedFields: Record<string, string>;
+  message: string;
+};

@@ -5,6 +5,7 @@ import { IconArrowRight, IconUserPlus } from 'twenty-ui/icon';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
 import { PARKS_LEADS_CEM_PATH } from '@/parks-industrial/constants/parks-routes.constants';
+import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
 import { useParksUnassignedLeads } from '@/parks-industrial/hooks/useParksUnassignedLeads';
 
 const StyledBanner = styled.div`
@@ -80,9 +81,10 @@ type ParksUnassignedLeadsBannerProps = {
 export const ParksUnassignedLeadsBanner = ({
   refreshKey = 0,
 }: ParksUnassignedLeadsBannerProps) => {
+  const { canAccessRoute } = useParksAccess();
   const { leads, isLoading } = useParksUnassignedLeads(refreshKey);
 
-  if (isLoading || leads.length === 0) {
+  if (!canAccessRoute('leadsCem') || isLoading || leads.length === 0) {
     return null;
   }
 

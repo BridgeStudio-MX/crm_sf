@@ -2,7 +2,11 @@ import { t } from '@lingui/core/macro';
 
 export const PARKS_UNASSIGNED_LEADS_PREVIEW_COUNT = 3;
 
+// Demo + fallback LOs. Live workspace LOs (rol Ejecutivo Comercial) are
+// prepended at runtime via useParksLeasingOfficerOptions.
 export const PARKS_LEASING_OFFICER_OPTIONS = [
+  'Edgard Vargas',
+  'Tim Apple',
   'Alejandro García',
   'María Torres',
   'Carlos Mendoza',

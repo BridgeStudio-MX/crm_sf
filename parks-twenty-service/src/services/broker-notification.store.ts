@@ -5,6 +5,11 @@ import {
   type BrokerNotificationPriority,
   type BrokerNotificationType,
 } from '../types/broker-notification.types';
+import {
+  isNotificationVisibleToViewer,
+  type NotificationAudienceViewer,
+  resolveAudienceRoleLabelsForArea,
+} from './notification-audience.util';
 
 type CreateBrokerNotificationInput = {
   type: BrokerNotificationType;
@@ -14,6 +19,14 @@ type CreateBrokerNotificationInput = {
   area?: string;
   opportunityId?: string;
   opportunityName?: string;
+  actionPath?: string;
+  actionLabel?: string;
+  audienceRoleLabels?: string[];
+  audienceNames?: string[];
+};
+
+type ListBrokerNotificationsOptions = NotificationAudienceViewer & {
+  unreadOnly?: boolean;
 };
 
 const notifications: BrokerNotification[] = [];
@@ -38,8 +51,16 @@ const seedDemoNotifications = (): void => {
   }
 };
 
+const filterForViewer = (
+  items: BrokerNotification[],
+  viewer: NotificationAudienceViewer,
+): BrokerNotification[] =>
+  items.filter((notification) =>
+    isNotificationVisibleToViewer(notification, viewer),
+  );
+
 export const brokerNotificationStore = {
-  list: (options?: { unreadOnly?: boolean }): BrokerNotification[] => {
+  list: (options?: ListBrokerNotificationsOptions): BrokerNotification[] => {
     seedDemoNotifications();
 
     const sorted = [...notifications].sort(
@@ -48,17 +69,30 @@ export const brokerNotificationStore = {
         new Date(left.createdAt).getTime(),
     );
 
+    const visible = filterForViewer(sorted, {
+      viewerName: options?.viewerName,
+      viewerRoleLabels: options?.viewerRoleLabels,
+    });
+
     if (options?.unreadOnly) {
-      return sorted.filter((notification) => !notification.read);
+      return visible.filter((notification) => !notification.read);
     }
 
-    return sorted;
+    return visible;
   },
 
-  getUnreadCount: (): number =>
-    brokerNotificationStore.list({ unreadOnly: true }).length,
+  getUnreadCount: (viewer?: NotificationAudienceViewer): number =>
+    brokerNotificationStore.list({
+      unreadOnly: true,
+      viewerName: viewer?.viewerName,
+      viewerRoleLabels: viewer?.viewerRoleLabels,
+    }).length,
 
   add: (input: CreateBrokerNotificationInput): BrokerNotification => {
+    const audienceRoleLabels = Array.isArray(input.audienceRoleLabels)
+      ? input.audienceRoleLabels
+      : resolveAudienceRoleLabelsForArea(input.area);
+
     const notification: BrokerNotification = {
       id: randomUUID(),
       type: input.type,
@@ -68,6 +102,10 @@ export const brokerNotificationStore = {
       area: input.area,
       opportunityId: input.opportunityId,
       opportunityName: input.opportunityName,
+      actionPath: input.actionPath,
+      actionLabel: input.actionLabel,
+      audienceRoleLabels,
+      audienceNames: input.audienceNames,
       read: false,
       createdAt: new Date().toISOString(),
     };
@@ -78,7 +116,9 @@ export const brokerNotificationStore = {
   },
 
   markRead: (notificationId: string): BrokerNotification | null => {
-    const notification = notifications.find((item) => item.id === notificationId);
+    const notification = notifications.find(
+      (item) => item.id === notificationId,
+    );
 
     if (!notification) {
       return null;
@@ -89,11 +129,14 @@ export const brokerNotificationStore = {
     return notification;
   },
 
-  markAllRead: (): number => {
+  markAllRead: (viewer?: NotificationAudienceViewer): number => {
+    const visibleIds = new Set(
+      brokerNotificationStore.list(viewer).map((notification) => notification.id),
+    );
     let updatedCount = 0;
 
     for (const notification of notifications) {
-      if (!notification.read) {
+      if (visibleIds.has(notification.id) && !notification.read) {
         notification.read = true;
         updatedCount += 1;
       }

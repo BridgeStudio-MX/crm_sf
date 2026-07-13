@@ -74,7 +74,7 @@ export const legalHandoffService = {
       priority: 'normal',
       title: `Paquete enviado a Legal — ${referencia}`,
       body: validation.summary,
-      area: 'Legal — Catalina',
+      area: 'Legal',
     });
 
     return {

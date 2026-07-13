@@ -1,5 +1,14 @@
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
+export const PARKS_BRAND = {
+  primary: '#006837',
+  accent: '#8DC63F',
+  text: '#333333',
+  primarySoft: 'rgba(0, 104, 55, 0.12)',
+  accentSoft: 'rgba(141, 198, 63, 0.14)',
+  borderSoft: 'rgba(0, 104, 55, 0.22)',
+} as const;
+
 export type ParksVisualAccent =
   | 'blue'
   | 'green'
@@ -21,8 +30,8 @@ type ParksVisualAccentTokens = {
 
 export const PARKS_VISUAL_THEME = {
   pageBackgroundGradient: `
-    radial-gradient(circle at 0% 0%, ${themeCssVariables.color.blue1} 0%, transparent 42%),
-    radial-gradient(circle at 100% 0%, ${themeCssVariables.color.purple1} 0%, transparent 38%),
+    radial-gradient(circle at 0% 0%, rgba(0, 104, 55, 0.08) 0%, transparent 42%),
+    radial-gradient(circle at 100% 0%, rgba(141, 198, 63, 0.06) 0%, transparent 38%),
     radial-gradient(circle at 50% 100%, ${themeCssVariables.color.green1} 0%, transparent 34%),
     ${themeCssVariables.background.primary}
   `,

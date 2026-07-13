@@ -1,5 +1,7 @@
 import { styled } from '@linaria/react';
 
+import { useDefaultHomePagePath } from '@/navigation/hooks/useDefaultHomePagePath';
+import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
 import { currentMobileNavigationDrawerState } from '@/navigation/states/currentMobileNavigationDrawerState';
 import { isNavigationDrawerExpandedState } from '@/ui/navigation/states/isNavigationDrawerExpanded';
 import { navigationDrawerExpandedMemorizedState } from '@/ui/navigation/states/navigationDrawerExpandedMemorizedState';
@@ -7,6 +9,7 @@ import { navigationMemorizedUrlState } from '@/ui/navigation/states/navigationMe
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 import { useSetAtomState } from '@/ui/utilities/state/jotai/hooks/useSetAtomState';
 import { useIsWorkspaceActivationStatusEqualsTo } from '@/workspace/hooks/useIsWorkspaceActivationStatusEqualsTo';
+import { AppPath } from 'twenty-shared/types';
 import { WorkspaceActivationStatus } from 'twenty-shared/workspace';
 import { useContext } from 'react';
 import { IconX } from 'twenty-ui/icon';
@@ -53,6 +56,8 @@ export const NavigationDrawerBackButton = ({
 }: NavigationDrawerBackButtonProps) => {
   const { theme } = useContext(ThemeContext);
   const navigationMemorizedUrl = useAtomStateValue(navigationMemorizedUrlState);
+  const { defaultHomePagePath } = useDefaultHomePagePath();
+  const { hasAnyParksNavAccess, defaultAccessiblePath } = useParksAccess();
 
   const setIsNavigationDrawerExpanded = useSetAtomState(
     isNavigationDrawerExpandedState,
@@ -68,6 +73,22 @@ export const NavigationDrawerBackButton = ({
     WorkspaceActivationStatus.SUSPENDED,
   );
 
+  const fallbackExitPath =
+    hasAnyParksNavAccess &&
+    (defaultHomePagePath === AppPath.Index || defaultHomePagePath === '/')
+      ? defaultAccessiblePath
+      : defaultHomePagePath;
+
+  // Never exit Settings via bare "/" — PageChangeEffect remaps Index to home
+  // (often Parks Dashboard), which feels like "Configuración → Dashboard".
+  const exitPath =
+    !navigationMemorizedUrl ||
+    navigationMemorizedUrl === '/' ||
+    navigationMemorizedUrl === AppPath.Index ||
+    navigationMemorizedUrl.startsWith('/settings')
+      ? fallbackExitPath
+      : navigationMemorizedUrl;
+
   if (isWorkspaceSuspended) {
     return <StyledContainer />;
   }
@@ -75,7 +96,7 @@ export const NavigationDrawerBackButton = ({
   return (
     <StyledContainer>
       <UndecoratedLink
-        to={navigationMemorizedUrl}
+        to={exitPath}
         replace
         onClick={() => {
           setIsNavigationDrawerExpanded(navigationDrawerExpandedMemorized);

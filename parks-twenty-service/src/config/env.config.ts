@@ -54,10 +54,10 @@ export const envConfig = {
   openAiApiKey: process.env.OPENAI_API_KEY ?? '',
   openAiModel: process.env.OPENAI_MODEL ?? 'gpt-4o-mini',
   parksAiMock: parseBoolean(process.env.PARKS_AI_MOCK, true),
-  // Commercial flow stops at Hoja de Acuerdos until Legal module is enabled
+  // Legal handoff creates casoLegal when Hoja de Acuerdos is signed
   parksLegalHandoffEnabled: parseBoolean(
     process.env.PARKS_LEGAL_HANDOFF_ENABLED,
-    false,
+    true,
   ),
   // Placeholder thresholds until Héctor confirms exact discount rules
   aprobacionCemDescuentoPctMax: parseNumber(

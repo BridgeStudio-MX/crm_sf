@@ -27,6 +27,12 @@ export type WorkspaceMember = {
   timeFormat?: WorkspaceMemberTimeFormatEnum | null;
   numberFormat?: WorkspaceMemberNumberFormatEnum | null;
   calendarStartDay?: number | null;
+  roles?: Array<{
+    id: string;
+    label: string;
+    canReadAllObjectRecords?: boolean;
+    canUpdateAllObjectRecords?: boolean;
+  }> | null;
 };
 
 export type WorkspaceInvitation = {

@@ -2,6 +2,7 @@ import cron from 'node-cron';
 
 import { envConfig } from '../config/env.config';
 import { holdoverService } from '../services/holdover.service';
+import { holdoverAccumulationService } from '../services/holdover-condonacion.service';
 
 export const registerHoldoverScannerCron = (): void => {
   cron.schedule(envConfig.cronHoldoverScanner, async () => {
@@ -9,6 +10,7 @@ export const registerHoldoverScannerCron = (): void => {
 
     try {
       await holdoverService.scanExpiringContracts();
+      await holdoverAccumulationService.refreshAccumulatedAmounts();
       console.log('[cron] Holdover scanner — completed');
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

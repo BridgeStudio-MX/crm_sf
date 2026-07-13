@@ -89,6 +89,7 @@ type ParksDecisoresPanelProps = {
   opportunityId?: string;
   inquilinoId?: string;
   showTourAttendance?: boolean;
+  tourAttendanceLabel?: string;
   selectedTourDecisorIds?: string[];
   onTourSelectionChange?: (decisorIds: string[]) => void;
   embedded?: boolean;
@@ -105,6 +106,7 @@ export const ParksDecisoresPanel = ({
   opportunityId,
   inquilinoId,
   showTourAttendance = false,
+  tourAttendanceLabel,
   selectedTourDecisorIds = [],
   onTourSelectionChange,
   embedded = false,
@@ -257,7 +259,7 @@ export const ParksDecisoresPanel = ({
                   checked={selectedTourDecisorIds.includes(decisor.id)}
                   onChange={() => toggleTourSelection(decisor.id)}
                 />
-                {t`Asistió al tour`}
+                {tourAttendanceLabel ?? t`Asistió al tour`}
               </StyledTourAttendanceRow>
             ) : null}
           </StyledDecisorCard>

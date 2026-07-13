@@ -6,6 +6,7 @@ import {
   TIPO_DOCUMENTO_RENOVACION,
 } from '../constants/parks.constants';
 import {
+  CREATE_ACTA_RESTITUCION,
   CREATE_CASO_LEGAL,
   CREATE_COMISION,
   CREATE_DOCUMENTO_CHECKLIST,
@@ -14,17 +15,25 @@ import {
   CREATE_HOLDOVER,
   CREATE_NOTE,
   CREATE_TASK,
+  CREATE_VERSION_DOCUMENTO,
+  UPDATE_ACTA_RESTITUCION,
   UPDATE_CASO_LEGAL,
   UPDATE_COMISION,
+  UPDATE_DOCUMENTO_CHECKLIST,
   UPDATE_EXPEDIENTE_CONTRATO,
   UPDATE_FLUJO_FIRMAS,
+  UPDATE_HOLDOVER,
   UPDATE_INQUILINO,
   UPDATE_NAVE,
   UPDATE_OPPORTUNITY,
+  UPDATE_VERSION_DOCUMENTO,
 } from '../graphql/mutations';
 import {
   FIND_HOJA_DE_ACUERDOS_FOR_HANDOFF,
+  FIND_HOJA_DE_ACUERDOS_BY_OPPORTUNITY,
   GET_CASO_LEGAL_BY_ID,
+  GET_ACTAS_BY_CASO,
+  GET_ALL_CASOS_LEGALES,
   GET_CASOS_LEGALES_ACTIVOS,
   GET_ALL_COMISIONES,
   GET_COMISIONES_BY_HOJA,
@@ -38,6 +47,8 @@ import {
   GET_EXPEDIENTES_VENCIDOS,
   GET_FLUJOS_FIRMAS_BY_CASO,
   GET_HOJA_DE_ACUERDOS_BY_ID,
+  GET_HOLDOVERS_ACTIVOS,
+  GET_VERSIONES_BY_CASO,
   GET_NAVE_BY_ID,
   GET_HOLDOVER_BY_EXPEDIENTE,
   GET_NAVES_DISPONIBLES,
@@ -59,7 +70,7 @@ import {
 } from '../types/parks.types';
 import { toIsoDateString } from '../utils/business-days.util';
 import { buildBlocknoteJson } from '../utils/blocknote.util';
-import { toSelectValue } from '../utils/select-value.util';
+import { isSelectValueEqual, toSelectValue } from '../utils/select-value.util';
 import { twentyClient } from './twenty.client';
 
 const logGraphQlError = (context: string, error: unknown): void => {
@@ -98,6 +109,27 @@ export const twentyDataService = {
       logGraphQlError('findCasosLegalesActivos failed', error);
       return [];
     }
+  },
+
+  findAllCasosLegales: async (): Promise<CasoLegalRecord[]> => {
+    try {
+      const response = await twentyClient.query<{
+        casosLegales: GraphQlConnection<CasoLegalRecord>;
+      }>(GET_ALL_CASOS_LEGALES, {});
+
+      return mapConnectionNodes(response.casosLegales).map(enrichCasoLegalRecord);
+    } catch (error) {
+      logGraphQlError('findAllCasosLegales failed', error);
+      return [];
+    }
+  },
+
+  findCasosLegalesCerradosRecientes: async (): Promise<CasoLegalRecord[]> => {
+    const allCasos = await twentyDataService.findAllCasosLegales();
+
+    return allCasos.filter((casoLegal) =>
+      isSelectValueEqual(casoLegal.estatus, CASO_LEGAL_ESTATUS_CERRADO),
+    );
   },
 
   getCasoLegalById: async (
@@ -146,6 +178,26 @@ export const twentyDataService = {
       return response.hojaDeAcuerdos;
     } catch (error) {
       logGraphQlError(`getHojaDeAcuerdosById(${hojaDeAcuerdosId}) failed`, error);
+      return null;
+    }
+  },
+
+  findHojaDeAcuerdosByOpportunity: async (
+    opportunityId: string,
+  ): Promise<HojaDeAcuerdosRecord | null> => {
+    try {
+      const response = await twentyClient.query<{
+        hojasDeAcuerdos: {
+          edges: Array<{ node: HojaDeAcuerdosRecord }>;
+        };
+      }>(FIND_HOJA_DE_ACUERDOS_BY_OPPORTUNITY, { opportunityId });
+
+      return response.hojasDeAcuerdos?.edges?.[0]?.node ?? null;
+    } catch (error) {
+      logGraphQlError(
+        `findHojaDeAcuerdosByOpportunity(${opportunityId}) failed`,
+        error,
+      );
       return null;
     }
   },
@@ -231,6 +283,166 @@ export const twentyDataService = {
     } catch (error) {
       logGraphQlError('createDocumentoChecklist failed', error);
       return null;
+    }
+  },
+
+  updateDocumentoChecklist: async (
+    documentoChecklistId: string,
+    data: Record<string, unknown>,
+  ): Promise<void> => {
+    try {
+      await twentyClient.mutate(UPDATE_DOCUMENTO_CHECKLIST, {
+        documentoChecklistId,
+        data,
+      });
+    } catch (error) {
+      logGraphQlError(
+        `updateDocumentoChecklist(${documentoChecklistId}) failed`,
+        error,
+      );
+    }
+  },
+
+  findVersionesByCasoLegal: async (
+    casoLegalId: string,
+  ): Promise<
+    {
+      id: string;
+      titulo?: string;
+      numeroVersion?: number;
+      fechaEnvio?: string;
+      enviadoPor?: string;
+      dirigidoA?: string;
+      respuestaCliente?: string;
+      cambiosSolicitados?: string;
+      esVersionFinal?: boolean;
+      pdfUrl?: string;
+    }[]
+  > => {
+    try {
+      const response = await twentyClient.query<{
+        versionesDocumento: GraphQlConnection<{
+          id: string;
+          titulo?: string;
+          numeroVersion?: number;
+          fechaEnvio?: string;
+          enviadoPor?: string;
+          dirigidoA?: string;
+          respuestaCliente?: string;
+          cambiosSolicitados?: string;
+          esVersionFinal?: boolean;
+          pdfUrl?: string;
+        }>;
+      }>(GET_VERSIONES_BY_CASO, { casoLegalId });
+
+      return mapConnectionNodes(response.versionesDocumento);
+    } catch (error) {
+      logGraphQlError(
+        `findVersionesByCasoLegal(${casoLegalId}) failed`,
+        error,
+      );
+      return [];
+    }
+  },
+
+  createVersionDocumento: async (
+    data: Record<string, unknown>,
+  ): Promise<{ id: string; numeroVersion?: number } | null> => {
+    try {
+      const response = await twentyClient.mutate<{
+        createVersionDocumento: { id: string; numeroVersion?: number };
+      }>(CREATE_VERSION_DOCUMENTO, { data });
+
+      return response.createVersionDocumento;
+    } catch (error) {
+      logGraphQlError('createVersionDocumento failed', error);
+      return null;
+    }
+  },
+
+  updateVersionDocumento: async (
+    versionDocumentoId: string,
+    data: Record<string, unknown>,
+  ): Promise<void> => {
+    try {
+      await twentyClient.mutate(UPDATE_VERSION_DOCUMENTO, {
+        versionDocumentoId,
+        data,
+      });
+    } catch (error) {
+      logGraphQlError(
+        `updateVersionDocumento(${versionDocumentoId}) failed`,
+        error,
+      );
+    }
+  },
+
+  findActasByCasoLegal: async (casoLegalId: string) => {
+    try {
+      const response = await twentyClient.query<{
+        actasRestitucion: GraphQlConnection<Record<string, unknown>>;
+      }>(GET_ACTAS_BY_CASO, { casoLegalId });
+
+      return mapConnectionNodes(response.actasRestitucion);
+    } catch (error) {
+      logGraphQlError(`findActasByCasoLegal(${casoLegalId}) failed`, error);
+      return [];
+    }
+  },
+
+  createActaRestitucion: async (data: Record<string, unknown>) => {
+    try {
+      const response = await twentyClient.mutate<{
+        createActaRestitucion: { id: string; referencia?: string };
+      }>(CREATE_ACTA_RESTITUCION, { data });
+
+      return response.createActaRestitucion;
+    } catch (error) {
+      logGraphQlError('createActaRestitucion failed', error);
+      return null;
+    }
+  },
+
+  updateActaRestitucion: async (
+    actaRestitucionId: string,
+    data: Record<string, unknown>,
+  ): Promise<void> => {
+    try {
+      await twentyClient.mutate(UPDATE_ACTA_RESTITUCION, {
+        actaRestitucionId,
+        data,
+      });
+    } catch (error) {
+      logGraphQlError(
+        `updateActaRestitucion(${actaRestitucionId}) failed`,
+        error,
+      );
+    }
+  },
+
+  findHoldoversActivos: async () => {
+    try {
+      const response = await twentyClient.query<{
+        holdovers: GraphQlConnection<Record<string, unknown>>;
+      }>(GET_HOLDOVERS_ACTIVOS, {
+        resolucionActivo: toSelectValue(HOLDOVER_RESOLUCION_ACTIVO),
+      });
+
+      return mapConnectionNodes(response.holdovers);
+    } catch (error) {
+      logGraphQlError('findHoldoversActivos failed', error);
+      return [];
+    }
+  },
+
+  updateHoldover: async (
+    holdoverId: string,
+    data: Record<string, unknown>,
+  ): Promise<void> => {
+    try {
+      await twentyClient.mutate(UPDATE_HOLDOVER, { holdoverId, data });
+    } catch (error) {
+      logGraphQlError(`updateHoldover(${holdoverId}) failed`, error);
     }
   },
 

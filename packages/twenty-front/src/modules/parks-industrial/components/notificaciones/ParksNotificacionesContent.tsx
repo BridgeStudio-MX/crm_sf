@@ -2,18 +2,18 @@ import { styled } from '@linaria/react';
 import { t } from '@lingui/core/macro';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { AppPath } from 'twenty-shared/types';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   IconBell,
   IconMail,
   IconSparkles,
   IconAlertTriangle,
   IconCheckbox,
+  IconArrowRight,
 } from 'twenty-ui/icon';
-import { Button } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
+import { ParksActionButton } from '@/parks-industrial/components/ui/ParksActionButton';
 import { ParksEmptyState } from '@/parks-industrial/components/ui/ParksEmptyState';
 import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
 import { ParksSectionCard } from '@/parks-industrial/components/ui/ParksSectionCard';
@@ -21,15 +21,19 @@ import { ParksStatusBadge } from '@/parks-industrial/components/ui/ParksStatusBa
 import { StyledParksPageStack } from '@/parks-industrial/components/ui/ParksSectionCard';
 import { useParksNotifications } from '@/parks-industrial/hooks/useParksNotifications';
 import { type BrokerNotification } from '@/parks-industrial/types/parks-commercial.types';
+import {
+  PARKS_NOTIFICATION_ACTION,
+  resolveParksNotificationActionLabel,
+} from '@/parks-industrial/utils/parks-notification-action.util';
 
 const StyledHero = styled.div`
   background: linear-gradient(
     135deg,
-    ${themeCssVariables.color.purple1} 0%,
+    ${themeCssVariables.color.green1} 0%,
     ${themeCssVariables.background.primary} 60%,
     ${themeCssVariables.color.blue1} 100%
   );
-  border: 1px solid ${themeCssVariables.color.purple3};
+  border: 1px solid ${themeCssVariables.border.color.medium};
   border-radius: ${themeCssVariables.border.radius.md};
   padding: ${themeCssVariables.spacing[4]};
 `;
@@ -112,10 +116,14 @@ const StyledMeta = styled.div`
   margin-top: ${themeCssVariables.spacing[1]};
 `;
 
-const StyledDealLink = styled(Link)`
-  color: ${themeCssVariables.font.color.secondary};
+const StyledActionHint = styled.span`
+  align-items: center;
+  color: ${themeCssVariables.color.blue};
+  display: inline-flex;
   font-size: ${themeCssVariables.font.size.xs};
-  text-decoration: underline;
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  gap: ${themeCssVariables.spacing[1]};
+  margin-top: ${themeCssVariables.spacing[2]};
 `;
 
 const resolveNotificationIcon = (notification: BrokerNotification) => {
@@ -147,7 +155,24 @@ const resolvePriorityColor = (
   return 'gray';
 };
 
+const resolveNotificationActionPath = (
+  notification: BrokerNotification,
+): string | null => {
+  if (notification.actionPath) {
+    return notification.actionPath;
+  }
+
+  if (notification.opportunityId) {
+    return PARKS_NOTIFICATION_ACTION.pipelineDeal(notification.opportunityId, {
+      tab: 'hoja',
+    });
+  }
+
+  return null;
+};
+
 export const ParksNotificacionesContent = () => {
+  const navigate = useNavigate();
   const {
     notifications,
     unreadCount,
@@ -169,14 +194,67 @@ export const ParksNotificacionesContent = () => {
     if (!notification.read) {
       void markRead(notification.id);
     }
+
+    const actionPath = resolveNotificationActionPath(notification);
+
+    if (actionPath) {
+      navigate(actionPath);
+    }
+  };
+
+  const renderNotificationCard = (notification: BrokerNotification) => {
+    const NotificationIcon = resolveNotificationIcon(notification);
+    const timeAgo = formatDistanceToNow(parseISO(notification.createdAt), {
+      addSuffix: true,
+      locale: es,
+    });
+    const actionPath = resolveNotificationActionPath(notification);
+    const actionLabel =
+      notification.actionLabel ??
+      resolveParksNotificationActionLabel(actionPath ?? undefined) ??
+      t`Ir a la acción`;
+
+    return (
+      <StyledNotificationCard
+        key={notification.id}
+        type="button"
+        isRead={notification.read}
+        onClick={() => handleNotificationClick(notification)}
+      >
+        <StyledIconWrap>
+          <NotificationIcon size={18} />
+        </StyledIconWrap>
+        <div>
+          <StyledTitle>{notification.title}</StyledTitle>
+          <StyledBody>{notification.body}</StyledBody>
+          <StyledMeta>
+            {notification.area ? <span>{notification.area}</span> : null}
+            <span>{timeAgo}</span>
+            {notification.opportunityName ? (
+              <span>{notification.opportunityName}</span>
+            ) : null}
+          </StyledMeta>
+          {actionPath ? (
+            <StyledActionHint>
+              {actionLabel}
+              <IconArrowRight size={12} />
+            </StyledActionHint>
+          ) : null}
+        </div>
+        <ParksStatusBadge
+          color={resolvePriorityColor(notification.priority)}
+          label={notification.read ? t`Leída` : t`Nueva`}
+        />
+      </StyledNotificationCard>
+    );
   };
 
   return (
     <StyledParksPageStack>
       <StyledHero>
-        <StyledHeroTitle>{t`Centro de notificaciones del broker`}</StyledHeroTitle>
+        <StyledHeroTitle>{t`Centro de notificaciones`}</StyledHeroTitle>
         <StyledHeroText>
-          {t`Tareas automáticas, enriquecimiento IA y alertas comerciales en un solo lugar. Se actualiza cada 30 segundos.`}
+          {t`Toca una alerta para ir directo a la acción (firmar Hoja, abrir deal o ver contratos). Se actualiza cada 30 segundos.`}
         </StyledHeroText>
       </StyledHero>
 
@@ -186,13 +264,15 @@ export const ParksNotificacionesContent = () => {
           label={t`${unreadCount} sin leer`}
         />
         <div style={{ display: 'flex', gap: themeCssVariables.spacing[2] }}>
-          <Button
+          <ParksActionButton
             variant="secondary"
+            size="sm"
             title={t`Actualizar`}
             onClick={() => void refresh()}
           />
-          <Button
+          <ParksActionButton
             variant="primary"
+            size="sm"
             title={t`Marcar todo leído`}
             onClick={() => void markAllRead()}
             disabled={unreadCount === 0}
@@ -212,49 +292,19 @@ export const ParksNotificacionesContent = () => {
       {!loading && !error && notifications.length === 0 ? (
         <ParksEmptyState
           title={t`Sin notificaciones`}
-          description={t`Crea un lead en Prospecto nuevo para disparar tareas y enriquecimiento IA.`}
+          description={t`Cuando haya firmas pendientes o handoffs, aparecerán aquí con un acceso directo.`}
         />
       ) : null}
 
       {!loading && !error && notifications.length > 0 ? (
         <>
           {emailNotifications.length > 0 ? (
-            <ParksSectionCard title={t`Secuencia nurture (emails)`} accent="purple">
+            <ParksSectionCard
+              title={t`Secuencia nurture (emails)`}
+              accent="purple"
+            >
               <StyledList>
-                {emailNotifications.map((notification) => {
-                  const NotificationIcon = resolveNotificationIcon(notification);
-                  const timeAgo = formatDistanceToNow(
-                    parseISO(notification.createdAt),
-                    { addSuffix: true, locale: es },
-                  );
-
-                  return (
-                    <StyledNotificationCard
-                      key={notification.id}
-                      type="button"
-                      isRead={notification.read}
-                      onClick={() => handleNotificationClick(notification)}
-                    >
-                      <StyledIconWrap>
-                        <NotificationIcon size={18} />
-                      </StyledIconWrap>
-                      <div>
-                        <StyledTitle>{notification.title}</StyledTitle>
-                        <StyledBody>{notification.body}</StyledBody>
-                        <StyledMeta>
-                          {notification.area ? (
-                            <span>{notification.area}</span>
-                          ) : null}
-                          <span>{timeAgo}</span>
-                        </StyledMeta>
-                      </div>
-                      <ParksStatusBadge
-                        color={resolvePriorityColor(notification.priority)}
-                        label={notification.read ? t`Leída` : t`Nueva`}
-                      />
-                    </StyledNotificationCard>
-                  );
-                })}
+                {emailNotifications.map(renderNotificationCard)}
               </StyledList>
             </ParksSectionCard>
           ) : null}
@@ -262,48 +312,7 @@ export const ParksNotificacionesContent = () => {
           {otherNotifications.length > 0 ? (
             <ParksSectionCard title={t`Actividad reciente`} accent="sky">
               <StyledList>
-                {otherNotifications.map((notification) => {
-                  const NotificationIcon = resolveNotificationIcon(notification);
-                  const timeAgo = formatDistanceToNow(
-                    parseISO(notification.createdAt),
-                    { addSuffix: true, locale: es },
-                  );
-
-                  return (
-                    <StyledNotificationCard
-                      key={notification.id}
-                      type="button"
-                      isRead={notification.read}
-                      onClick={() => handleNotificationClick(notification)}
-                    >
-                      <StyledIconWrap>
-                        <NotificationIcon size={18} />
-                      </StyledIconWrap>
-                      <div>
-                        <StyledTitle>{notification.title}</StyledTitle>
-                        <StyledBody>{notification.body}</StyledBody>
-                        <StyledMeta>
-                          {notification.area ? (
-                            <span>{notification.area}</span>
-                          ) : null}
-                          <span>{timeAgo}</span>
-                          {notification.opportunityId ? (
-                            <StyledDealLink
-                              to={AppPath.ParksPipeline}
-                              onClick={(event) => event.stopPropagation()}
-                            >
-                              {t`Ver en pipeline`}
-                            </StyledDealLink>
-                          ) : null}
-                        </StyledMeta>
-                      </div>
-                      <ParksStatusBadge
-                        color={resolvePriorityColor(notification.priority)}
-                        label={notification.read ? t`Leída` : t`Nueva`}
-                      />
-                    </StyledNotificationCard>
-                  );
-                })}
+                {otherNotifications.map(renderNotificationCard)}
               </StyledList>
             </ParksSectionCard>
           ) : null}

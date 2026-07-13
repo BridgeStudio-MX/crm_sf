@@ -55,7 +55,7 @@ const buildMockExtraction = ({
   if (documentType.includes('INE')) {
     return {
       nombre: simulateMismatch ? 'Persona Distinta' : (repLegalNombre ?? ''),
-      vigencia: '2028-12-31',
+      vigencia: '2025-03-15',
     };
   }
 

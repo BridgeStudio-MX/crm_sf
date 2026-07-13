@@ -94,6 +94,80 @@ export const getParksRenovacionStageTheme = (
   return getParksPipelineStageTheme(color);
 };
 
+const legalStageColorById: Record<string, ParksPipelineStageColor> = {
+  nuevo: 'sky',
+  asignado: 'blue',
+  'docs-incompletas': 'yellow',
+  elaboracion: 'purple',
+  'primera-version': 'turquoise',
+  negociacion: 'orange',
+  'version-final': 'green',
+  'espera-firma-cliente': 'orange',
+  cotejo: 'yellow',
+  firmas: 'green',
+  funo: 'purple',
+};
+
+export const getParksLegalStageTheme = (
+  stageId: string,
+): ParksPipelineStageTheme => {
+  const color = legalStageColorById[stageId] ?? 'gray';
+
+  return getParksPipelineStageTheme(color);
+};
+
+export const getParksLegalSemaforoBadgeColor = (
+  semaforo?: string | null,
+): 'red' | 'yellow' | 'green' | 'gray' => {
+  if (semaforo === 'ROJO') {
+    return 'red';
+  }
+
+  if (semaforo === 'AMARILLO' || semaforo === 'NARANJA') {
+    return 'yellow';
+  }
+
+  if (semaforo === 'VERDE') {
+    return 'green';
+  }
+
+  return 'gray';
+};
+
+export const getParksLegalSemaforoLabel = (semaforo?: string | null): string => {
+  if (semaforo === 'ROJO') {
+    return 'Crítico';
+  }
+
+  if (semaforo === 'NARANJA') {
+    return 'En riesgo';
+  }
+
+  if (semaforo === 'AMARILLO') {
+    return 'Atención';
+  }
+
+  if (semaforo === 'VERDE') {
+    return 'En tiempo';
+  }
+
+  return 'Sin semáforo';
+};
+
+export const getParksLegalLawyerInitials = (name?: string | null): string => {
+  if (!name) {
+    return '?';
+  }
+
+  const parts = name.trim().split(/\s+/);
+
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+
+  return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase();
+};
+
 export type ParksOcupacionLevel = 'high' | 'medium' | 'low';
 
 export const getParksParqueOcupacion = (
@@ -289,9 +363,67 @@ export const getParksStackingStatusColor = (
 
 export type ParksDaysInStageColor = 'gray' | 'yellow' | 'red';
 
+const normalizePersonName = (value?: string | null): string =>
+  (value ?? '')
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .trim()
+    .toLowerCase();
+
+// Prefer dedicated LO field; fall back to "CEM → LO" in asignadoPor.
+export const getParksAssignedLeasingOfficerName = (
+  opportunity: ParksOpportunityRecord,
+): string | null => {
+  const dedicated = opportunity.leasingOfficerAsignado?.trim();
+
+  if (dedicated) {
+    return dedicated;
+  }
+
+  const asignadoPor = opportunity.asignadoPor?.trim();
+
+  if (!asignadoPor) {
+    return null;
+  }
+
+  const arrowIndex = asignadoPor.lastIndexOf('→');
+
+  if (arrowIndex === -1) {
+    return null;
+  }
+
+  const leasingOfficerName = asignadoPor.slice(arrowIndex + 1).trim();
+
+  return leasingOfficerName.length > 0 ? leasingOfficerName : null;
+};
+
+export const isParksOpportunityAssignedToViewer = (
+  opportunity: ParksOpportunityRecord,
+  viewerName?: string | null,
+): boolean => {
+  const leasingOfficerName = getParksAssignedLeasingOfficerName(opportunity);
+  const normalizedViewerName = normalizePersonName(viewerName);
+  const normalizedOfficerName = normalizePersonName(leasingOfficerName);
+
+  if (!normalizedViewerName || !normalizedOfficerName) {
+    return false;
+  }
+
+  return (
+    normalizedViewerName.includes(normalizedOfficerName) ||
+    normalizedOfficerName.includes(normalizedViewerName)
+  );
+};
+
 export const getParksOwnerName = (
   opportunity: ParksOpportunityRecord,
 ): string => {
+  const leasingOfficerName = getParksAssignedLeasingOfficerName(opportunity);
+
+  if (leasingOfficerName) {
+    return leasingOfficerName;
+  }
+
   const firstName = opportunity.owner?.name?.firstName ?? '';
   const lastName = opportunity.owner?.name?.lastName ?? '';
   const fullName = `${firstName} ${lastName}`.trim();

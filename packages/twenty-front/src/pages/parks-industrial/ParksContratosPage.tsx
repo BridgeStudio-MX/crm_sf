@@ -8,10 +8,10 @@ import { getParksIndustrialPageSubtitle } from '@/parks-industrial/constants/par
 import { ParksMetadataGate } from '@/parks-industrial/components/layout/ParksMetadataGate';
 import { ParksPageShell } from '@/parks-industrial/components/layout/ParksPageShell';
 import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
-import { useParksCasosLegales } from '@/parks-industrial/hooks/useParksRecords';
+import { useFilteredParksCasosLegales } from '@/parks-industrial/hooks/useFilteredParksCasosLegales';
 
 const ParksContratosContent = () => {
-  const { records, loading } = useParksCasosLegales();
+  const { records, loading } = useFilteredParksCasosLegales();
 
   if (loading) {
     return <ParksLoadingSkeleton variant="list" />;

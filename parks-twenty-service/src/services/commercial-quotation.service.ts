@@ -29,6 +29,7 @@ export type QuotationInput = {
   escalacionAnual?: string;
   porcentajeEscalacion?: number;
   companyName?: string;
+  naveVinculadaId?: string;
 };
 
 export const commercialQuotationService = {
@@ -60,6 +61,10 @@ export const commercialQuotationService = {
       cotizacionEnviadaEn: today,
       stage: toSelectValue('Cotización enviada'),
     };
+
+    if (input.naveVinculadaId) {
+      updateData.naveVinculadaId = input.naveVinculadaId;
+    }
 
     if (input.plazoContratoMeses !== undefined) {
       updateData.plazoContratoMeses = input.plazoContratoMeses;

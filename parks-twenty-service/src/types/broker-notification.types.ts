@@ -16,6 +16,10 @@ export type BrokerNotification = {
   area?: string;
   opportunityId?: string;
   opportunityName?: string;
+  actionPath?: string;
+  actionLabel?: string;
+  audienceRoleLabels?: string[];
+  audienceNames?: string[];
   read: boolean;
   createdAt: string;
 };

@@ -2,68 +2,676 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Carta de Intención — {{inquilino.empresa}}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hoja de Acuerdos — {{inquilino.empresa}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap"
+    rel="stylesheet"
+  />
   <style>
+    :root {
+      --parks-green: #006837;
+      --parks-green-deep: #004d29;
+      --parks-lime: #8dc63f;
+      --ink: #1a1f1c;
+      --ink-soft: #4a554f;
+      --muted: #6b756f;
+      --line: #d7e0d9;
+      --paper: #f7faf7;
+      --surface: #ffffff;
+      --draft: #9a3412;
+      --draft-bg: #fff7ed;
+      --draft-line: #fdba74;
+      --signed: #006837;
+      --signed-bg: #ecf8ef;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
     body {
-      font-family: 'Times New Roman', serif;
-      font-size: 12pt;
-      line-height: 1.6;
-      color: #111;
       margin: 0;
       padding: 0;
     }
-    .draft-banner {
-      background: #fef2f2;
-      border: 1px solid #dc2626;
-      color: #991b1b;
-      font-weight: bold;
-      text-align: center;
-      padding: 8px;
-      margin-bottom: 24px;
-      font-size: 11pt;
+
+    body {
+      background:
+        radial-gradient(ellipse at top left, rgba(0, 104, 55, 0.07), transparent 42%),
+        radial-gradient(ellipse at top right, rgba(141, 198, 63, 0.08), transparent 36%),
+        #eef2ef;
+      color: var(--ink);
+      font-family: 'DM Sans', 'Segoe UI', sans-serif;
+      font-size: 15px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
     }
-    .header { text-align: center; margin-bottom: 2em; }
-    .header h2 { margin: 0 0 8px; font-size: 16pt; }
-    .clausula { margin-bottom: 1.2em; text-align: justify; }
-    footer {
-      font-size: 9pt;
-      color: #666;
-      margin-top: 3em;
-      border-top: 1px solid #ddd;
-      padding-top: 12px;
+
+    .page-shell {
+      margin: 0 auto;
+      max-width: 880px;
+      padding: 28px 20px 48px;
+    }
+
+    .document {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow:
+        0 1px 2px rgba(26, 31, 28, 0.04),
+        0 18px 40px rgba(0, 77, 41, 0.08);
+      overflow: hidden;
+    }
+
+    .brand-bar {
+      background: linear-gradient(
+        105deg,
+        var(--parks-green-deep) 0%,
+        var(--parks-green) 58%,
+        #1a7a42 100%
+      );
+      color: #fff;
+      display: flex;
+      gap: 16px;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 28px 36px 24px;
+      position: relative;
+    }
+
+    .brand-bar::after {
+      background: linear-gradient(90deg, var(--parks-lime), transparent 70%);
+      bottom: 0;
+      content: '';
+      height: 3px;
+      left: 0;
+      position: absolute;
+      right: 0;
+    }
+
+    .brand-mark {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .brand-name {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin: 0;
+    }
+
+    .brand-tag {
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    .doc-meta {
+      text-align: right;
+    }
+
+    .doc-meta-label {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      margin: 0 0 4px;
+      text-transform: uppercase;
+    }
+
+    .doc-meta-value {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 15px;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .body {
+      padding: 32px 36px 40px;
+    }
+
+    .status-row {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .status-pill {
+      border: 1px solid;
+      display: inline-flex;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 7px 12px;
+      text-transform: uppercase;
+    }
+
+    .status-pill.is-draft {
+      background: var(--draft-bg);
+      border-color: var(--draft-line);
+      color: var(--draft);
+    }
+
+    .status-pill.is-signed {
+      background: var(--signed-bg);
+      border-color: rgba(0, 104, 55, 0.28);
+      color: var(--signed);
+    }
+
+    .ref-line {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .ref-line strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .title-block {
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      color: var(--parks-green);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      margin: 0 0 8px;
+      text-transform: uppercase;
+    }
+
+    .title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 34px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin: 0 0 10px;
+    }
+
+    .subtitle {
+      color: var(--ink-soft);
+      font-size: 15px;
+      margin: 0;
+      max-width: 54ch;
+    }
+
+    .parties {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr 1fr;
+      margin-bottom: 28px;
+    }
+
+    .party-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--parks-green);
+      padding: 18px 20px;
+    }
+
+    .party-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      margin: 0 0 8px;
+      text-transform: uppercase;
+    }
+
+    .party-name {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin: 0 0 6px;
+    }
+
+    .party-detail {
+      color: var(--ink-soft);
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .intro {
+      color: var(--ink-soft);
+      margin: 0 0 28px;
+      max-width: 68ch;
+    }
+
+    .intro strong {
+      color: var(--ink);
+    }
+
+    .section-label {
+      align-items: center;
+      color: var(--parks-green-deep);
+      display: flex;
+      font-size: 12px;
+      font-weight: 700;
+      gap: 10px;
+      letter-spacing: 0.14em;
+      margin: 0 0 14px;
+      text-transform: uppercase;
+    }
+
+    .section-label::after {
+      background: var(--line);
+      content: '';
+      flex: 1;
+      height: 1px;
+    }
+
+    .metrics {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-bottom: 18px;
+    }
+
+    .metric {
+      background: linear-gradient(180deg, #f4f9f5 0%, #ffffff 100%);
+      border: 1px solid var(--line);
+      padding: 16px 14px;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      margin: 0 0 8px;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin: 0;
+    }
+
+    .metric-value span {
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+
+    .metric.is-highlight {
+      background: linear-gradient(
+        145deg,
+        rgba(0, 104, 55, 0.1) 0%,
+        rgba(141, 198, 63, 0.12) 100%
+      );
+      border-color: rgba(0, 104, 55, 0.28);
+    }
+
+    .metric.is-highlight .metric-value {
+      color: var(--parks-green-deep);
+    }
+
+    .details {
+      border: 1px solid var(--line);
+      margin-bottom: 24px;
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .details th,
+    .details td {
+      border-bottom: 1px solid var(--line);
+      padding: 12px 16px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .details tr:last-child th,
+    .details tr:last-child td {
+      border-bottom: none;
+    }
+
+    .details th {
+      background: var(--paper);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      width: 42%;
+    }
+
+    .details td {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .special {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      margin-bottom: 24px;
+      padding: 18px 20px;
+    }
+
+    .special h3 {
+      color: var(--parks-green-deep);
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 8px;
+    }
+
+    .special p {
+      color: var(--ink-soft);
+      margin: 0;
+      white-space: pre-wrap;
+    }
+
+    .disclaimer {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0 0 36px;
+      max-width: 70ch;
+    }
+
+    .signatures {
+      display: grid;
+      gap: 28px;
+      grid-template-columns: 1fr 1fr;
+      margin-top: 8px;
+    }
+
+    .signature {
+      min-height: 120px;
+      padding-top: 72px;
+    }
+
+    .signature-line {
+      border-top: 1.5px solid var(--ink);
+      margin-bottom: 10px;
+    }
+
+    .signature-role {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin: 0 0 4px;
+      text-transform: uppercase;
+    }
+
+    .signature-name {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .footer {
+      align-items: center;
+      background: var(--paper);
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      font-size: 12px;
+      gap: 8px 18px;
+      justify-content: space-between;
+      padding: 16px 36px;
+    }
+
+    .footer strong {
+      color: var(--ink-soft);
+      font-weight: 600;
+    }
+
+    @media (max-width: 720px) {
+      .page-shell {
+        padding: 12px 10px 28px;
+      }
+
+      .brand-bar,
+      .body,
+      .footer {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .brand-bar {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .doc-meta {
+        text-align: left;
+      }
+
+      .title {
+        font-size: 28px;
+      }
+
+      .parties,
+      .signatures,
+      .metrics {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .metrics {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .parties,
+      .signatures,
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .page-shell {
+        max-width: none;
+        padding: 0;
+      }
+
+      .document {
+        border: none;
+        box-shadow: none;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="draft-banner">BORRADOR LOI — NO VÁLIDO PARA FIRMA</div>
+  <div class="page-shell">
+    <article class="document">
+      <header class="brand-bar">
+        <div class="brand-mark">
+          <p class="brand-tag">Parks Industrial</p>
+          <h1 class="brand-name">Hoja de Acuerdos</h1>
+        </div>
+        <div class="doc-meta">
+          <p class="doc-meta-label">Documento</p>
+          <p class="doc-meta-value">Carta de Intención (LOI)</p>
+        </div>
+      </header>
 
-  <div class="header">
-    <h2>CARTA DE INTENCIÓN (LOI)</h2>
-    <p>{{parque.nombre}} · {{parque.ubicacion}}</p>
+      <div class="body">
+        <div class="status-row">
+          {{#if firmada}}
+          <span class="status-pill is-signed">Firmada</span>
+          {{else}}
+          <span class="status-pill is-draft">Borrador — no válido para firma</span>
+          {{/if}}
+          <p class="ref-line">Referencia <strong>{{referencia}}</strong></p>
+        </div>
+
+        <div class="title-block">
+          <p class="eyebrow">Acuerdo comercial preliminar</p>
+          <h2 class="title">
+            {{#if tipoContrato}}{{tipoContrato}}{{else}}Arrendamiento{{/if}}
+          </h2>
+          <p class="subtitle">
+            {{parque.nombre}}{{#if parque.ubicacion}} · {{parque.ubicacion}}{{/if}}
+            {{#if nave.identificador}} · Nave {{nave.identificador}}{{/if}}
+          </p>
+        </div>
+
+        <div class="parties">
+          <div class="party-card">
+            <p class="party-label">Arrendador</p>
+            <p class="party-name">Parks Industrial</p>
+            <p class="party-detail">
+              {{#if ejecutivoAsignado}}Ejecutivo: {{ejecutivoAsignado}}{{else}}Representación comercial{{/if}}
+            </p>
+          </div>
+          <div class="party-card">
+            <p class="party-label">Arrendatario / Prospecto</p>
+            <p class="party-name">{{inquilino.empresa}}</p>
+            <p class="party-detail">
+              {{#if inquilino.rfc}}RFC {{inquilino.rfc}}{{/if}}{{#if inquilino.repLegalNombre}}{{#if inquilino.rfc}} · {{/if}}Rep. legal: {{inquilino.repLegalNombre}}{{/if}}{{#unless inquilino.rfc}}{{#unless inquilino.repLegalNombre}}Parte interesada en el inmueble{{/unless}}{{/unless}}
+            </p>
+          </div>
+        </div>
+
+        <p class="intro">
+          Las partes manifiestan su intención de celebrar un contrato de
+          <strong>{{#if tipoContrato}}{{tipoContrato}}{{else}}arrendamiento{{/if}}</strong>
+          sobre la nave <strong>{{nave.identificador}}</strong>, conforme a los
+          términos comerciales siguientes.
+        </p>
+
+        <p class="section-label">Términos clave</p>
+        <div class="metrics">
+          <div class="metric">
+            <p class="metric-label">Superficie</p>
+            <p class="metric-value">
+              {{hojaAcuerdos.m2Acordados}} <span>m²</span>
+            </p>
+          </div>
+          <div class="metric">
+            <p class="metric-label">Precio</p>
+            <p class="metric-value">
+              {{hojaAcuerdos.precioUsdM2}} <span>USD/m²</span>
+            </p>
+          </div>
+          <div class="metric is-highlight">
+            <p class="metric-label">Renta mensual</p>
+            <p class="metric-value">
+              {{rentaMensualTotal hojaAcuerdos}} <span>USD</span>
+            </p>
+          </div>
+          <div class="metric">
+            <p class="metric-label">Plazo</p>
+            <p class="metric-value">
+              {{hojaAcuerdos.plazoMeses}} <span>meses</span>
+            </p>
+          </div>
+        </div>
+
+        <table class="details">
+          <tbody>
+            {{#if hojaAcuerdos.fechaInicio}}
+            <tr>
+              <th>Fecha de inicio</th>
+              <td>{{hojaAcuerdos.fechaInicio}}</td>
+            </tr>
+            {{/if}}
+            {{#if hojaAcuerdos.periodoGraciaMeses}}
+            <tr>
+              <th>Periodo de gracia</th>
+              <td>{{hojaAcuerdos.periodoGraciaMeses}} meses</td>
+            </tr>
+            {{/if}}
+            {{#if hojaAcuerdos.depositoMeses}}
+            <tr>
+              <th>Depósito en garantía</th>
+              <td>{{hojaAcuerdos.depositoMeses}} meses de renta</td>
+            </tr>
+            {{/if}}
+            {{#if hojaAcuerdos.escalacionAnualPct}}
+            <tr>
+              <th>Escalación anual</th>
+              <td>{{hojaAcuerdos.escalacionAnualPct}}%</td>
+            </tr>
+            {{/if}}
+            {{#if esquemaComision}}
+            <tr>
+              <th>Esquema de comisión</th>
+              <td>{{esquemaComision}}</td>
+            </tr>
+            {{/if}}
+            <tr>
+              <th>Inmueble</th>
+              <td>
+                Nave {{nave.identificador}}
+                {{#if parque.nombre}} · {{parque.nombre}}{{/if}}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        {{#if hojaAcuerdos.condicionesEspeciales}}
+        <div class="special">
+          <h3>Condiciones especiales</h3>
+          <p>{{hojaAcuerdos.condicionesEspeciales}}</p>
+        </div>
+        {{/if}}
+
+        <p class="disclaimer">
+          Este documento formaliza el acuerdo comercial preliminar. Está sujeto a
+          due diligence, revisión legal y firma del contrato definitivo. No
+          constituye por sí solo una obligación contractual final.
+        </p>
+
+        <p class="section-label">Firmas</p>
+        <div class="signatures">
+          <div class="signature">
+            <div class="signature-line"></div>
+            <p class="signature-role">Parks Industrial · CEM</p>
+            <p class="signature-name">
+              {{#if ejecutivoAsignado}}{{ejecutivoAsignado}}{{else}}Autorizado Parks{{/if}}
+            </p>
+          </div>
+          <div class="signature">
+            <div class="signature-line"></div>
+            <p class="signature-role">Cliente / Prospecto</p>
+            <p class="signature-name">{{inquilino.empresa}}</p>
+          </div>
+        </div>
+      </div>
+
+      <footer class="footer">
+        <span>
+          {{#if firmada}}<strong>Documento firmado</strong>{{else}}<strong>Borrador</strong>{{/if}}
+          · Versión {{numeroVersion}}
+        </span>
+        <span>{{fechaGeneracion}} · Parks Industrial</span>
+      </footer>
+    </article>
   </div>
-
-  <div class="clausula">
-    Entre <strong>Parks Industrial</strong> y <strong>{{inquilino.empresa}}</strong>
-    (RFC {{inquilino.rfc}}), representada por {{inquilino.repLegalNombre}},
-    las partes manifiestan su intención de celebrar un contrato de arrendamiento
-    sobre la nave <strong>{{nave.identificador}}</strong>.
-  </div>
-
-  <div class="clausula">
-    <strong>Términos comerciales preliminares:</strong>
-    superficie {{hojaAcuerdos.m2Acordados}} m²,
-    precio USD {{hojaAcuerdos.precioUsdM2}}/m²,
-    plazo {{hojaAcuerdos.plazoMeses}} meses,
-    renta mensual estimada USD {{rentaMensualTotal hojaAcuerdos}}.
-  </div>
-
-  <div class="clausula">
-    Esta LOI no constituye obligación definitiva y está sujeta a due diligence,
-    aprobación legal y firma del contrato definitivo.
-  </div>
-
-  <footer>
-    Versión {{numeroVersion}} · {{fechaGeneracion}} · Parks Industrial
-  </footer>
 </body>
 </html>

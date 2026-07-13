@@ -3,6 +3,7 @@ export const UPDATE_CASO_LEGAL = `
     updateCasoLegal(id: $casoLegalId, data: $data) {
       id
       estatus
+      abogadoAsignado
       slaDiasHabiles
       slaFechaLimite
       diasTranscurridos
@@ -146,6 +147,77 @@ export const UPDATE_FLUJO_FIRMAS = `
       id
       orden
       estatus
+    }
+  }
+`;
+
+export const UPDATE_DOCUMENTO_CHECKLIST = `
+  mutation UpdateDocumentoChecklist(
+    $documentoChecklistId: UUID!
+    $data: DocumentoChecklistUpdateInput!
+  ) {
+    updateDocumentoChecklist(id: $documentoChecklistId, data: $data) {
+      id
+      entregado
+      fechaEntrega
+    }
+  }
+`;
+
+export const CREATE_VERSION_DOCUMENTO = `
+  mutation CreateVersionDocumento($data: VersionDocumentoCreateInput!) {
+    createVersionDocumento(data: $data) {
+      id
+      titulo
+      numeroVersion
+      fechaEnvio
+      respuestaCliente
+      esVersionFinal
+    }
+  }
+`;
+
+export const UPDATE_VERSION_DOCUMENTO = `
+  mutation UpdateVersionDocumento(
+    $versionDocumentoId: UUID!
+    $data: VersionDocumentoUpdateInput!
+  ) {
+    updateVersionDocumento(id: $versionDocumentoId, data: $data) {
+      id
+      respuestaCliente
+      esVersionFinal
+    }
+  }
+`;
+
+export const CREATE_ACTA_RESTITUCION = `
+  mutation CreateActaRestitucion($data: ActaRestitucionCreateInput!) {
+    createActaRestitucion(data: $data) {
+      id
+      referencia
+    }
+  }
+`;
+
+export const UPDATE_ACTA_RESTITUCION = `
+  mutation UpdateActaRestitucion(
+    $actaRestitucionId: UUID!
+    $data: ActaRestitucionUpdateInput!
+  ) {
+    updateActaRestitucion(id: $actaRestitucionId, data: $data) {
+      id
+      aprobadoPorComercial
+      montoADevolver
+    }
+  }
+`;
+
+export const UPDATE_HOLDOVER = `
+  mutation UpdateHoldover($holdoverId: UUID!, $data: HoldoverUpdateInput!) {
+    updateHoldover(id: $holdoverId, data: $data) {
+      id
+      condonacionEstatus
+      montoCondonado
     }
   }
 `;

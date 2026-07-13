@@ -11,6 +11,7 @@ export type NaveMatchCandidate = {
   alturaLibreM?: number;
   andenes?: number;
   estatus?: string;
+  fotoInmuebleUrl?: string;
   disponibilidadCondicional?: boolean;
   matchScore: number;
   matchReasons: string[];
@@ -108,4 +109,91 @@ export type Account360Response = {
   estadoPagos: Account360EstadoPagos;
   tieneContratosFuno: boolean;
   note?: string;
+};
+
+export type DemandSearchFilters = {
+  m2Min?: number;
+  m2Max?: number;
+  cityFilter?: string;
+  sectorFilter?: string;
+  canalOrigen?: string;
+  minAlturaLibre?: number;
+  minAndenes?: number;
+  limit?: number;
+};
+
+export type DemandSearchProspect = {
+  opportunityId: string;
+  companyName: string;
+  stage?: string;
+  m2Requeridos?: number;
+  ubicacionDeseada?: string;
+  sector?: string;
+  canalOrigen?: string;
+  plazoContratoMeses?: number;
+  presupuestoMensualUsd?: number;
+  inquilinoId?: string;
+  naveVinculadaIdentificador?: string;
+  updatedAt?: string;
+  matchingNaves: NaveMatchCandidate[];
+};
+
+export type DemandSearchResult = {
+  filters: DemandSearchFilters;
+  totalMatches: number;
+  prospects: DemandSearchProspect[];
+  searchedAt: string;
+};
+
+export type ComposerTemplateType = 'brochure' | 'listing-report';
+
+export type ComposerGenerateInput = {
+  templateType: ComposerTemplateType;
+  opportunityId?: string;
+  opportunityName?: string;
+  companyName?: string;
+  naveIdentificador: string;
+  parqueNombre?: string;
+  ubicacion?: string;
+  m2?: number;
+  precioUsdM2?: number;
+  description?: string;
+  inquiriesCount?: number;
+  toursCount?: number;
+  proposalsCount?: number;
+};
+
+export type ComposerGenerateResult = {
+  templateType: ComposerTemplateType;
+  html: string;
+  fileName: string;
+  filePath: string;
+  generatedAt: string;
+};
+
+export type ActivityTimelineEntryType =
+  | 'email'
+  | 'call'
+  | 'task'
+  | 'meeting';
+
+export type ActivityTimelineEntry = {
+  id: string;
+  type: ActivityTimelineEntryType;
+  direction: 'inbound' | 'outbound' | 'internal';
+  subject: string;
+  summary: string;
+  participant: string;
+  occurredAt: string;
+  source: 'gmail' | 'crm' | 'email-parser';
+};
+
+export type DealWinPreview = {
+  opportunityId: string;
+  companyName: string;
+  naveIdentificador?: string;
+  willCreateCasoLegal: boolean;
+  willReserveNave: boolean;
+  willOpenExpedienteOnClose: boolean;
+  steps: string[];
 };

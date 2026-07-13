@@ -51,8 +51,10 @@ export const SettingsNavigationDrawer = ({
     hasAiPermission &&
     navigationDrawerActiveTab === NAVIGATION_DRAWER_TABS.AI_CHAT_HISTORY;
 
+  // Title is "Back" (not Settings/Configuración) so the ✕ exit isn't confused
+  // with the Settings entry that was sending Parks users to Dashboard.
   return (
-    <NavigationDrawer className={className} title={t`Settings`}>
+    <NavigationDrawer className={className} title={t`Back`}>
       {hasAiPermission && (
         <NavigationDrawerFixedContent>
           <MainNavigationDrawerTabsRow />
