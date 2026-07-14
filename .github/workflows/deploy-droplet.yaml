@@ -37,6 +37,8 @@ jobs:
           npx nx build twenty-front
         env:
           NODE_OPTIONS: --max-old-space-size=8192
+          # Público vía Caddy → container parks (:3002)
+          VITE_PARKS_SERVICE_URL: https://parks.bridgehub.mx/parks-api
 
       - uses: docker/setup-buildx-action@v3
 
@@ -47,7 +49,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & push imagen
+      - name: Build & push imagen Twenty
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -60,18 +62,38 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Build & push imagen parks-twenty-service
+        uses: docker/build-push-action@v6
+        with:
+          context: parks-twenty-service
+          file: parks-twenty-service/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/bridgestudio-mx/crm_sf-parks:${{ github.sha }}
+            ghcr.io/bridgestudio-mx/crm_sf-parks:latest
+          cache-from: type=gha,scope=parks-service
+          cache-to: type=gha,mode=max,scope=parks-service
+
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
-    # Despliega a cada servidor de la lista en paralelo. Para agregar maquinas,
-    # edita la variable DEPLOY_HOSTS (Settings -> Variables) con un JSON, ej:
-    #   ["157.230.52.8","10.0.0.5"]
-    # El acceso usa usuario+contrasena (secrets DROPLET_USER / DROPLET_PASSWORD).
     strategy:
       fail-fast: false
       matrix:
         host: ${{ fromJSON(vars.DEPLOY_HOSTS) }}
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync compose + Caddyfile al servidor
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ matrix.host }}
+          username: ${{ secrets.DROPLET_USER }}
+          password: ${{ secrets.DROPLET_PASSWORD }}
+          source: 'deploy/docker-compose.yml,deploy/Caddyfile'
+          target: '/opt/twenty'
+          strip_components: 1
+
       - name: SSH al servidor ${{ matrix.host }} y redeploy
         uses: appleboy/ssh-action@v1
         with:
@@ -83,9 +105,19 @@ jobs:
             cd /opt/twenty
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             sed -i "s/^TAG=.*/TAG=${{ github.sha }}/" .env
+            # Ensure TWENTY_API_KEY exists for parks container (from GH secret if missing)
+            if ! grep -q '^TWENTY_API_KEY=' .env 2>/dev/null; then
+              echo "TWENTY_API_KEY=${{ secrets.TWENTY_API_KEY }}" >> .env
+            elif [ -n "${{ secrets.TWENTY_API_KEY }}" ]; then
+              sed -i "s|^TWENTY_API_KEY=.*|TWENTY_API_KEY=${{ secrets.TWENTY_API_KEY }}|" .env
+            fi
             docker compose pull
             docker compose up -d
+            docker compose restart caddy
             docker image prune -f
+            # Smoke: parks API through compose network + public path after caddy reload
+            sleep 5
+            docker compose exec -T parks curl -sf http://localhost:3002/health
 
   parks-bootstrap:
     needs: deploy

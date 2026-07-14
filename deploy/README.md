@@ -101,6 +101,11 @@ Cada push a `main`: Actions reconstruye la imagen, la sube a GHCR, y el droplet
 hace `pull` + `up -d` con el nuevo codigo. El `.env` del droplet se reutiliza.
 
 Despues del deploy, el job **parks-bootstrap** corre `parks-twenty-service`
+(scripts de metadata/seed) contra la URL publica.
+
+El microservicio **parks** corre en el droplet (`crm_sf-parks`) y Caddy lo
+expone en `https://parks.bridgehub.mx/parks-api/*`. El frontend se compila con
+`VITE_PARKS_SERVICE_URL=https://parks.bridgehub.mx/parks-api`.
 (metadata Parks + datos demo). Borra registros `DEMO-*` anteriores y recrea el
 dataset.
 

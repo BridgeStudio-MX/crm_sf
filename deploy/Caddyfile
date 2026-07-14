@@ -1,5 +1,10 @@
 # Caddy obtiene y renueva el certificado SSL (Let's Encrypt) automaticamente,
 # guardandolo dentro del droplet (volumen caddy-data). No necesitas comprar SSL.
 parks.bridgehub.mx {
+    # Microservicio Parks Industrial (CEO, comité, CxC, comercial, legal)
+    handle_path /parks-api/* {
+        reverse_proxy parks:3002
+    }
+
     reverse_proxy server:3000
 }
