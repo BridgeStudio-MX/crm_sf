@@ -27,8 +27,6 @@ jobs:
         with:
           node-version: 24
 
-      # Pre-construir el frontend en el runner (tiene RAM de sobra). El Dockerfile
-      # detecta packages/twenty-front/build/ y se salta el build pesado en Docker.
       - name: Build frontend
         run: |
           corepack enable
@@ -37,7 +35,6 @@ jobs:
           npx nx build twenty-front
         env:
           NODE_OPTIONS: --max-old-space-size=8192
-          # Público vía Caddy → container parks (:3002)
           VITE_PARKS_SERVICE_URL: https://parks.bridgehub.mx/parks-api
 
       - uses: docker/setup-buildx-action@v3
@@ -84,59 +81,58 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Encode deploy files for SSH transfer
-        id: encode
-        run: |
-          {
-            echo 'compose<<EOF'
-            base64 -w0 deploy/docker-compose.yml
-            echo
-            echo 'EOF'
-            echo 'caddy<<EOF'
-            base64 -w0 deploy/Caddyfile
-            echo
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
 
-      - name: SSH al servidor ${{ matrix.host }} — sync + redeploy
-        uses: appleboy/ssh-action@v1
+      - name: Sync compose + Caddyfile and redeploy
         env:
-          COMPOSE_FILE: ${{ steps.encode.outputs.compose }}
-          CADDY_FILE: ${{ steps.encode.outputs.caddy }}
-          IMAGE_TAG: ${{ github.sha }}
+          SSHPASS: ${{ secrets.DROPLET_PASSWORD }}
+          DROPLET_USER: ${{ secrets.DROPLET_USER }}
+          DROPLET_HOST: ${{ matrix.host }}
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
           GH_ACTOR: ${{ github.actor }}
+          IMAGE_TAG: ${{ github.sha }}
           TWENTY_API_KEY: ${{ secrets.TWENTY_API_KEY }}
-        with:
-          host: ${{ matrix.host }}
-          username: ${{ secrets.DROPLET_USER }}
-          password: ${{ secrets.DROPLET_PASSWORD }}
-          command_timeout: 20m
-          envs: COMPOSE_FILE,CADDY_FILE,IMAGE_TAG,GHCR_TOKEN,GH_ACTOR,TWENTY_API_KEY
-          script: |
-            set -e
-            cd /opt/twenty
-            printf '%s' "$COMPOSE_FILE" | base64 -d > docker-compose.yml
-            printf '%s' "$CADDY_FILE" | base64 -d > Caddyfile
-            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GH_ACTOR" --password-stdin
-            sed -i "s/^TAG=.*/TAG=${IMAGE_TAG}/" .env
-            if ! grep -q '^TWENTY_API_KEY=' .env 2>/dev/null; then
-              echo "TWENTY_API_KEY=${TWENTY_API_KEY}" >> .env
-            elif [ -n "${TWENTY_API_KEY}" ]; then
-              sed -i "s|^TWENTY_API_KEY=.*|TWENTY_API_KEY=${TWENTY_API_KEY}|" .env
+        run: |
+          set -euo pipefail
+          SSH_OPTS='-o StrictHostKeyChecking=no -o ConnectTimeout=60 -o ServerAliveInterval=15'
+
+          for attempt in 1 2 3; do
+            echo "SCP attempt ${attempt}..."
+            if sshpass -e scp $SSH_OPTS \
+              deploy/docker-compose.yml deploy/Caddyfile \
+              "${DROPLET_USER}@${DROPLET_HOST}:/opt/twenty/"; then
+              break
             fi
-            docker compose pull
-            docker compose up -d
-            docker compose restart caddy
-            docker image prune -f
-            sleep 8
-            docker compose exec -T parks curl -sf http://localhost:3002/health
+            if [ "$attempt" -eq 3 ]; then
+              echo "SCP failed after 3 attempts"
+              exit 1
+            fi
+            sleep 10
+          done
+
+          sshpass -e ssh $SSH_OPTS "${DROPLET_USER}@${DROPLET_HOST}" \
+            "IMAGE_TAG='${IMAGE_TAG}' GHCR_TOKEN='${GHCR_TOKEN}' GH_ACTOR='${GH_ACTOR}' TWENTY_API_KEY='${TWENTY_API_KEY}' bash -s" <<'REMOTE'
+          set -euo pipefail
+          cd /opt/twenty
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GH_ACTOR" --password-stdin
+          sed -i "s/^TAG=.*/TAG=${IMAGE_TAG}/" .env
+          if ! grep -q '^TWENTY_API_KEY=' .env 2>/dev/null; then
+            echo "TWENTY_API_KEY=${TWENTY_API_KEY}" >> .env
+          elif [ -n "${TWENTY_API_KEY}" ]; then
+            sed -i "s|^TWENTY_API_KEY=.*|TWENTY_API_KEY=${TWENTY_API_KEY}|" .env
+          fi
+          docker compose pull
+          docker compose up -d
+          docker compose restart caddy
+          docker image prune -f
+          sleep 10
+          docker compose exec -T parks curl -sf http://localhost:3002/health
+          REMOTE
 
   parks-bootstrap:
     needs: deploy
     runs-on: ubuntu-latest
-    # Metadata Parks + seed demo (borra DEMO-* previos y recrea).
-    # Requiere secret TWENTY_API_KEY (Settings → APIs en parks.bridgehub.mx).
     steps:
       - uses: actions/checkout@v4
 
@@ -160,7 +156,6 @@ jobs:
           fi
           if [ -z "$TWENTY_BOOTSTRAP_EMAIL" ] || [ -z "$TWENTY_BOOTSTRAP_PASSWORD" ]; then
             echo "::warning::TWENTY_BOOTSTRAP_EMAIL/PASSWORD no configurados — se omitirán assign-roles y workspace-branding."
-            echo "::warning::Agrega ambos secrets (admin del workspace con permiso ROLES) para asignar roles demo automáticamente."
           fi
 
       - name: Bootstrap Parks metadata + demo seed
