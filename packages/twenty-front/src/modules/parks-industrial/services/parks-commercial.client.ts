@@ -2,6 +2,7 @@ import {
   PARKS_COMMERCIAL_EMAIL_SEQUENCE_ENDPOINT,
   PARKS_COMMERCIAL_ENRICH_PROSPECT_ENDPOINT,
   PARKS_COMMERCIAL_FICHA_TECNICA_ENDPOINT,
+  PARKS_COMMERCIAL_INBOX_ENDPOINT,
   PARKS_COMMERCIAL_MATCH_NAVES_ENDPOINT,
   PARKS_COMMERCIAL_NOTIFICATIONS_ENDPOINT,
   PARKS_COMMERCIAL_PROSPECT_SCORES_ENDPOINT,
@@ -11,6 +12,7 @@ import {
   PARKS_COMMERCIAL_ACTIVITY_TIMELINE_ENDPOINT,
   PARKS_COMMERCIAL_DEAL_WIN_PREVIEW_ENDPOINT,
   PARKS_COMMERCIAL_BULK_FOLLOW_UP_ENDPOINT,
+  PARKS_COMMERCIAL_MAP_OUTREACH_ENDPOINT,
   PARKS_SERVICE_URL,
 } from '@/parks-industrial/constants/parks-commercial.constants';
 import {
@@ -25,6 +27,7 @@ import {
   type EmailSequenceResult,
   type FichaTecnicaLink,
   type FichaTecnicaSentVia,
+  type MapOutreachResult,
   type NaveMatchResult,
   type ProspectEnrichmentResult,
   type ProspectScoresResponse,
@@ -33,11 +36,16 @@ import {
   type DecisorClienteRol,
   type ParksAccount360Response,
 } from '@/parks-industrial/types/parks-commercial.types';
+import {
+  type ParksCemInboxSummary,
+} from '@/parks-industrial/types/parks-cem-inbox.types';
 
 const normalizeParksAccount360Response = (
   body: Partial<ParksAccount360Response> & { inquilinoId: string },
 ): ParksAccount360Response => {
   const oportunidades = body.oportunidades ?? [];
+  const casosLegales = body.casosLegales ?? [];
+  const documentos = body.documentos ?? [];
 
   return {
     inquilinoId: body.inquilinoId,
@@ -49,6 +57,18 @@ const normalizeParksAccount360Response = (
     oportunidadesEnProceso:
       body.oportunidadesEnProceso ??
       oportunidades.filter((oportunidad) => oportunidad.enProceso).length,
+    casosLegales,
+    casosLegalesActivos: body.casosLegalesActivos ?? casosLegales.length,
+    hojasDeAcuerdos: body.hojasDeAcuerdos ?? [],
+    documentos,
+    documentosEntregados:
+      body.documentosEntregados ??
+      documentos.filter((documento) => documento.entregado).length,
+    documentosPendientes:
+      body.documentosPendientes ??
+      documentos.filter((documento) => !documento.entregado).length,
+    actividades: body.actividades ?? [],
+    cxc: body.cxc,
     interacciones: body.interacciones ?? [],
     estadoPagos: body.estadoPagos ?? { fuente: 'sin-datos' },
     tieneContratosFuno: body.tieneContratosFuno ?? false,
@@ -65,6 +85,36 @@ const parseErrorMessage = async (response: Response): Promise<string> => {
     errorBody?.error ??
     `Error del servicio Parks Industrial (${response.status})`
   );
+};
+
+const EMPTY_CEM_INBOX: ParksCemInboxSummary = {
+  total: 0,
+  leadsSinAsignar: 0,
+  aprobacionesComerciales: 0,
+  firmasHoja: 0,
+  items: [],
+};
+
+export const fetchParksCemInbox = async (): Promise<ParksCemInboxSummary> => {
+  const response = await fetch(PARKS_COMMERCIAL_INBOX_ENDPOINT);
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  const inbox = (await response.json()) as ParksCemInboxSummary | undefined;
+
+  if (!inbox) {
+    return EMPTY_CEM_INBOX;
+  }
+
+  return {
+    total: inbox.total ?? inbox.items?.length ?? 0,
+    leadsSinAsignar: inbox.leadsSinAsignar ?? 0,
+    aprobacionesComerciales: inbox.aprobacionesComerciales ?? 0,
+    firmasHoja: inbox.firmasHoja ?? 0,
+    items: inbox.items ?? [],
+  };
 };
 
 export type CreateParksLeadInput = {
@@ -834,14 +884,15 @@ export const matchParksNaves = async ({
 };
 
 export const createParksFichaTecnica = async (input: {
-  opportunityId: string;
-  opportunityName: string;
+  opportunityId?: string;
+  opportunityName?: string;
   naveId: string;
   naveIdentificador: string;
   parqueNombre?: string;
   ubicacion?: string;
   m2: number;
   precioUsdM2?: number;
+  source?: 'pipeline' | 'stacking-plan' | 'inventory';
 }): Promise<FichaTecnicaLink> => {
   const response = await fetch(PARKS_COMMERCIAL_FICHA_TECNICA_ENDPOINT, {
     method: 'POST',
@@ -854,6 +905,46 @@ export const createParksFichaTecnica = async (input: {
   }
 
   return (await response.json()) as FichaTecnicaLink;
+};
+
+export const downloadParksFichaTecnicaPdf = async ({
+  token,
+  filename,
+}: {
+  token: string;
+  filename: string;
+}): Promise<void> => {
+  const response = await fetch(
+    `${PARKS_SERVICE_URL}/commercial/ficha/${token}/pdf`,
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  const pdfBlob = await response.blob();
+  const objectUrl = URL.createObjectURL(pdfBlob);
+  const anchor = document.createElement('a');
+  anchor.href = objectUrl;
+  anchor.download = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(objectUrl);
+};
+
+export const openParksFichaTecnicaPdf = async (token: string): Promise<void> => {
+  const response = await fetch(
+    `${PARKS_SERVICE_URL}/commercial/ficha/${token}/pdf`,
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  const pdfBlob = await response.blob();
+  const objectUrl = URL.createObjectURL(pdfBlob);
+  window.open(objectUrl, '_blank', 'noopener,noreferrer');
 };
 
 export const simulateParksFichaView = async (
@@ -1079,4 +1170,38 @@ export const createParksBulkFollowUp = async (
     tasksCreated: number;
     message: string;
   };
+};
+
+export const sendParksMapOutreach = async (input: {
+  leads: Array<{
+    opportunityId: string;
+    opportunityName: string;
+    companyName?: string;
+    ubicacionDeseada?: string;
+    m2Requeridos?: number;
+    contactEmail?: string;
+  }>;
+  nave: {
+    naveId: string;
+    naveIdentificador: string;
+    parqueNombre?: string;
+    ubicacion?: string;
+    m2?: number;
+    precioUsdM2?: number;
+    availabilityLabel?: string;
+  };
+  personalNote?: string;
+  senderName?: string;
+}): Promise<MapOutreachResult> => {
+  const response = await fetch(PARKS_COMMERCIAL_MAP_OUTREACH_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  return (await response.json()) as MapOutreachResult;
 };

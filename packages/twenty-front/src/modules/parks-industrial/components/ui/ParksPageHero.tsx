@@ -6,6 +6,7 @@ import { IconArrowRight, type IconComponent } from 'twenty-ui/icon';
 import { MOBILE_VIEWPORT, themeCssVariables } from 'twenty-ui/theme-constants';
 
 import { PARKS_BRAND } from '@/parks-industrial/constants/parks-theme.constants';
+import { ParksBrandLogo } from '@/parks-industrial/components/ui/ParksBrandLogo';
 
 export type ParksPageHeroAction = {
   to: string;
@@ -85,6 +86,10 @@ const StyledHeroCopy = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${themeCssVariables.spacing[3]};
+`;
+
+const StyledHeroBrand = styled.div`
+  margin-bottom: ${themeCssVariables.spacing[1]};
 `;
 
 const StyledEyebrow = styled.div`
@@ -202,6 +207,9 @@ export const ParksPageHero = ({
 
     <StyledHeroGrid hasSide={isDefined(sideContent)}>
       <StyledHeroCopy>
+        <StyledHeroBrand>
+          <ParksBrandLogo variant="onDark" height={32} />
+        </StyledHeroBrand>
         <StyledEyebrow>{eyebrow}</StyledEyebrow>
         <StyledHeroTitle>{title}</StyledHeroTitle>
         <StyledHeroSubtitle>{subtitle}</StyledHeroSubtitle>

@@ -12,10 +12,18 @@ import { MainAppLayoutWithSidePanel } from '@/ui/layout/page/components/MainAppL
 import { AppPath, SettingsPath } from 'twenty-shared/types';
 import { getSettingsPath } from 'twenty-shared/utils';
 import {
+  PARKS_COMITE_DETAIL_PATH,
+  PARKS_COMITE_PATH,
+  PARKS_CXC_PATH,
+  PARKS_DASHBOARD_COMERCIAL_PATH,
   PARKS_INQUILINO_360_PATH,
   PARKS_LEADS_CEM_PATH,
   PARKS_LEGAL_DASHBOARD_PATH,
   PARKS_LEGAL_PIPELINE_PATH,
+  PARKS_LO_CAMPO_PATH,
+  PARKS_MIS_PENDIENTES_PATH,
+  PARKS_VALOR_AGREGADO_PATH,
+  PARKS_ASIGNACION_PATH,
 } from '@/parks-industrial/constants/parks-routes.constants';
 import { ParksProtectedRoute } from '@/parks-industrial/components/navigation/ParksProtectedRoute';
 
@@ -185,6 +193,50 @@ const ParksLegalDashboardPage = lazy(() =>
   import('~/pages/parks-industrial/ParksLegalDashboardPage').then((module) => ({
     default: module.ParksLegalDashboardPage,
   })),
+);
+
+const ParksCxcDashboardPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksCxcDashboardPage').then((module) => ({
+    default: module.ParksCxcDashboardPage,
+  })),
+);
+
+const ParksComitePage = lazy(() =>
+  import('~/pages/parks-industrial/ParksComitePage').then((module) => ({
+    default: module.ParksComitePage,
+  })),
+);
+
+const ParksValorAgregadoPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksValorAgregadoPage').then((module) => ({
+    default: module.ParksValorAgregadoPage,
+  })),
+);
+
+const ParksAsignacionPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksAsignacionPage').then((module) => ({
+    default: module.ParksAsignacionPage,
+  })),
+);
+
+const ParksLoCampoPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksLoCampoPage').then((module) => ({
+    default: module.ParksLoCampoPage,
+  })),
+);
+
+const ParksMisPendientesPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksMisPendientesPage').then((module) => ({
+    default: module.ParksMisPendientesPage,
+  })),
+);
+
+const ParksDashboardComercialPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksDashboardComercialPage').then(
+    (module) => ({
+      default: module.ParksDashboardComercialPage,
+    }),
+  ),
 );
 
 const ParksComisionesPage = lazy(() =>
@@ -421,6 +473,22 @@ export const useCreateAppRouter = (
               }
             />
             <Route
+              path={PARKS_MIS_PENDIENTES_PATH}
+              element={
+                <ParksLazyRoute>
+                  <ParksMisPendientesPage />
+                </ParksLazyRoute>
+              }
+            />
+            <Route
+              path={PARKS_DASHBOARD_COMERCIAL_PATH}
+              element={
+                <ParksLazyRoute>
+                  <ParksDashboardComercialPage />
+                </ParksLazyRoute>
+              }
+            />
+            <Route
               path={AppPath.ParksContratos}
               element={
                 <ParksLazyRoute>
@@ -449,6 +517,54 @@ export const useCreateAppRouter = (
               element={
                 <ParksLazyRoute>
                   <ParksLegalDashboardPage />
+                </ParksLazyRoute>
+              }
+            />
+            <Route
+              path={PARKS_CXC_PATH}
+              element={
+                <ParksLazyRoute>
+                  <ParksCxcDashboardPage />
+                </ParksLazyRoute>
+              }
+            />
+            <Route
+              path={PARKS_COMITE_PATH}
+              element={
+                <ParksLazyRoute>
+                  <ParksComitePage />
+                </ParksLazyRoute>
+              }
+            />
+            <Route
+              path={PARKS_COMITE_DETAIL_PATH}
+              element={
+                <ParksLazyRoute>
+                  <ParksComitePage />
+                </ParksLazyRoute>
+              }
+            />
+            <Route
+              path={PARKS_VALOR_AGREGADO_PATH}
+              element={
+                <ParksLazyRoute>
+                  <ParksValorAgregadoPage />
+                </ParksLazyRoute>
+              }
+            />
+            <Route
+              path={PARKS_ASIGNACION_PATH}
+              element={
+                <ParksLazyRoute>
+                  <ParksAsignacionPage />
+                </ParksLazyRoute>
+              }
+            />
+            <Route
+              path={PARKS_LO_CAMPO_PATH}
+              element={
+                <ParksLazyRoute>
+                  <ParksLoCampoPage />
                 </ParksLazyRoute>
               }
             />

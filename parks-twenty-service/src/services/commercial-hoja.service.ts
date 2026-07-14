@@ -3,11 +3,13 @@ import path from 'path';
 
 import Handlebars from 'handlebars';
 
+import { envConfig } from '../config/env.config';
 import { OPPORTUNITY_STAGE_EN_PROCESO_LEGAL, OPPORTUNITY_STAGE_HOJA_FIRMADA } from '../constants/parks.constants';
 import { CREATE_HOJA_DE_ACUERDOS } from '../seed/demo-seed.mutations';
 import { type HojaDeAcuerdosRecord } from '../types/parks.types';
 import { toSelectValue } from '../utils/select-value.util';
 import { brokerNotificationStore } from './broker-notification.store';
+import { comiteService } from './comite.service';
 import { commercialLegalHandoffService } from './commercial-legal-handoff.service';
 import { twentyClient } from './twenty.client';
 import { twentyDataService } from './twenty-data.service';
@@ -487,53 +489,103 @@ export const commercialHojaService = {
       });
 
       try {
-        const handoff =
-          await commercialLegalHandoffService.handoffFromOpportunity(
+        if (envConfig.parksComiteEnabled) {
+          const opportunity = await twentyDataService.getOpportunityById(
             input.opportunityId,
-            input.hojaId,
           );
+          const updatedHoja =
+            (await twentyDataService.getHojaDeAcuerdosById(input.hojaId)) ??
+            existing;
 
-        casoLegalId = handoff.casoLegalId;
-        handoffReason = handoff.reason;
+          const comite = await comiteService.createFromHoja({
+            opportunityId: input.opportunityId,
+            opportunityName: opportunity?.name,
+            hojaDeAcuerdosId: input.hojaId,
+            leasingOfficerNombre:
+              updatedHoja.ejecutivoAsignado ?? 'Leasing Officer',
+            cemQueFirmoNombre: 'Héctor Montelongo',
+            deal: {
+              clienteRazonSocial:
+                opportunity?.name?.split('—')[0]?.trim() ??
+                opportunity?.name ??
+                'Cliente Parks',
+              naveNomenclatura:
+                updatedHoja.nave?.identificador ??
+                opportunity?.naveVinculada?.identificador ??
+                'Nave',
+              glaM2: updatedHoja.m2Acordados ?? opportunity?.m2Requeridos ?? 0,
+              precioAcordadoM2:
+                updatedHoja.precioUsdM2 ?? opportunity?.precioPorM2Usd ?? 0,
+              plazoMeses:
+                updatedHoja.plazoMeses ??
+                opportunity?.plazoContratoMeses ??
+                36,
+              periodoGraciaMeses: updatedHoja.periodoGraciaMeses,
+              depositosGarantiaMeses: updatedHoja.depositoMeses,
+              condicionesEspeciales: updatedHoja.condicionesEspeciales ?? '',
+            },
+          });
 
-        if (handoff.created || handoff.casoLegalId) {
-          nextStage = toSelectValue(OPPORTUNITY_STAGE_EN_PROCESO_LEGAL);
-        }
-
-        // Handoff service already notifies Legal when it creates the caso.
-        // Notify here only for the non-create paths (skip / already exists / disabled).
-        if (!handoff.created) {
-          const notifyLegal = Boolean(handoff.casoLegalId);
+          handoffReason = `Comité ${comite.referencia} abierto — pendiente de votación`;
 
           brokerNotificationStore.add({
             type: 'alert',
             priority: 'high',
-            title: 'Hoja de Acuerdos firmada por CEM y cliente',
-            body:
-              handoff.reason === 'PARKS_LEGAL_HANDOFF_ENABLED=false'
-                ? 'Handoff a Legal desactivado (PARKS_LEGAL_HANDOFF_ENABLED=false).'
-                : `Firmas completas. ${handoff.reason ?? 'Listo para Legal.'}`,
-            area: notifyLegal ? 'Legal' : 'Comercial',
+            title: 'Hoja firmada — enviada al Comité de Autorización',
+            body: `${comite.deal.clienteRazonSocial} · ${comite.deal.naveNomenclatura} · Vence en ${envConfig.parksComiteSlaHoras}h`,
+            area: 'Comercial',
             opportunityId: input.opportunityId,
-            actionPath: notifyLegal
-              ? '/parks/contratos'
-              : buildPipelineDealActionPath(input.opportunityId, {
-                  tab: 'hoja',
-                }),
-            actionLabel: notifyLegal ? 'Ver contratos' : 'Ver Hoja',
-            audienceRoleLabels: notifyLegal
-              ? [...PARKS_NOTIFICATION_LEGAL_ROLES]
-              : [...PARKS_NOTIFICATION_COMMERCIAL_ROLES],
-            audienceNames: notifyLegal
-              ? ['Catalina Moreno', 'Catalina']
-              : undefined,
+            actionPath: `/parks/comite/${comite.id}`,
+            actionLabel: 'Ver comité',
+            audienceRoleLabels: [...PARKS_NOTIFICATION_COMMERCIAL_ROLES],
           });
+        } else {
+          const handoff =
+            await commercialLegalHandoffService.handoffFromOpportunity(
+              input.opportunityId,
+              input.hojaId,
+            );
+
+          casoLegalId = handoff.casoLegalId;
+          handoffReason = handoff.reason;
+
+          if (handoff.created || handoff.casoLegalId) {
+            nextStage = toSelectValue(OPPORTUNITY_STAGE_EN_PROCESO_LEGAL);
+          }
+
+          if (!handoff.created) {
+            const notifyLegal = Boolean(handoff.casoLegalId);
+
+            brokerNotificationStore.add({
+              type: 'alert',
+              priority: 'high',
+              title: 'Hoja de Acuerdos firmada por CEM y cliente',
+              body:
+                handoff.reason === 'PARKS_LEGAL_HANDOFF_ENABLED=false'
+                  ? 'Handoff a Legal desactivado (PARKS_LEGAL_HANDOFF_ENABLED=false).'
+                  : `Firmas completas. ${handoff.reason ?? 'Listo para Legal.'}`,
+              area: notifyLegal ? 'Legal' : 'Comercial',
+              opportunityId: input.opportunityId,
+              actionPath: notifyLegal
+                ? '/parks/contratos'
+                : buildPipelineDealActionPath(input.opportunityId, {
+                    tab: 'hoja',
+                  }),
+              actionLabel: notifyLegal ? 'Ver contratos' : 'Ver Hoja',
+              audienceRoleLabels: notifyLegal
+                ? [...PARKS_NOTIFICATION_LEGAL_ROLES]
+                : [...PARKS_NOTIFICATION_COMMERCIAL_ROLES],
+              audienceNames: notifyLegal
+                ? ['Catalina Moreno', 'Catalina']
+                : undefined,
+            });
+          }
         }
       } catch (error) {
         handoffReason =
           error instanceof Error ? error.message : 'Handoff failed';
         console.error(
-          `[commercial-hoja] Legal handoff failed for opportunity ${input.opportunityId}:`,
+          `[commercial-hoja] Legal/Comité handoff failed for opportunity ${input.opportunityId}:`,
           error,
         );
       }

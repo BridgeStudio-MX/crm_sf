@@ -5,20 +5,24 @@ import { es } from 'date-fns/locale';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AppPath } from 'twenty-shared/types';
+import { getAppPath } from 'twenty-shared/utils';
 import {
   IconAlertTriangle,
   IconArrowLeft,
+  IconBriefcase,
   IconBuildingSkyscraper,
   IconCalendar,
   IconClock,
   IconCurrencyDollar,
   IconExternalLink,
+  IconFileCheck,
   IconFileText,
   IconLayoutKanban,
   IconMail,
   IconMap,
   IconPhone,
   IconPlus,
+  IconReportMoney,
   IconUser,
   IconUsers,
 } from 'twenty-ui/icon';
@@ -41,21 +45,30 @@ import {
   getParksPipelineStageColor,
   getParksPipelineStageLabel,
 } from '@/parks-industrial/constants/parks-industrial.constants';
+import { getLegalEstatusLabel } from '@/parks-industrial/constants/parks-legal-workflow.constants';
+import { PARKS_CXC_PATH } from '@/parks-industrial/constants/parks-routes.constants';
 import { type ParksAccount360Response } from '@/parks-industrial/types/parks-commercial.types';
 import {
   formatParksDate,
   formatParksNumber,
   formatParksUsd,
   getParksDaysUntil,
+  getParksLegalSemaforoBadgeColor,
+  getParksLegalSemaforoLabel,
   getParksStackingStatus,
 } from '@/parks-industrial/utils/parks-format.util';
 import { useOpenRecordInSidePanel } from '@/side-panel/hooks/useOpenRecordInSidePanel';
 
 type Account360Tab =
   | 'resumen'
+  | 'empresa'
+  | 'documentos'
+  | 'hojas'
+  | 'actividad'
   | 'contratos'
   | 'oportunidades'
-  | 'historial'
+  | 'legal'
+  | 'cxc'
   | 'decisores';
 
 type ParksAccount360ContentProps = {
@@ -389,6 +402,11 @@ export const ParksAccount360Content = ({
 
   const oportunidades = data.oportunidades ?? [];
   const contratos = data.contratos ?? [];
+  const casosLegales = data.casosLegales ?? [];
+  const hojasDeAcuerdos = data.hojasDeAcuerdos ?? [];
+  const documentos = data.documentos ?? [];
+  const actividades = data.actividades ?? [];
+  const cxc = data.cxc;
   const interacciones = data.interacciones ?? [];
   const decisores = data.decisores ?? [];
   const estadoPagos = data.estadoPagos ?? { fuente: 'sin-datos' as const };
@@ -396,6 +414,21 @@ export const ParksAccount360Content = ({
   const oportunidadesEnProceso = useMemo(
     () => oportunidades.filter((oportunidad) => oportunidad.enProceso),
     [oportunidades],
+  );
+
+  const oportunidadesCerradas = useMemo(
+    () => oportunidades.filter((oportunidad) => !oportunidad.enProceso),
+    [oportunidades],
+  );
+
+  const documentosEntregados = useMemo(
+    () => documentos.filter((documento) => documento.entregado),
+    [documentos],
+  );
+
+  const documentosPendientes = useMemo(
+    () => documentos.filter((documento) => !documento.entregado),
+    [documentos],
   );
 
   const rentaMensualTotal = useMemo(
@@ -413,6 +446,13 @@ export const ParksAccount360Content = ({
       ? { label: t`Con adeudos`, color: 'red' as const, accent: 'red' as const }
       : { label: t`Sin dato`, color: 'gray' as const, accent: 'gray' as const };
 
+  const paymentSourceLabel =
+    estadoPagos.fuente === 'oracle'
+      ? t`Fuente: Oracle`
+      : estadoPagos.fuente === 'cxc'
+        ? t`Fuente: CxC`
+        : t`Fuente: sin dato`;
+
   const prefillInquilino = {
     inquilinoId,
     empresa: data.inquilino?.empresa ?? t`Inquilino`,
@@ -422,8 +462,26 @@ export const ParksAccount360Content = ({
     giroEmpresa: data.inquilino?.sector,
   };
 
+  const actividadCount = actividades.length + interacciones.length;
+
   const tabOptions = [
     { id: 'resumen' as const, label: t`Resumen` },
+    { id: 'empresa' as const, label: t`Empresa` },
+    {
+      id: 'documentos' as const,
+      label: t`Documentos`,
+      count: documentos.length,
+    },
+    {
+      id: 'hojas' as const,
+      label: t`Hojas`,
+      count: hojasDeAcuerdos.length,
+    },
+    {
+      id: 'actividad' as const,
+      label: t`Actividad`,
+      count: actividadCount,
+    },
     {
       id: 'contratos' as const,
       label: t`Contratos`,
@@ -432,12 +490,17 @@ export const ParksAccount360Content = ({
     {
       id: 'oportunidades' as const,
       label: t`Oportunidades`,
-      count: oportunidadesEnProceso.length,
+      count: oportunidades.length,
     },
     {
-      id: 'historial' as const,
-      label: t`Historial`,
-      count: interacciones.length,
+      id: 'legal' as const,
+      label: t`Legal`,
+      count: casosLegales.length,
+    },
+    {
+      id: 'cxc' as const,
+      label: t`CxC`,
+      count: cxc ? 1 : 0,
     },
     { id: 'decisores' as const, label: t`Decisores`, count: decisores.length },
   ];
@@ -523,18 +586,22 @@ export const ParksAccount360Content = ({
           accent="purple"
         />
         <ParksMetricCard
-          label={t`Decisores`}
-          value={decisores.length}
-          icon={IconUsers}
+          label={t`Casos legales`}
+          value={data.casosLegalesActivos ?? casosLegales.length}
+          icon={IconBriefcase}
           accent="blue"
-          trend={t`Meta: 2–5 personas`}
+          trend={
+            casosLegales.length > 0
+              ? t`${casosLegales.length} en historial`
+              : t`Sin casos`
+          }
         />
         <ParksMetricCard
           label={t`Estado de pagos`}
           value={paymentStatus.label}
           icon={IconCurrencyDollar}
           accent={paymentStatus.accent}
-          trend={formatParksDate(estadoPagos.ultimoPagoFecha)}
+          trend={paymentSourceLabel}
         />
       </StyledKpiGrid>
 
@@ -556,44 +623,32 @@ export const ParksAccount360Content = ({
       </StyledTabBar>
 
       {activeTab === 'resumen' ? (
-        <StyledTwoColumn>
-          <ParksSectionCard title={t`Contacto y cuenta`} accent="blue">
+        <StyledCardList>
+          <ParksSectionCard title={t`Datos de la empresa`} accent="blue">
             <StyledContactGrid>
               <ParksDetailField
-                label={t`Contacto principal`}
-                icon={IconUser}
+                label={t`Nombre / razón social`}
+                icon={IconBuildingSkyscraper}
                 accent="blue"
-                value={data.inquilino?.contactoPrincipal ?? '—'}
+                value={data.inquilino?.empresa ?? '—'}
               />
               <ParksDetailField
-                label={t`Correo`}
-                icon={IconMail}
+                label={t`RFC`}
+                icon={IconFileText}
                 accent="blue"
-                value={
-                  data.inquilino?.emailContacto ? (
-                    <StyledContactLink
-                      href={`mailto:${data.inquilino.emailContacto}`}
-                    >
-                      {data.inquilino.emailContacto}
-                    </StyledContactLink>
-                  ) : (
-                    '—'
-                  )
-                }
+                value={data.inquilino?.rfc ?? '—'}
               />
               <ParksDetailField
-                label={t`Teléfono`}
-                icon={IconPhone}
+                label={t`Sector`}
+                icon={IconBriefcase}
                 accent="blue"
-                value={
-                  data.inquilino?.telefono ? (
-                    <StyledContactLink href={`tel:${data.inquilino.telefono}`}>
-                      {data.inquilino.telefono}
-                    </StyledContactLink>
-                  ) : (
-                    '—'
-                  )
-                }
+                value={data.inquilino?.sector ?? '—'}
+              />
+              <ParksDetailField
+                label={t`Estatus`}
+                icon={IconUsers}
+                accent="blue"
+                value={data.inquilino?.estatus ?? '—'}
               />
               <ParksDetailField
                 label={t`Rep. legal`}
@@ -601,48 +656,409 @@ export const ParksAccount360Content = ({
                 value={data.inquilino?.repLegalNombre ?? '—'}
               />
               <ParksDetailField
-                label={t`RFC`}
-                icon={IconBuildingSkyscraper}
-                value={data.inquilino?.rfc ?? '—'}
-              />
-              <ParksDetailField
                 label={t`Oracle ID`}
                 icon={IconCurrencyDollar}
-                value={data.inquilino?.oracleClienteId ?? '—'}
+                value={data.inquilino?.oracleClienteId || '—'}
               />
             </StyledContactGrid>
-            {data.note ? <StyledHint>{data.note}</StyledHint> : null}
           </ParksSectionCard>
 
-          <ParksSectionCard title={t`Snapshot comercial`} accent="purple">
-            <StyledContactGrid>
-              <ParksKpiTile
-                label={t`Renta mensual`}
-                value={formatParksUsd(rentaMensualTotal)}
-                accent="green"
+          <StyledTwoColumn>
+            <ParksSectionCard title={t`Contacto`} accent="purple">
+              <StyledContactGrid>
+                <ParksDetailField
+                  label={t`Contacto principal`}
+                  icon={IconUser}
+                  accent="purple"
+                  value={data.inquilino?.contactoPrincipal ?? '—'}
+                />
+                <ParksDetailField
+                  label={t`Correo`}
+                  icon={IconMail}
+                  accent="purple"
+                  value={
+                    data.inquilino?.emailContacto ? (
+                      <StyledContactLink
+                        href={`mailto:${data.inquilino.emailContacto}`}
+                      >
+                        {data.inquilino.emailContacto}
+                      </StyledContactLink>
+                    ) : (
+                      '—'
+                    )
+                  }
+                />
+                <ParksDetailField
+                  label={t`Teléfono`}
+                  icon={IconPhone}
+                  accent="purple"
+                  value={
+                    data.inquilino?.telefono ? (
+                      <StyledContactLink href={`tel:${data.inquilino.telefono}`}>
+                        {data.inquilino.telefono}
+                      </StyledContactLink>
+                    ) : (
+                      '—'
+                    )
+                  }
+                />
+                <ParksDetailField
+                  label={t`Email rep. legal`}
+                  icon={IconMail}
+                  value={
+                    data.inquilino?.repLegalEmail ? (
+                      <StyledContactLink
+                        href={`mailto:${data.inquilino.repLegalEmail}`}
+                      >
+                        {data.inquilino.repLegalEmail}
+                      </StyledContactLink>
+                    ) : (
+                      '—'
+                    )
+                  }
+                />
+              </StyledContactGrid>
+              {data.note ? <StyledHint>{data.note}</StyledHint> : null}
+            </ParksSectionCard>
+
+            <ParksSectionCard title={t`Snapshot`} accent="green">
+              <StyledContactGrid>
+                <ParksKpiTile
+                  label={t`Renta mensual`}
+                  value={formatParksUsd(rentaMensualTotal)}
+                  accent="green"
+                />
+                <ParksKpiTile
+                  label={t`Documentos`}
+                  value={`${data.documentosEntregados ?? documentosEntregados.length}/${documentos.length || 0}`}
+                  accent="yellow"
+                />
+                <ParksKpiTile
+                  label={t`Hojas de Acuerdos`}
+                  value={hojasDeAcuerdos.length}
+                  accent="purple"
+                />
+                <ParksKpiTile
+                  label={t`Casos legales`}
+                  value={casosLegales.length}
+                  accent="blue"
+                />
+              </StyledContactGrid>
+              <StyledPipelineLink to={AppPath.ParksPipeline}>
+                {t`Abrir pipeline completo`}
+                <IconExternalLink size={14} />
+              </StyledPipelineLink>
+            </ParksSectionCard>
+          </StyledTwoColumn>
+        </StyledCardList>
+      ) : null}
+
+      {activeTab === 'empresa' ? (
+        <ParksSectionCard title={t`Ficha de la empresa`} accent="blue">
+          <StyledContactGrid>
+            <ParksDetailField
+              label={t`Nombre / razón social`}
+              icon={IconBuildingSkyscraper}
+              accent="blue"
+              value={data.inquilino?.empresa ?? '—'}
+            />
+            <ParksDetailField
+              label={t`RFC`}
+              icon={IconFileText}
+              accent="blue"
+              value={data.inquilino?.rfc ?? '—'}
+            />
+            <ParksDetailField
+              label={t`Sector / giro`}
+              icon={IconBriefcase}
+              value={data.inquilino?.sector ?? '—'}
+            />
+            <ParksDetailField
+              label={t`Estatus comercial`}
+              icon={IconUsers}
+              value={data.inquilino?.estatus ?? '—'}
+            />
+            <ParksDetailField
+              label={t`Representante legal`}
+              icon={IconUser}
+              value={data.inquilino?.repLegalNombre ?? '—'}
+            />
+            <ParksDetailField
+              label={t`Email representante`}
+              icon={IconMail}
+              value={data.inquilino?.repLegalEmail || '—'}
+            />
+            <ParksDetailField
+              label={t`Contacto principal`}
+              icon={IconUser}
+              value={data.inquilino?.contactoPrincipal ?? '—'}
+            />
+            <ParksDetailField
+              label={t`Correo contacto`}
+              icon={IconMail}
+              value={data.inquilino?.emailContacto ?? '—'}
+            />
+            <ParksDetailField
+              label={t`Teléfono`}
+              icon={IconPhone}
+              value={data.inquilino?.telefono ?? '—'}
+            />
+            <ParksDetailField
+              label={t`Oracle cliente ID`}
+              icon={IconCurrencyDollar}
+              value={data.inquilino?.oracleClienteId || '—'}
+            />
+            <ParksDetailField
+              label={t`Último pago`}
+              icon={IconCalendar}
+              value={formatParksDate(estadoPagos.ultimoPagoFecha)}
+            />
+            <ParksDetailField
+              label={t`Decisores registrados`}
+              icon={IconUsers}
+              value={`${decisores.length}`}
+            />
+          </StyledContactGrid>
+        </ParksSectionCard>
+      ) : null}
+
+      {activeTab === 'documentos' ? (
+        <ParksSectionCard
+          title={t`Documentación del cliente`}
+          accent="yellow"
+          action={
+            <StyledHint>
+              {t`${documentosEntregados.length} entregados · ${documentosPendientes.length} pendientes`}
+            </StyledHint>
+          }
+        >
+          {documentos.length > 0 ? (
+            <StyledCardList>
+              {documentos.map((documento) => (
+                <StyledStaticCard key={documento.id}>
+                  <StyledCardHeader>
+                    <StyledCardTitle>
+                      {documento.titulo ??
+                        documento.tipoDocumento ??
+                        t`Documento`}
+                    </StyledCardTitle>
+                    <ParksStatusBadge
+                      label={
+                        documento.entregado ? t`Entregado` : t`Pendiente`
+                      }
+                      color={documento.entregado ? 'green' : 'yellow'}
+                    />
+                  </StyledCardHeader>
+                  <StyledMetaGrid>
+                    <StyledMetaItem>
+                      <IconFileText size={14} />
+                      {documento.tipoDocumento ?? t`Sin tipo`}
+                    </StyledMetaItem>
+                    <StyledMetaItem>
+                      <IconBriefcase size={14} />
+                      {documento.casoReferencia ?? t`Sin caso`}
+                    </StyledMetaItem>
+                    <StyledMetaItem>
+                      <StyledPipelineLink
+                        to={getAppPath(AppPath.ParksContratoAprobacion, {
+                          contratoId: documento.casoLegalId,
+                        })}
+                      >
+                        {t`Ver en caso legal`}
+                        <IconExternalLink size={14} />
+                      </StyledPipelineLink>
+                    </StyledMetaItem>
+                  </StyledMetaGrid>
+                </StyledStaticCard>
+              ))}
+            </StyledCardList>
+          ) : (
+            <ParksEmptyState
+              title={t`Sin checklist de documentos`}
+              description={t`Los documentos aparecen cuando Legal genera el checklist del caso (CSF, acta, INE, etc.).`}
+            />
+          )}
+        </ParksSectionCard>
+      ) : null}
+
+      {activeTab === 'hojas' ? (
+        <ParksSectionCard title={t`Hojas de Acuerdos`} accent="purple">
+          {hojasDeAcuerdos.length > 0 ? (
+            <StyledCardList>
+              {hojasDeAcuerdos.map((hoja) => (
+                <StyledStaticCard key={hoja.id}>
+                  <StyledCardHeader>
+                    <StyledCardTitle>
+                      {hoja.referencia ?? hoja.id}
+                    </StyledCardTitle>
+                    <StyledBadgeRow>
+                      <ParksStatusBadge
+                        label={hoja.estatus ?? t`Sin estatus`}
+                        color="blue"
+                      />
+                      {hoja.firmadaPorCliente && hoja.firmadaPorCem ? (
+                        <ParksStatusBadge label={t`Firmada`} color="green" />
+                      ) : (
+                        <ParksStatusBadge
+                          label={t`Firma pendiente`}
+                          color="yellow"
+                        />
+                      )}
+                    </StyledBadgeRow>
+                  </StyledCardHeader>
+                  <StyledMetaGrid>
+                    <StyledMetaItem>
+                      <IconFileText size={14} />
+                      {hoja.tipoContrato ?? t`Sin tipo`}
+                    </StyledMetaItem>
+                    <StyledMetaItem>
+                      <IconBuildingSkyscraper size={14} />
+                      {hoja.m2Acordados
+                        ? `${formatParksNumber(hoja.m2Acordados)} m²`
+                        : t`Sin m²`}
+                      {hoja.precioUsdM2
+                        ? ` · ${formatParksUsd(hoja.precioUsdM2)}/m²`
+                        : ''}
+                    </StyledMetaItem>
+                    <StyledMetaItem>
+                      <IconCurrencyDollar size={14} />
+                      {hoja.rentaMensualEstimadaUsd != null
+                        ? `${formatParksUsd(hoja.rentaMensualEstimadaUsd)}/mes`
+                        : t`Sin renta`}
+                    </StyledMetaItem>
+                    <StyledMetaItem>
+                      <IconCalendar size={14} />
+                      {t`Plazo`} {hoja.plazoMeses ?? '—'} {t`meses`}
+                    </StyledMetaItem>
+                    <StyledMetaItem>
+                      <IconMap size={14} />
+                      {hoja.parqueNombre ?? t`Sin parque`} ·{' '}
+                      {hoja.naveIdentificador ?? t`Sin nave`}
+                    </StyledMetaItem>
+                    <StyledMetaItem>
+                      <IconClock size={14} />
+                      {t`Firma`} {formatParksDate(hoja.fechaFirma)}
+                    </StyledMetaItem>
+                    {hoja.oportunidadVinculadaId ? (
+                      <StyledMetaItem>
+                        <button
+                          type="button"
+                          style={{
+                            alignItems: 'center',
+                            background: 'none',
+                            border: 'none',
+                            color: 'inherit',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            font: 'inherit',
+                            gap: 4,
+                            padding: 0,
+                          }}
+                          onClick={() => {
+                            if (hoja.oportunidadVinculadaId) {
+                              handleOpenOpportunity(
+                                hoja.oportunidadVinculadaId,
+                              );
+                            }
+                          }}
+                        >
+                          {t`Ver oportunidad`}
+                          <IconExternalLink size={14} />
+                        </button>
+                      </StyledMetaItem>
+                    ) : null}
+                  </StyledMetaGrid>
+                </StyledStaticCard>
+              ))}
+            </StyledCardList>
+          ) : (
+            <ParksEmptyState
+              title={t`Sin Hojas de Acuerdos`}
+              description={t`Cuando el LO genera y firma la Hoja, aparece aquí vinculada al inquilino.`}
+            />
+          )}
+        </ParksSectionCard>
+      ) : null}
+
+      {activeTab === 'actividad' ? (
+        <StyledCardList>
+          <ParksSectionCard title={t`Actividad comercial`} accent="blue">
+            {actividades.length > 0 ? (
+              <StyledTimeline>
+                {actividades.map((actividad) => (
+                  <StyledTimelineItem
+                    key={actividad.id}
+                    accent={
+                      actividad.type === 'email'
+                        ? themeCssVariables.color.blue
+                        : actividad.type === 'call'
+                          ? themeCssVariables.color.green
+                          : themeCssVariables.color.orange
+                    }
+                  >
+                    <StyledTimelineTitle>
+                      {actividad.subject}
+                    </StyledTimelineTitle>
+                    <StyledTimelineMeta>
+                      {actividad.type.toUpperCase()} · {actividad.direction} ·{' '}
+                      {actividad.participant}
+                      {actividad.opportunityName
+                        ? ` · ${actividad.opportunityName}`
+                        : ''}
+                    </StyledTimelineMeta>
+                    <StyledTimelineMeta>{actividad.summary}</StyledTimelineMeta>
+                    <StyledTimelineMeta>
+                      {formatRelativeDate(actividad.occurredAt)}
+                    </StyledTimelineMeta>
+                  </StyledTimelineItem>
+                ))}
+              </StyledTimeline>
+            ) : (
+              <ParksEmptyState
+                title={t`Sin actividad reciente`}
+                description={t`Emails, llamadas y tareas del deal aparecerán aquí.`}
               />
-              <ParksKpiTile
-                label={t`Último pago`}
-                value={formatParksDate(estadoPagos.ultimoPagoFecha)}
-                accent="yellow"
-              />
-              <ParksKpiTile
-                label={t`Contratos FUNO`}
-                value={data.contratos.filter((contrato) => contrato.esPropiedadFuno).length}
-                accent="yellow"
-              />
-              <ParksKpiTile
-                label={t`Interacciones`}
-                value={interacciones.length}
-                accent="purple"
-              />
-            </StyledContactGrid>
-            <StyledPipelineLink to={AppPath.ParksPipeline}>
-              {t`Abrir pipeline completo`}
-              <IconExternalLink size={14} />
-            </StyledPipelineLink>
+            )}
           </ParksSectionCard>
-        </StyledTwoColumn>
+
+          <ParksSectionCard title={t`Línea de tiempo CRM`} accent="yellow">
+            {interacciones.length > 0 ? (
+              <StyledTimeline>
+                {interacciones.map((interaccion) => (
+                  <StyledTimelineItem
+                    key={interaccion.id}
+                    accent={
+                      interaccion.tipo === 'notificacion'
+                        ? themeCssVariables.color.orange
+                        : interaccion.tipo === 'legal'
+                          ? themeCssVariables.color.purple
+                          : interaccion.tipo === 'cxc'
+                            ? themeCssVariables.color.green
+                            : interaccion.tipo === 'hoja'
+                              ? themeCssVariables.color.turquoise
+                              : themeCssVariables.color.blue
+                    }
+                  >
+                    <StyledTimelineTitle>
+                      {interaccion.titulo}
+                    </StyledTimelineTitle>
+                    <StyledTimelineMeta>
+                      {interaccion.descripcion}
+                    </StyledTimelineMeta>
+                    <StyledTimelineMeta>
+                      {formatRelativeDate(interaccion.fecha)}
+                    </StyledTimelineMeta>
+                  </StyledTimelineItem>
+                ))}
+              </StyledTimeline>
+            ) : (
+              <ParksEmptyState
+                title={t`Sin eventos CRM`}
+                description={t`Oportunidades, hojas, legal y CxC se consolidan aquí.`}
+              />
+            )}
+          </ParksSectionCard>
+        </StyledCardList>
       ) : null}
 
       {activeTab === 'contratos' ? (
@@ -685,6 +1101,12 @@ export const ParksAccount360Content = ({
                         {formatParksUsd(contrato.rentaMensualUsd)}/mes
                       </StyledMetaItem>
                       <StyledMetaItem>
+                        <IconBuildingSkyscraper size={14} />
+                        {contrato.m2
+                          ? `${formatParksNumber(contrato.m2)} m²`
+                          : t`Sin m²`}
+                      </StyledMetaItem>
+                      <StyledMetaItem>
                         <IconCalendar size={14} />
                         {t`Vence`} {formatParksDate(contrato.fechaVencimiento)}
                       </StyledMetaItem>
@@ -704,6 +1126,19 @@ export const ParksAccount360Content = ({
                           color={expiryStatus.color}
                         />
                       </StyledMetaItem>
+                      {contrato.casoLegalId ? (
+                        <StyledMetaItem>
+                          <IconBriefcase size={14} />
+                          <StyledPipelineLink
+                            to={getAppPath(AppPath.ParksContratoAprobacion, {
+                              contratoId: contrato.casoLegalId,
+                            })}
+                          >
+                            {t`Ver caso legal`}
+                            <IconExternalLink size={14} />
+                          </StyledPipelineLink>
+                        </StyledMetaItem>
+                      ) : null}
                     </StyledMetaGrid>
                   </StyledStaticCard>
                 );
@@ -727,103 +1162,246 @@ export const ParksAccount360Content = ({
       ) : null}
 
       {activeTab === 'oportunidades' ? (
-        <ParksSectionCard
-          title={t`Oportunidades en proceso`}
-          accent="purple"
-          action={
-            <StyledPipelineLink to={AppPath.ParksPipeline}>
-              {t`Pipeline`}
-              <IconExternalLink size={14} />
-            </StyledPipelineLink>
-          }
-        >
-          {oportunidadesEnProceso.length > 0 ? (
+        <StyledCardList>
+          <ParksSectionCard
+            title={t`Oportunidades en proceso`}
+            accent="purple"
+            action={
+              <StyledPipelineLink to={AppPath.ParksPipeline}>
+                {t`Pipeline`}
+                <IconExternalLink size={14} />
+              </StyledPipelineLink>
+            }
+          >
+            {oportunidadesEnProceso.length > 0 ? (
+              <StyledCardList>
+                {oportunidadesEnProceso.map((oportunidad) => (
+                  <StyledEntityCard
+                    key={oportunidad.id}
+                    type="button"
+                    onClick={() => handleOpenOpportunity(oportunidad.id)}
+                  >
+                    <StyledCardHeader>
+                      <StyledCardTitle>
+                        {oportunidad.name ?? oportunidad.id}
+                      </StyledCardTitle>
+                      <Tag
+                        color={getParksPipelineStageColor(oportunidad.stage)}
+                        text={getParksPipelineStageLabel(oportunidad.stage)}
+                        variant="solid"
+                        weight="medium"
+                      />
+                    </StyledCardHeader>
+                    <StyledMetaGrid>
+                      <StyledMetaItem>
+                        <IconFileText size={14} />
+                        {oportunidad.tipoOperacion ?? t`Sin tipo`}
+                      </StyledMetaItem>
+                      <StyledMetaItem>
+                        <IconBuildingSkyscraper size={14} />
+                        {oportunidad.m2Requeridos
+                          ? `${formatParksNumber(oportunidad.m2Requeridos)} m²`
+                          : t`Sin m²`}
+                      </StyledMetaItem>
+                      <StyledMetaItem>
+                        <IconMap size={14} />
+                        {oportunidad.ubicacionDeseada ?? t`Sin ubicación`}
+                      </StyledMetaItem>
+                      <StyledMetaItem>
+                        <IconClock size={14} />
+                        {t`Actualizado`}{' '}
+                        {formatRelativeDate(oportunidad.updatedAt)}
+                      </StyledMetaItem>
+                    </StyledMetaGrid>
+                  </StyledEntityCard>
+                ))}
+              </StyledCardList>
+            ) : (
+              <ParksEmptyState
+                title={t`Sin oportunidades abiertas`}
+                description={t`Crea una nueva oportunidad para expansión, renovación o nave adicional.`}
+                action={
+                  <Button
+                    variant="primary"
+                    Icon={IconPlus}
+                    title={t`Nueva oportunidad`}
+                    onClick={() => setIsNewOpportunityOpen(true)}
+                  />
+                }
+              />
+            )}
+          </ParksSectionCard>
+
+          {oportunidadesCerradas.length > 0 ? (
+            <ParksSectionCard title={t`Cerradas / perdidas`} accent="gray">
+              <StyledCardList>
+                {oportunidadesCerradas.map((oportunidad) => (
+                  <StyledEntityCard
+                    key={oportunidad.id}
+                    type="button"
+                    onClick={() => handleOpenOpportunity(oportunidad.id)}
+                  >
+                    <StyledCardHeader>
+                      <StyledCardTitle>
+                        {oportunidad.name ?? oportunidad.id}
+                      </StyledCardTitle>
+                      <Tag
+                        color={getParksPipelineStageColor(oportunidad.stage)}
+                        text={getParksPipelineStageLabel(oportunidad.stage)}
+                        variant="solid"
+                        weight="medium"
+                      />
+                    </StyledCardHeader>
+                    <StyledMetaItem>
+                      <IconClock size={14} />
+                      {formatRelativeDate(oportunidad.updatedAt)}
+                    </StyledMetaItem>
+                  </StyledEntityCard>
+                ))}
+              </StyledCardList>
+            </ParksSectionCard>
+          ) : null}
+        </StyledCardList>
+      ) : null}
+
+      {activeTab === 'legal' ? (
+        <ParksSectionCard title={t`Casos legales`} accent="blue">
+          {casosLegales.length > 0 ? (
             <StyledCardList>
-              {oportunidadesEnProceso.map((oportunidad) => (
-                <StyledEntityCard
-                  key={oportunidad.id}
-                  type="button"
-                  onClick={() => handleOpenOpportunity(oportunidad.id)}
-                >
+              {casosLegales.map((casoLegal) => (
+                <StyledStaticCard key={casoLegal.id}>
                   <StyledCardHeader>
                     <StyledCardTitle>
-                      {oportunidad.name ?? oportunidad.id}
+                      {casoLegal.referencia ?? casoLegal.id}
                     </StyledCardTitle>
-                    <Tag
-                      color={getParksPipelineStageColor(oportunidad.stage)}
-                      text={getParksPipelineStageLabel(oportunidad.stage)}
-                      variant="solid"
-                      weight="medium"
-                    />
+                    <StyledBadgeRow>
+                      {casoLegal.semaforo ? (
+                        <ParksStatusBadge
+                          label={getParksLegalSemaforoLabel(casoLegal.semaforo)}
+                          color={getParksLegalSemaforoBadgeColor(
+                            casoLegal.semaforo,
+                          )}
+                        />
+                      ) : null}
+                      <ParksStatusBadge
+                        label={getLegalEstatusLabel(casoLegal.estatus)}
+                        color="blue"
+                      />
+                    </StyledBadgeRow>
                   </StyledCardHeader>
                   <StyledMetaGrid>
                     <StyledMetaItem>
                       <IconFileText size={14} />
-                      {oportunidad.tipoOperacion ?? t`Sin tipo`}
+                      {casoLegal.tipoDocumento ?? t`Sin tipo`}
                     </StyledMetaItem>
                     <StyledMetaItem>
-                      <IconBuildingSkyscraper size={14} />
-                      {oportunidad.m2Requeridos
-                        ? `${formatParksNumber(oportunidad.m2Requeridos)} m²`
-                        : t`Sin m²`}
+                      <IconUser size={14} />
+                      {casoLegal.abogadoAsignado ?? t`Sin abogado`}
                     </StyledMetaItem>
                     <StyledMetaItem>
                       <IconMap size={14} />
-                      {oportunidad.ubicacionDeseada ?? t`Sin ubicación`}
+                      {casoLegal.parqueNombre ?? t`Sin parque`} ·{' '}
+                      {casoLegal.naveIdentificador ?? t`Sin nave`}
                     </StyledMetaItem>
                     <StyledMetaItem>
                       <IconClock size={14} />
-                      {t`Actualizado`}{' '}
-                      {formatRelativeDate(oportunidad.updatedAt)}
+                      {t`SLA`} {casoLegal.diasTranscurridos ?? 0}/
+                      {casoLegal.slaDiasHabiles ?? '—'} {t`días`}
+                      {casoLegal.slaPausado ? ` · ${t`Pausado`}` : ''}
+                    </StyledMetaItem>
+                    <StyledMetaItem>
+                      <IconFileCheck size={14} />
+                      {casoLegal.documentacionCompleta
+                        ? t`Documentación completa`
+                        : t`Documentación pendiente`}
+                    </StyledMetaItem>
+                    <StyledMetaItem>
+                      <StyledPipelineLink
+                        to={getAppPath(AppPath.ParksContratoAprobacion, {
+                          contratoId: casoLegal.id,
+                        })}
+                      >
+                        {t`Abrir aprobación`}
+                        <IconExternalLink size={14} />
+                      </StyledPipelineLink>
                     </StyledMetaItem>
                   </StyledMetaGrid>
-                </StyledEntityCard>
+                </StyledStaticCard>
               ))}
             </StyledCardList>
           ) : (
             <ParksEmptyState
-              title={t`Sin oportunidades abiertas`}
-              description={t`Crea una nueva oportunidad para expansión, renovación o nave adicional.`}
-              action={
-                <Button
-                  variant="primary"
-                  Icon={IconPlus}
-                  title={t`Nueva oportunidad`}
-                  onClick={() => setIsNewOpportunityOpen(true)}
-                />
-              }
+              title={t`Sin casos legales`}
+              description={t`Los casos aparecen cuando se firma la Hoja de Acuerdos y hay handoff a Legal.`}
             />
           )}
         </ParksSectionCard>
       ) : null}
 
-      {activeTab === 'historial' ? (
-        <ParksSectionCard title={t`Historial de interacciones`} accent="yellow">
-          {interacciones.length > 0 ? (
-            <StyledTimeline>
-              {interacciones.map((interaccion) => (
-                <StyledTimelineItem
-                  key={interaccion.id}
-                  accent={
-                    interaccion.tipo === 'notificacion'
-                      ? themeCssVariables.color.orange
-                      : themeCssVariables.color.blue
-                  }
-                >
-                  <StyledTimelineTitle>{interaccion.titulo}</StyledTimelineTitle>
-                  <StyledTimelineMeta>
-                    {interaccion.descripcion}
-                  </StyledTimelineMeta>
-                  <StyledTimelineMeta>
-                    {formatRelativeDate(interaccion.fecha)}
-                  </StyledTimelineMeta>
-                </StyledTimelineItem>
-              ))}
-            </StyledTimeline>
+      {activeTab === 'cxc' ? (
+        <ParksSectionCard
+          title={t`Cuentas por cobrar`}
+          accent="green"
+          action={
+            <StyledPipelineLink to={PARKS_CXC_PATH}>
+              {t`Dashboard CxC`}
+              <IconExternalLink size={14} />
+            </StyledPipelineLink>
+          }
+        >
+          {cxc ? (
+            <StyledContactGrid>
+              <ParksDetailField
+                label={t`Estatus de pagos`}
+                icon={IconReportMoney}
+                accent="green"
+                value={cxc.estatusPagos}
+              />
+              <ParksDetailField
+                label={t`Score de riesgo`}
+                icon={IconAlertTriangle}
+                value={`${cxc.scoreRiesgo} · ${cxc.scoreLabel}`}
+              />
+              <ParksDetailField
+                label={t`Adeudo total`}
+                icon={IconCurrencyDollar}
+                value={formatParksUsd(cxc.montoAdeudoTotal)}
+              />
+              <ParksDetailField
+                label={t`Días en mora`}
+                icon={IconClock}
+                value={`${cxc.diasEnMora}`}
+              />
+              <ParksDetailField
+                label={t`Renta mensual`}
+                icon={IconCurrencyDollar}
+                value={formatParksUsd(cxc.rentaMensual)}
+              />
+              <ParksDetailField
+                label={t`Último pago`}
+                icon={IconCalendar}
+                value={formatParksDate(cxc.ultimaFechaPago ?? undefined)}
+              />
+              <ParksDetailField
+                label={t`Nave / parque`}
+                icon={IconMap}
+                value={`${cxc.nave} · ${cxc.parque}`}
+              />
+              <ParksDetailField
+                label={t`Facturas pendientes`}
+                icon={IconFileText}
+                value={`${cxc.facturasPendientes}`}
+              />
+              <ParksDetailField
+                label={t`Ciclo`}
+                icon={IconBriefcase}
+                value={cxc.cicloEstatus}
+              />
+            </StyledContactGrid>
           ) : (
             <ParksEmptyState
-              title={t`Sin actividad registrada`}
-              description={t`Las oportunidades y notificaciones del cliente aparecerán aquí.`}
+              title={t`Sin cuenta CxC vinculada`}
+              description={t`Cuando exista match por empresa o RFC en cobranza, el resumen aparecerá aquí.`}
             />
           )}
         </ParksSectionCard>

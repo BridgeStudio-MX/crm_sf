@@ -8,11 +8,17 @@ import {
   IconChartBar,
   IconCurrencyDollar,
   IconMap,
+  IconUsers,
 } from 'twenty-ui/icon';
+import { Button } from 'twenty-ui/input';
 import { MOBILE_VIEWPORT, ThemeContext, themeCssVariables } from 'twenty-ui/theme-constants';
 
 import { getParqueCoordinates } from '@/parks-industrial/constants/parks-industrial.constants';
-import { type ParksNaveRecord } from '@/parks-industrial/hooks/useParksRecords';
+import {
+  type ParksExpedienteRecord,
+  type ParksNaveRecord,
+  type ParksOpportunityRecord,
+} from '@/parks-industrial/hooks/useParksRecords';
 import { type ParksParqueRecord } from '@/parks-industrial/hooks/useParksParques';
 import { useParksMapMetrics } from '@/parks-industrial/hooks/useParksMapMetrics';
 import {
@@ -20,6 +26,8 @@ import {
   isValidGoogleMapsApiKey,
   ParksGoogleMapPanel,
 } from '@/parks-industrial/components/mapa/ParksGoogleMapPanel';
+import { ParksLeadSidebarCard } from '@/parks-industrial/components/mapa/ParksLeadSidebarCard';
+import { ParksMapLeadOutreachPanel } from '@/parks-industrial/components/mapa/ParksMapLeadOutreachPanel';
 import { ParksParqueSidebarCard } from '@/parks-industrial/components/mapa/ParksParqueSidebarCard';
 import { ParksAiQuickActions } from '@/parks-industrial/components/ai/ParksAiQuickActions';
 import { ParksEmptyState } from '@/parks-industrial/components/ui/ParksEmptyState';
@@ -41,6 +49,16 @@ import {
   getParksMapCityFilterOptions,
   type ParksMapCityFilterId,
 } from '@/parks-industrial/utils/parks-map-city-filter.util';
+import {
+  buildParksMapLeadMarkers,
+  filterParksMapLeads,
+  getParksMapLayerOptions,
+  PARKS_MAP_LEAD_MARKER_COLOR,
+  resolveParksMapLeadRegionId,
+  type ParksMapLayerId,
+  type ParksMapLeadRegionId,
+} from '@/parks-industrial/utils/parks-map-leads.util';
+import { buildParksMapOfferableNaves } from '@/parks-industrial/utils/parks-map-offerable-naves.util';
 
 const StyledPageStack = styled.div`
   display: flex;
@@ -175,6 +193,60 @@ const StyledFilterStack = styled.div`
   gap: ${themeCssVariables.spacing[2]};
 `;
 
+const StyledLayerToggle = styled.div`
+  display: grid;
+  gap: ${themeCssVariables.spacing[1]};
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+`;
+
+const StyledLayerButton = styled.button<{ isActive: boolean }>`
+  background: ${({ isActive }) =>
+    isActive
+      ? themeCssVariables.background.transparent.medium
+      : themeCssVariables.background.primary};
+  border: 1px solid
+    ${({ isActive }) =>
+      isActive
+        ? themeCssVariables.border.color.strong
+        : themeCssVariables.border.color.medium};
+  border-radius: ${themeCssVariables.border.radius.sm};
+  color: ${({ isActive }) =>
+    isActive
+      ? themeCssVariables.font.color.primary
+      : themeCssVariables.font.color.secondary};
+  cursor: pointer;
+  font-size: ${themeCssVariables.font.size.xs};
+  font-weight: ${({ isActive }) =>
+    isActive
+      ? themeCssVariables.font.weight.semiBold
+      : themeCssVariables.font.weight.regular};
+  padding: ${themeCssVariables.spacing[1]} ${themeCssVariables.spacing[2]};
+`;
+
+const StyledSidebarSectionLabel = styled.p`
+  color: ${themeCssVariables.font.color.tertiary};
+  font-size: ${themeCssVariables.font.size.xs};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  letter-spacing: 0.04em;
+  margin: 0;
+  text-transform: uppercase;
+`;
+
+const StyledSelectionToolbar = styled.div`
+  align-items: center;
+  border-bottom: 1px solid ${themeCssVariables.border.color.light};
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${themeCssVariables.spacing[2]};
+  padding: ${themeCssVariables.spacing[2]} ${themeCssVariables.spacing[3]};
+`;
+
+const StyledSelectionCount = styled.span`
+  color: ${themeCssVariables.font.color.secondary};
+  flex: 1;
+  font-size: ${themeCssVariables.font.size.xs};
+`;
+
 const StyledSidebarList = styled.div`
   display: flex;
   flex: 1;
@@ -221,17 +293,21 @@ const StyledMapDot = styled.button<{
   left: number;
   top: number;
   isSelected: boolean;
+  isDiamond?: boolean;
 }>`
   background: ${({ dotColor }) => dotColor};
   border: 3px solid ${themeCssVariables.background.primary};
-  border-radius: 50%;
+  border-radius: ${({ isDiamond }) => (isDiamond ? '2px' : '50%')};
   box-shadow: ${themeCssVariables.boxShadow.light};
   cursor: pointer;
   height: ${({ isSelected }) => (isSelected ? 22 : 16)}px;
   left: ${({ left }) => `${left}%`};
   position: absolute;
   top: ${({ top }) => `${top}%`};
-  transform: translate(-50%, -50%);
+  transform: ${({ isDiamond }) =>
+    isDiamond
+      ? 'translate(-50%, -50%) rotate(45deg)'
+      : 'translate(-50%, -50%)'};
   transition:
     height 0.15s ease,
     width 0.15s ease;
@@ -241,6 +317,21 @@ const StyledMapDot = styled.button<{
   &:hover {
     box-shadow: ${themeCssVariables.boxShadow.strong};
   }
+`;
+
+const StyledLeadCountBadge = styled.span<{ left: number; top: number }>`
+  background: ${PARKS_MAP_LEAD_MARKER_COLOR};
+  border: 2px solid ${themeCssVariables.background.primary};
+  border-radius: ${themeCssVariables.border.radius.pill};
+  color: ${themeCssVariables.font.color.inverted};
+  font-size: 10px;
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  left: ${({ left }) => `${left}%`};
+  padding: 0 5px;
+  position: absolute;
+  top: ${({ top }) => `calc(${top}% - 18px)`};
+  transform: translateX(-50%);
+  z-index: 2;
 `;
 
 const StyledDotLabel = styled.div<{ left: number; top: number }>`
@@ -302,6 +393,8 @@ const syncSelectedParqueId = (
 type ParksMapContentProps = {
   parques: ParksParqueRecord[];
   naves: ParksNaveRecord[];
+  opportunities: ParksOpportunityRecord[];
+  expedientes: ParksExpedienteRecord[];
 };
 
 const buildMapFilterSummaryLabel = ({
@@ -339,17 +432,30 @@ const buildMapFilterSummaryLabel = ({
   return t`${visibleParqueCount} de ${totalParqueCount} parques${filterSuffix}`;
 };
 
-export const ParksMapContent = ({ parques, naves }: ParksMapContentProps) => {
+export const ParksMapContent = ({
+  parques,
+  naves,
+  opportunities,
+  expedientes,
+}: ParksMapContentProps) => {
   const { colorScheme } = useContext(ThemeContext);
   const { setContextPatch } = useParksAiAssistant();
   const [selectedParqueId, setSelectedParqueId] = useState<string | null>(
     parques[0]?.id ?? null,
   );
+  const [selectedLeadRegionId, setSelectedLeadRegionId] =
+    useState<ParksMapLeadRegionId | null>(null);
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  const [checkedLeadIds, setCheckedLeadIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [cityFilterId, setCityFilterId] =
     useState<ParksMapCityFilterId>('all');
+  const [mapLayerId, setMapLayerId] = useState<ParksMapLayerId>('ambos');
   const googleMapsApiKey = getParksGoogleMapsApiKey();
   const hasGoogleMapsApiKey = isValidGoogleMapsApiKey(googleMapsApiKey);
+  const showParques = mapLayerId === 'inventario' || mapLayerId === 'ambos';
+  const showLeads = mapLayerId === 'demanda' || mapLayerId === 'ambos';
+  const mapLayerOptions = useMemo(() => getParksMapLayerOptions(), []);
 
   const cityFilterOptions = useMemo(
     () => getParksMapCityFilterOptions(parques),
@@ -366,6 +472,50 @@ export const ParksMapContent = ({ parques, naves }: ParksMapContentProps) => {
     [parques, searchQuery, cityFilterId],
   );
 
+  const filteredLeads = useMemo(
+    () =>
+      filterParksMapLeads({
+        opportunities,
+        cityFilterId,
+        searchQuery,
+      }),
+    [opportunities, cityFilterId, searchQuery],
+  );
+
+  const leadMarkers = useMemo(
+    () => buildParksMapLeadMarkers(filteredLeads),
+    [filteredLeads],
+  );
+
+  const sidebarLeads = useMemo(() => {
+    if (!selectedLeadRegionId) {
+      return filteredLeads;
+    }
+
+    return filteredLeads.filter(
+      (lead) =>
+        resolveParksMapLeadRegionId(lead.ubicacionDeseada) ===
+        selectedLeadRegionId,
+    );
+  }, [filteredLeads, selectedLeadRegionId]);
+
+  const selectedLeadsForOutreach = useMemo(
+    () =>
+      filteredLeads.filter((lead) => checkedLeadIds.includes(lead.id)),
+    [checkedLeadIds, filteredLeads],
+  );
+
+  const offerableNaves = useMemo(
+    () =>
+      buildParksMapOfferableNaves({
+        naves,
+        parques,
+        expedientes,
+        preferredRegionId: selectedLeadRegionId,
+      }),
+    [expedientes, naves, parques, selectedLeadRegionId],
+  );
+
   const mapMetrics = useParksMapMetrics({
     filteredParques,
     allParques: parques,
@@ -373,18 +523,35 @@ export const ParksMapContent = ({ parques, naves }: ParksMapContentProps) => {
     searchQuery,
   });
 
+  const totalLeadM2 = useMemo(
+    () =>
+      filteredLeads.reduce(
+        (sum, lead) => sum + (lead.m2Requeridos ?? 0),
+        0,
+      ),
+    [filteredLeads],
+  );
+
   useEffect(() => {
     setContextPatch({
       screen: 'map',
       cityFilterId,
       searchQuery,
+      mapLayerId,
     });
-  }, [cityFilterId, searchQuery, setContextPatch]);
+  }, [cityFilterId, searchQuery, mapLayerId, setContextPatch]);
+
+  useEffect(() => {
+    setCheckedLeadIds((currentCheckedLeadIds) =>
+      currentCheckedLeadIds.filter((leadId) =>
+        filteredLeads.some((lead) => lead.id === leadId),
+      ),
+    );
+  }, [filteredLeads]);
 
   const selectedParque =
     filteredParques.find((parque) => parque.id === selectedParqueId) ??
-    filteredParques[0] ??
-    null;
+    (showParques ? filteredParques[0] ?? null : null);
 
   const handleSearchQueryChange = useCallback(
     (nextSearchQuery: string) => {
@@ -399,6 +566,8 @@ export const ParksMapContent = ({ parques, naves }: ParksMapContentProps) => {
       setSelectedParqueId((currentSelectedParqueId) =>
         syncSelectedParqueId(nextFilteredParques, currentSelectedParqueId),
       );
+      setSelectedLeadRegionId(null);
+      setSelectedLeadId(null);
     },
     [parques, cityFilterId],
   );
@@ -416,11 +585,81 @@ export const ParksMapContent = ({ parques, naves }: ParksMapContentProps) => {
       setSelectedParqueId((currentSelectedParqueId) =>
         syncSelectedParqueId(nextFilteredParques, currentSelectedParqueId),
       );
+      setSelectedLeadRegionId(null);
+      setSelectedLeadId(null);
     },
     [parques, searchQuery],
   );
 
-  if (parques.length === 0) {
+  const handleSelectLeadRegion = useCallback(
+    (regionId: ParksMapLeadRegionId | null) => {
+      setSelectedLeadRegionId(regionId);
+      setSelectedLeadId(null);
+
+      if (regionId) {
+        setSelectedParqueId(null);
+      }
+    },
+    [],
+  );
+
+  const handleSelectRegionLeads = useCallback(
+    (regionId: ParksMapLeadRegionId) => {
+      setSelectedLeadRegionId(regionId);
+      setSelectedParqueId(null);
+      setMapLayerId((currentLayer) =>
+        currentLayer === 'inventario' ? 'ambos' : currentLayer,
+      );
+
+      const regionLeadIds = filteredLeads
+        .filter(
+          (lead) =>
+            resolveParksMapLeadRegionId(lead.ubicacionDeseada) === regionId,
+        )
+        .map((lead) => lead.id);
+
+      setCheckedLeadIds(regionLeadIds);
+    },
+    [filteredLeads],
+  );
+
+  const handleSelectLead = useCallback((leadId: string) => {
+    setSelectedLeadId(leadId);
+    const lead = opportunities.find(
+      (opportunity) => opportunity.id === leadId,
+    );
+
+    if (!lead) {
+      return;
+    }
+
+    setSelectedParqueId(null);
+    setSelectedLeadRegionId(resolveParksMapLeadRegionId(lead.ubicacionDeseada));
+  }, [opportunities]);
+
+  const handleToggleLeadCheck = useCallback((leadId: string) => {
+    setCheckedLeadIds((currentCheckedLeadIds) =>
+      currentCheckedLeadIds.includes(leadId)
+        ? currentCheckedLeadIds.filter((id) => id !== leadId)
+        : [...currentCheckedLeadIds, leadId],
+    );
+  }, []);
+
+  const handleSelectAllVisibleLeads = useCallback(() => {
+    setCheckedLeadIds(sidebarLeads.map((lead) => lead.id));
+  }, [sidebarLeads]);
+
+  const handleClearLeadSelection = useCallback(() => {
+    setCheckedLeadIds([]);
+  }, []);
+
+  const handleSelectParque = useCallback((parqueId: string | null) => {
+    setSelectedParqueId(parqueId);
+    setSelectedLeadRegionId(null);
+    setSelectedLeadId(null);
+  }, []);
+
+  if (parques.length === 0 && opportunities.length === 0) {
     return (
       <ParksEmptyState
         title={t`No hay parques registrados`}
@@ -446,6 +685,13 @@ export const ParksMapContent = ({ parques, naves }: ParksMapContentProps) => {
               ? t`${mapMetrics.filterContext.totalParqueCount} en cartera total`
               : t`${formatParksNumber(mapMetrics.portfolio.m2Totales)} m² totales`
           }
+        />
+        <ParksMetricCard
+          label={t`Leads por ubicación`}
+          value={filteredLeads.length}
+          icon={IconUsers}
+          accent="orange"
+          trend={t`${formatParksNumber(totalLeadM2)} m² demandados`}
         />
         <ParksMetricCard
           label={t`m² rentados / disponibles`}
@@ -523,73 +769,139 @@ export const ParksMapContent = ({ parques, naves }: ParksMapContentProps) => {
               <ParksGoogleMapPanel
                 parques={filteredParques}
                 naves={naves}
+                leadMarkers={leadMarkers}
+                showParques={showParques}
+                showLeads={showLeads}
                 selectedParqueId={selectedParque?.id ?? null}
+                selectedLeadRegionId={selectedLeadRegionId}
                 colorScheme={colorScheme}
-                onSelectParque={setSelectedParqueId}
+                onSelectParque={handleSelectParque}
+                onSelectLeadRegion={handleSelectLeadRegion}
+                onSelectRegionLeads={handleSelectRegionLeads}
               />
               <StyledMapLegend>
-                <StyledLegendItem>
-                  <StyledLegendDot
-                    dotColor={getParksOcupacionColor(90)}
-                  />
-                  {t`Alta (≥85%)`}
-                </StyledLegendItem>
-                <StyledLegendItem>
-                  <StyledLegendDot
-                    dotColor={getParksOcupacionColor(70)}
-                  />
-                  {t`Media (60–84%)`}
-                </StyledLegendItem>
-                <StyledLegendItem>
-                  <StyledLegendDot
-                    dotColor={getParksOcupacionColor(40)}
-                  />
-                  {t`Baja (<60%)`}
-                </StyledLegendItem>
+                {showParques ? (
+                  <>
+                    <StyledLegendItem>
+                      <StyledLegendDot
+                        dotColor={getParksOcupacionColor(90)}
+                      />
+                      {t`Alta (≥85%)`}
+                    </StyledLegendItem>
+                    <StyledLegendItem>
+                      <StyledLegendDot
+                        dotColor={getParksOcupacionColor(70)}
+                      />
+                      {t`Media (60–84%)`}
+                    </StyledLegendItem>
+                    <StyledLegendItem>
+                      <StyledLegendDot
+                        dotColor={getParksOcupacionColor(40)}
+                      />
+                      {t`Baja (<60%)`}
+                    </StyledLegendItem>
+                  </>
+                ) : null}
+                {showLeads ? (
+                  <StyledLegendItem>
+                    <StyledLegendDot
+                      dotColor={PARKS_MAP_LEAD_MARKER_COLOR}
+                    />
+                    {t`Leads por ubicación`}
+                  </StyledLegendItem>
+                ) : null}
               </StyledMapLegend>
             </>
           ) : (
             <StyledFallbackMap>
               <StyledFallbackGrid />
-              {filteredParques.map((parque) => {
-                const coords = getParqueCoordinates(
-                  parque.nombre ?? '',
-                  parque.ubicacion,
-                );
-                const position = projectLatLngToCanvas(coords.lat, coords.lng);
-                const ocupacion = getParksParqueOcupacion(
-                  parque.m2Totales,
-                  parque.m2Rentados,
-                );
-                const isSelected = selectedParque?.id === parque.id;
+              {showParques
+                ? filteredParques.map((parque) => {
+                    const coords = getParqueCoordinates(
+                      parque.nombre ?? '',
+                      parque.ubicacion,
+                    );
+                    const position = projectLatLngToCanvas(
+                      coords.lat,
+                      coords.lng,
+                    );
+                    const ocupacion = getParksParqueOcupacion(
+                      parque.m2Totales,
+                      parque.m2Rentados,
+                    );
+                    const isSelected = selectedParque?.id === parque.id;
 
-                return (
-                  <div key={parque.id}>
-                    <StyledMapDot
-                      type="button"
-                      dotColor={getParksOcupacionColor(ocupacion)}
-                      left={position.left}
-                      top={position.top}
-                      isSelected={isSelected}
-                      onClick={() => setSelectedParqueId(parque.id)}
-                      aria-label={parque.nombre ?? t`Parque`}
-                    />
-                    {isSelected ? (
-                      <StyledDotLabel
-                        left={position.left}
-                        top={position.top}
-                      >
-                        {parque.nombre}
-                      </StyledDotLabel>
-                    ) : null}
-                  </div>
-                );
-              })}
+                    return (
+                      <div key={parque.id}>
+                        <StyledMapDot
+                          type="button"
+                          dotColor={getParksOcupacionColor(ocupacion)}
+                          left={position.left}
+                          top={position.top}
+                          isSelected={isSelected}
+                          onClick={() => handleSelectParque(parque.id)}
+                          aria-label={parque.nombre ?? t`Parque`}
+                        />
+                        {isSelected ? (
+                          <StyledDotLabel
+                            left={position.left}
+                            top={position.top}
+                          >
+                            {parque.nombre}
+                          </StyledDotLabel>
+                        ) : null}
+                      </div>
+                    );
+                  })
+                : null}
+              {showLeads
+                ? leadMarkers.map((leadMarker) => {
+                    const position = projectLatLngToCanvas(
+                      leadMarker.coords.lat,
+                      leadMarker.coords.lng,
+                    );
+                    const isSelected =
+                      selectedLeadRegionId === leadMarker.regionId;
+
+                    return (
+                      <div key={leadMarker.regionId}>
+                        <StyledMapDot
+                          type="button"
+                          dotColor={PARKS_MAP_LEAD_MARKER_COLOR}
+                          left={position.left}
+                          top={position.top}
+                          isSelected={isSelected}
+                          isDiamond
+                          onClick={() =>
+                            handleSelectLeadRegion(leadMarker.regionId)
+                          }
+                          aria-label={leadMarker.label}
+                        />
+                        <StyledLeadCountBadge
+                          left={position.left}
+                          top={position.top}
+                        >
+                          {leadMarker.leadCount}
+                        </StyledLeadCountBadge>
+                        {isSelected ? (
+                          <StyledDotLabel
+                            left={position.left}
+                            top={position.top}
+                          >
+                            {leadMarker.label}
+                          </StyledDotLabel>
+                        ) : null}
+                      </div>
+                    );
+                  })
+                : null}
               <StyledFallbackBanner>
                 {t`Configura REACT_APP_GOOGLE_MAPS_API_KEY en twenty-front/.env para el mapa interactivo.`}
                 {selectedParque
                   ? ` · ${selectedParque.nombre} — ${selectedParque.ubicacion}`
-                  : ''}
+                  : selectedLeadRegionId
+                    ? ` · ${t`Leads`} — ${selectedLeadRegionId}`
+                    : ''}
               </StyledFallbackBanner>
             </StyledFallbackMap>
           )}
@@ -597,8 +909,26 @@ export const ParksMapContent = ({ parques, naves }: ParksMapContentProps) => {
 
         <StyledSidebarPane>
           <StyledSidebarHeader>
-            <StyledSidebarTitle>{t`Cartera de parques`}</StyledSidebarTitle>
+            <StyledSidebarTitle>
+              {showLeads && !showParques
+                ? t`Leads por ubicación`
+                : showParques && !showLeads
+                  ? t`Cartera de parques`
+                  : t`Inventario y demanda`}
+            </StyledSidebarTitle>
             <StyledFilterStack>
+              <StyledLayerToggle role="group" aria-label={t`Capa del mapa`}>
+                {mapLayerOptions.map((layerOption) => (
+                  <StyledLayerButton
+                    key={layerOption.id}
+                    type="button"
+                    isActive={mapLayerId === layerOption.id}
+                    onClick={() => setMapLayerId(layerOption.id)}
+                  >
+                    {layerOption.label}
+                  </StyledLayerButton>
+                ))}
+              </StyledLayerToggle>
               <StyledCitySelect
                 value={cityFilterId}
                 onChange={(event) =>
@@ -619,7 +949,11 @@ export const ParksMapContent = ({ parques, naves }: ParksMapContentProps) => {
               </StyledCitySelect>
               <StyledSearchInput
                 type="search"
-                placeholder={t`Buscar parque...`}
+                placeholder={
+                  showLeads && !showParques
+                    ? t`Buscar lead...`
+                    : t`Buscar parque o lead...`
+                }
                 value={searchQuery}
                 onChange={(event) =>
                   handleSearchQueryChange(event.target.value)
@@ -627,34 +961,110 @@ export const ParksMapContent = ({ parques, naves }: ParksMapContentProps) => {
               />
             </StyledFilterStack>
             <StyledSidebarMeta>
-              {buildMapFilterSummaryLabel({
-                isFiltered: mapMetrics.filterContext.isFiltered,
-                visibleParqueCount: mapMetrics.filterContext.visibleParqueCount,
-                totalParqueCount: mapMetrics.filterContext.totalParqueCount,
-                cityFilterId: mapMetrics.filterContext.cityFilterId,
-                cityFilterLabel: mapMetrics.filterContext.cityFilterLabel,
-                searchQuery: mapMetrics.filterContext.searchQuery,
-              })}
-              {hasGoogleMapsApiKey ? ` · ${t`Google Maps`}` : ` · ${t`Vista simplificada`}`}
+              {showParques
+                ? buildMapFilterSummaryLabel({
+                    isFiltered: mapMetrics.filterContext.isFiltered,
+                    visibleParqueCount:
+                      mapMetrics.filterContext.visibleParqueCount,
+                    totalParqueCount:
+                      mapMetrics.filterContext.totalParqueCount,
+                    cityFilterId: mapMetrics.filterContext.cityFilterId,
+                    cityFilterLabel:
+                      mapMetrics.filterContext.cityFilterLabel,
+                    searchQuery: mapMetrics.filterContext.searchQuery,
+                  })
+                : null}
+              {showParques && showLeads ? ' · ' : null}
+              {showLeads
+                ? t`${filteredLeads.length} leads · ${leadMarkers.length} regiones`
+                : null}
+              {` · ${hasGoogleMapsApiKey ? t`Google Maps` : t`Vista simplificada`}`}
             </StyledSidebarMeta>
           </StyledSidebarHeader>
 
-          <StyledSidebarList>
-            {filteredParques.length === 0 ? (
-              <ParksEmptyState
-                title={t`Ningún parque coincide con los filtros`}
+          {showLeads ? (
+            <StyledSelectionToolbar>
+              <StyledSelectionCount>
+                {checkedLeadIds.length > 0
+                  ? t`${checkedLeadIds.length} leads seleccionados`
+                  : t`Marca leads o selecciona una zona en el mapa`}
+              </StyledSelectionCount>
+              <Button
+                title={t`Seleccionar visibles`}
+                variant="secondary"
+                size="small"
+                disabled={sidebarLeads.length === 0}
+                onClick={handleSelectAllVisibleLeads}
               />
-            ) : (
-              filteredParques.map((parque) => (
-                <ParksParqueSidebarCard
-                  key={parque.id}
-                  parque={parque}
-                  isSelected={selectedParque?.id === parque.id}
-                  onSelect={setSelectedParqueId}
-                />
-              ))
-            )}
+              <Button
+                title={t`Limpiar`}
+                variant="secondary"
+                size="small"
+                disabled={checkedLeadIds.length === 0}
+                onClick={handleClearLeadSelection}
+              />
+            </StyledSelectionToolbar>
+          ) : null}
+
+          <StyledSidebarList>
+            {showLeads ? (
+              <>
+                <StyledSidebarSectionLabel>
+                  {selectedLeadRegionId
+                    ? t`Leads en región`
+                    : t`Leads activos`}
+                </StyledSidebarSectionLabel>
+                {sidebarLeads.length === 0 ? (
+                  <ParksEmptyState
+                    title={t`Ningún lead coincide con los filtros`}
+                  />
+                ) : (
+                  sidebarLeads.map((lead) => (
+                    <ParksLeadSidebarCard
+                      key={lead.id}
+                      lead={lead}
+                      isSelected={selectedLeadId === lead.id}
+                      isChecked={checkedLeadIds.includes(lead.id)}
+                      onSelect={handleSelectLead}
+                      onToggleCheck={handleToggleLeadCheck}
+                    />
+                  ))
+                )}
+              </>
+            ) : null}
+
+            {showParques ? (
+              <>
+                {showLeads ? (
+                  <StyledSidebarSectionLabel>
+                    {t`Parques`}
+                  </StyledSidebarSectionLabel>
+                ) : null}
+                {filteredParques.length === 0 ? (
+                  <ParksEmptyState
+                    title={t`Ningún parque coincide con los filtros`}
+                  />
+                ) : (
+                  filteredParques.map((parque) => (
+                    <ParksParqueSidebarCard
+                      key={parque.id}
+                      parque={parque}
+                      isSelected={selectedParque?.id === parque.id}
+                      onSelect={handleSelectParque}
+                    />
+                  ))
+                )}
+              </>
+            ) : null}
           </StyledSidebarList>
+
+          {showLeads ? (
+            <ParksMapLeadOutreachPanel
+              selectedLeads={selectedLeadsForOutreach}
+              offerableNaves={offerableNaves}
+              onClearSelection={handleClearLeadSelection}
+            />
+          ) : null}
         </StyledSidebarPane>
       </StyledMapWorkspace>
     </StyledPageStack>

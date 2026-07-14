@@ -25,25 +25,12 @@ export type NaveMatchResult = {
   totalDisponibles: number;
 };
 
-export type FichaTecnicaSentVia = 'email' | 'whatsapp' | 'link' | null;
-
-export type FichaTecnicaLink = {
-  token: string;
-  opportunityId: string;
-  opportunityName: string;
-  naveId: string;
-  naveIdentificador: string;
-  parqueNombre?: string;
-  ubicacion?: string;
-  m2: number;
-  precioUsdM2?: number;
-  publicUrl: string;
-  viewCount: number;
-  lastViewedAt?: string;
-  sentVia: FichaTecnicaSentVia;
-  sentAt?: string;
-  createdAt: string;
-};
+export type {
+  FichaDisponibilidadEstatus,
+  FichaTecnicaDetalle,
+  FichaTecnicaLink,
+  FichaTecnicaSentVia,
+} from './ficha-tecnica.types';
 
 export type SalesScriptResult = {
   opportunityId?: string;
@@ -62,11 +49,14 @@ export type SalesScriptResult = {
 export type Account360Contrato = {
   id: string;
   numeroExpediente?: string;
+  fechaApertura?: string;
   fechaVencimiento?: string;
   rentaMensualUsd?: number;
   estatus?: string;
   naveIdentificador?: string;
   parqueNombre?: string;
+  m2?: number;
+  casoLegalId?: string;
   esPropiedadFuno?: boolean;
 };
 
@@ -83,18 +73,99 @@ export type Account360Oportunidad = {
   enProceso: boolean;
 };
 
+export type Account360CasoLegal = {
+  id: string;
+  referencia?: string;
+  tipoDocumento?: string;
+  estatus?: string;
+  semaforo?: string;
+  abogadoAsignado?: string;
+  diasTranscurridos?: number;
+  slaDiasHabiles?: number;
+  documentacionCompleta?: boolean;
+  slaPausado?: boolean;
+  naveIdentificador?: string;
+  parqueNombre?: string;
+  esPropiedadFuno?: boolean;
+  fechaHojaAcuerdos?: string;
+  hojaDeAcuerdosId?: string;
+};
+
+export type Account360HojaDeAcuerdos = {
+  id: string;
+  referencia?: string;
+  tipoContrato?: string;
+  m2Acordados?: number;
+  precioUsdM2?: number;
+  plazoMeses?: number;
+  fechaInicio?: string;
+  fechaFirma?: string;
+  depositoMeses?: number;
+  periodoGraciaMeses?: number;
+  escalacionAnualPct?: number;
+  estatus?: string;
+  firmadaPorCliente?: boolean;
+  firmadaPorCem?: boolean;
+  ejecutivoAsignado?: string;
+  naveIdentificador?: string;
+  parqueNombre?: string;
+  oportunidadVinculadaId?: string;
+  rentaMensualEstimadaUsd?: number;
+};
+
+export type Account360Documento = {
+  id: string;
+  titulo?: string;
+  tipoDocumento?: string;
+  entregado: boolean;
+  casoLegalId: string;
+  casoReferencia?: string;
+};
+
+export type Account360Actividad = {
+  id: string;
+  type: 'email' | 'call' | 'task' | 'meeting';
+  direction: 'inbound' | 'outbound' | 'internal';
+  subject: string;
+  summary: string;
+  participant: string;
+  occurredAt: string;
+  source: 'gmail' | 'crm' | 'email-parser';
+  opportunityId?: string;
+  opportunityName?: string;
+};
+
+export type Account360CxcResumen = {
+  accountId: string;
+  estatusPagos: string;
+  scoreRiesgo: number;
+  scoreLabel: string;
+  montoAdeudoTotal: number;
+  diasEnMora: number;
+  rentaMensual: number;
+  moneda: 'MXN' | 'USD';
+  ultimaFechaPago: string | null;
+  nave: string;
+  parque: string;
+  facturasPendientes: number;
+  cicloEstatus: string;
+};
+
 export type Account360Interaccion = {
   id: string;
   titulo: string;
   descripcion: string;
   fecha: string;
-  tipo: 'oportunidad' | 'notificacion';
+  tipo: 'oportunidad' | 'notificacion' | 'legal' | 'cxc' | 'hoja' | 'documento';
+  linkId?: string;
 };
 
 export type Account360EstadoPagos = {
   alCorriente?: boolean;
   ultimoPagoFecha?: string;
-  fuente: 'oracle' | 'sin-datos';
+  fuente: 'oracle' | 'cxc' | 'sin-datos';
+  montoAdeudoTotal?: number;
+  diasEnMora?: number;
 };
 
 export type Account360Response = {
@@ -105,6 +176,14 @@ export type Account360Response = {
   contratos: Account360Contrato[];
   oportunidades: Account360Oportunidad[];
   oportunidadesEnProceso: number;
+  casosLegales: Account360CasoLegal[];
+  casosLegalesActivos: number;
+  hojasDeAcuerdos: Account360HojaDeAcuerdos[];
+  documentos: Account360Documento[];
+  documentosEntregados: number;
+  documentosPendientes: number;
+  actividades: Account360Actividad[];
+  cxc?: Account360CxcResumen;
   interacciones: Account360Interaccion[];
   estadoPagos: Account360EstadoPagos;
   tieneContratosFuno: boolean;

@@ -1,4 +1,5 @@
 import {
+  PARKS_LEASING_OFFICER_ROLE_LABELS,
   PARKS_ROLE_LABEL_PREFIX,
   ParksRoleLabel,
 } from '@/parks-industrial/constants/parks-role-access.constants';
@@ -25,6 +26,9 @@ export const hasAnyParksRoleLabel = (
   allowedRoleLabels.some((allowedRoleLabel) =>
     userRoleLabels.includes(allowedRoleLabel),
   );
+
+export const isParksLeasingOfficerRole = (roleLabels: string[]): boolean =>
+  hasAnyParksRoleLabel(roleLabels, PARKS_LEASING_OFFICER_ROLE_LABELS);
 
 export const filterParksCasosLegalesForAssignedLawyer = ({
   casosLegales,

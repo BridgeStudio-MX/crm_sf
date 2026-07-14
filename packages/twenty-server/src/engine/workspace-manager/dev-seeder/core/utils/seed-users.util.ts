@@ -39,8 +39,8 @@ export const seedUsers = async ({ queryRunner, schemaName }: SeedUsersArgs) => {
     },
     {
       id: USER_DATA_SEED_IDS.JONY,
-      firstName: 'Jony',
-      lastName: 'Ive',
+      firstName: 'Charles',
+      lastName: 'El-Mann Metta',
       email: 'jony.ive@apple.dev',
       passwordHash:
         '$2b$10$3LwXjJRtLsfx4hLuuXhxt.3mWgismTiZFCZSG3z9kDrSfsrBl0fT6', // tim@apple.dev

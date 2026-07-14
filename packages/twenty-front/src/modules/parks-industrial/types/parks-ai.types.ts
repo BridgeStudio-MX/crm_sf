@@ -24,6 +24,7 @@ export type ParksAiRouteContext = {
   parqueId?: string;
   cityFilterId?: string;
   searchQuery?: string;
+  mapLayerId?: string;
 };
 
 export type ParksAiChatMessage = {
@@ -32,9 +33,18 @@ export type ParksAiChatMessage = {
   content: string;
 };
 
+export type ParksAiQuickActionVisual =
+  | 'briefing'
+  | 'approvals'
+  | 'risk'
+  | 'cash'
+  | 'pipeline';
+
 export type ParksAiQuickAction = {
   id: string;
   label: string;
   message: string;
+  description?: string;
+  visual?: ParksAiQuickActionVisual;
   action?: ParksAiAction;
 };

@@ -242,6 +242,22 @@ legalRouter.get('/workflow/:casoLegalId', async (request, response) => {
   }
 });
 
+legalRouter.get(
+  '/workflow/:casoLegalId/hoja-acuerdos/copy',
+  async (request, response) => {
+    try {
+      const copy = await legalWorkflowService.getHojaAcuerdosCopy(
+        request.params.casoLegalId,
+      );
+
+      response.json(copy);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      response.status(400).json({ error: message });
+    }
+  },
+);
+
 legalRouter.post(
   '/workflow/:casoLegalId/assign-lawyer',
   async (request, response) => {

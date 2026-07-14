@@ -2,35 +2,37 @@ import { styled } from '@linaria/react';
 import { type ReactNode } from 'react';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
+import {
+  ParksBrandLogo,
+  ParksBrandLogoMark,
+} from '@/parks-industrial/components/ui/ParksBrandLogo';
 import { PARKS_BRAND } from '@/parks-industrial/constants/parks-theme.constants';
+import { NavigationDrawerAnimatedCollapseWrapper } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerAnimatedCollapseWrapper';
 import { NavigationDrawerSection } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerSection';
 
 const StyledParksNavSection = styled.div<{ isPrimary: boolean }>`
   position: relative;
+  margin-top: ${({ isPrimary }) =>
+    isPrimary ? '0' : themeCssVariables.spacing[1]};
+  padding-top: ${({ isPrimary }) =>
+    isPrimary ? '0' : themeCssVariables.spacing[2]};
 
-  ${({ isPrimary }) =>
-    !isPrimary
-      ? `
-    margin-top: ${themeCssVariables.spacing[1]};
-    padding-top: ${themeCssVariables.spacing[2]};
-
-    &::before {
-      background: linear-gradient(
-        90deg,
-        transparent 0%,
-        ${PARKS_BRAND.borderSoft} 20%,
-        ${PARKS_BRAND.borderSoft} 80%,
-        transparent 100%
-      );
-      content: '';
-      height: 1px;
-      left: 0;
-      position: absolute;
-      right: 0;
-      top: 0;
-    }
-  `
-      : ''}
+  &::before {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      ${PARKS_BRAND.borderSoft} 20%,
+      ${PARKS_BRAND.borderSoft} 80%,
+      transparent 100%
+    );
+    content: '';
+    display: ${({ isPrimary }) => (isPrimary ? 'none' : 'block')};
+    height: 1px;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
 
   .navigation-drawer-item {
     border-left: 2px solid transparent;
@@ -55,6 +57,10 @@ const StyledParksNavSection = styled.div<{ isPrimary: boolean }>`
   }
 `;
 
+const StyledBrandHeader = styled.div`
+  padding: 0 ${themeCssVariables.spacing[1]} ${themeCssVariables.spacing[2]};
+`;
+
 const StyledGroupsStack = styled.div`
   display: flex;
   flex-direction: column;
@@ -71,7 +77,16 @@ export const ParksNavigationBrandPanel = ({
   isPrimary = false,
 }: ParksNavigationBrandPanelProps) => (
   <StyledParksNavSection isPrimary={isPrimary}>
-    <NavigationDrawerSection>{children}</NavigationDrawerSection>
+    <NavigationDrawerSection>
+      <NavigationDrawerAnimatedCollapseWrapper>
+        <StyledBrandHeader>
+          <ParksBrandLogoMark>
+            <ParksBrandLogo variant="auto" height={20} />
+          </ParksBrandLogoMark>
+        </StyledBrandHeader>
+      </NavigationDrawerAnimatedCollapseWrapper>
+      {children}
+    </NavigationDrawerSection>
   </StyledParksNavSection>
 );
 

@@ -49,6 +49,45 @@ export const fetchParksContractTypes = async (): Promise<ContractTypeOption[]> =
   return body.types;
 };
 
+export const fetchParksLegalHojaCopy = async (
+  casoLegalId: string,
+): Promise<{
+  html: string;
+  fileName: string;
+  referencia: string;
+  hojaId: string;
+  firmadaPorCem: boolean;
+  firmadaPorCliente: boolean;
+  m2Acordados: number | null;
+  precioUsdM2: number | null;
+  plazoMeses: number | null;
+  fechaInicio: string | null;
+  tipoContrato: string | null;
+}> => {
+  const response = await fetch(
+    `${parksLegalWorkflowUrl(casoLegalId)}/hoja-acuerdos/copy`,
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  return (await response.json()) as {
+    html: string;
+    fileName: string;
+    referencia: string;
+    hojaId: string;
+    firmadaPorCem: boolean;
+    firmadaPorCliente: boolean;
+    m2Acordados: number | null;
+    precioUsdM2: number | null;
+    plazoMeses: number | null;
+    fechaInicio: string | null;
+    tipoContrato: string | null;
+  };
+};
+
+
 export const validateParksDocuments = async ({
   casoLegalId,
   uploads,

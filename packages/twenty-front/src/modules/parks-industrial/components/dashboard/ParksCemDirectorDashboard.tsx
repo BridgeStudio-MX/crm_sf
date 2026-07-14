@@ -258,8 +258,8 @@ export const ParksCemDirectorDashboard = () => {
           title={t`Aprobaciones pendientes`}
           accent="yellow"
           action={
-            <Link to={AppPath.ParksNotificaciones} style={{ fontSize: 12 }}>
-              {t`Ver notificaciones`}
+            <Link to={AppPath.ParksMisPendientes} style={{ fontSize: 12 }}>
+              {t`Mis pendientes`}
             </Link>
           }
         >

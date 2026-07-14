@@ -31,6 +31,7 @@ import {
 import {
   FIND_HOJA_DE_ACUERDOS_FOR_HANDOFF,
   FIND_HOJA_DE_ACUERDOS_BY_OPPORTUNITY,
+  FIND_HOJAS_DE_ACUERDOS_BY_INQUILINO,
   GET_CASO_LEGAL_BY_ID,
   GET_ACTAS_BY_CASO,
   GET_ALL_CASOS_LEGALES,
@@ -38,6 +39,8 @@ import {
   GET_ALL_COMISIONES,
   GET_COMISIONES_BY_HOJA,
   COUNT_ACTIVE_RENOVACION_CASOS,
+  FIND_CASOS_LEGALES_BY_INQUILINO,
+  FIND_EXPEDIENTES_BY_INQUILINO,
   FIND_OPPORTUNITY_BY_INQUILINO_NAVE,
   FIND_OPPORTUNITIES_BY_INQUILINO,
   GET_DOCUMENTOS_CHECKLIST_BY_CASO,
@@ -199,6 +202,24 @@ export const twentyDataService = {
         error,
       );
       return null;
+    }
+  },
+
+  findHojasDeAcuerdosByInquilino: async (
+    inquilinoId: string,
+  ): Promise<HojaDeAcuerdosRecord[]> => {
+    try {
+      const response = await twentyClient.query<{
+        hojasDeAcuerdos: GraphQlConnection<HojaDeAcuerdosRecord>;
+      }>(FIND_HOJAS_DE_ACUERDOS_BY_INQUILINO, { inquilinoId });
+
+      return mapConnectionNodes(response.hojasDeAcuerdos);
+    } catch (error) {
+      logGraphQlError(
+        `findHojasDeAcuerdosByInquilino(${inquilinoId}) failed`,
+        error,
+      );
+      return [];
     }
   },
 
@@ -731,6 +752,9 @@ export const twentyDataService = {
       await twentyClient.mutate(UPDATE_OPPORTUNITY, { opportunityId, data });
     } catch (error) {
       logGraphQlError(`updateOpportunity(${opportunityId}) failed`, error);
+      throw error instanceof Error
+        ? error
+        : new Error(`Failed to update opportunity ${opportunityId}`);
     }
   },
 
@@ -863,6 +887,44 @@ export const twentyDataService = {
       return mapConnectionNodes(response.expedientesContrato);
     } catch (error) {
       logGraphQlError('findExpedientesActivos failed', error);
+      return [];
+    }
+  },
+
+  findExpedientesByInquilino: async (
+    inquilinoId: string,
+  ): Promise<ExpedienteContratoRecord[]> => {
+    try {
+      const response = await twentyClient.query<{
+        expedientesContrato: GraphQlConnection<ExpedienteContratoRecord>;
+      }>(FIND_EXPEDIENTES_BY_INQUILINO, { inquilinoId });
+
+      return mapConnectionNodes(response.expedientesContrato);
+    } catch (error) {
+      logGraphQlError(
+        `findExpedientesByInquilino(${inquilinoId}) failed`,
+        error,
+      );
+      return [];
+    }
+  },
+
+  findCasosLegalesByInquilino: async (
+    inquilinoId: string,
+  ): Promise<CasoLegalRecord[]> => {
+    try {
+      const response = await twentyClient.query<{
+        casosLegales: GraphQlConnection<CasoLegalRecord>;
+      }>(FIND_CASOS_LEGALES_BY_INQUILINO, { inquilinoId });
+
+      return mapConnectionNodes(response.casosLegales).map(
+        enrichCasoLegalRecord,
+      );
+    } catch (error) {
+      logGraphQlError(
+        `findCasosLegalesByInquilino(${inquilinoId}) failed`,
+        error,
+      );
       return [];
     }
   },

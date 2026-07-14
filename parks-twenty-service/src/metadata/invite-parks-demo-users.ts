@@ -462,13 +462,11 @@ export const inviteParksDemoUsers = async (): Promise<void> => {
     }
   }
 
-  console.log(
-    `${LOG_PREFIX} Demo users (password: ${PARKS_DEMO_USER_PASSWORD}):`,
-  );
+  console.log(`${LOG_PREFIX} Demo users:`);
 
   for (const demoUser of PARKS_DEMO_USERS) {
     console.log(
-      `${LOG_PREFIX}   ${demoUser.email} → ${demoUser.roleLabel} (${demoUser.persona})`,
+      `${LOG_PREFIX}   ${demoUser.email} → ${demoUser.roleLabel} · pass=${demoUser.password} (${demoUser.persona})`,
     );
   }
 };

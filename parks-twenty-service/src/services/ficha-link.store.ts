@@ -4,7 +4,7 @@ import { envConfig } from '../config/env.config';
 import {
   type FichaTecnicaLink,
   type FichaTecnicaSentVia,
-} from '../types/commercial.types';
+} from '../types/ficha-tecnica.types';
 
 const fichaLinks = new Map<string, FichaTecnicaLink>();
 
@@ -34,6 +34,11 @@ export const fichaLinkStore = {
 
     fichaLinks.set(token, link);
 
+    return link;
+  },
+
+  upsert: (link: FichaTecnicaLink): FichaTecnicaLink => {
+    fichaLinks.set(link.token, link);
     return link;
   },
 

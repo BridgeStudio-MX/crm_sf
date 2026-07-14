@@ -1,4 +1,5 @@
 import { brokerNotificationStore } from './broker-notification.store';
+import { cxcDashboardService } from './cxc-dashboard.service';
 import { cxcHandoffStore } from './cxc-handoff.store';
 import { twentyDataService } from './twenty-data.service';
 import { type CxcHandoffResult } from '../types/operations.types';
@@ -59,6 +60,15 @@ export const cxcHandoffService = {
       status: 'pending',
     });
 
+    cxcDashboardService.onboardFromLegal({
+      casoLegalId,
+      empresa,
+      rfc: casoLegal.inquilino?.rfc ?? undefined,
+      nave: naveIdentificador,
+      rentaMensualUsd,
+      depositoEstimadoUsd,
+    });
+
     brokerNotificationStore.add({
       type: 'task',
       priority: 'high',
@@ -71,7 +81,7 @@ export const cxcHandoffService = {
     return {
       handoff,
       ticketsCreated: tickets.length,
-      message: `Handoff a CxC registrado para ${empresa}.`,
+      message: `Handoff a CxC registrado para ${empresa}. Ciclo de facturación y depósito creados en cartera CxC.`,
     };
   },
 

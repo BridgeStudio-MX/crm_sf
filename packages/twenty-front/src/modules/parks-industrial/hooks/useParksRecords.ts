@@ -131,6 +131,9 @@ export type ParksCasoLegalRecord = ObjectRecord & {
     precioUsdM2?: number;
     plazoMeses?: number;
     fechaInicio?: string;
+    referencia?: string;
+    firmadaPorCem?: boolean;
+    firmadaPorCliente?: boolean;
   };
 };
 

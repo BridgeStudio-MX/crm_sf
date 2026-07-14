@@ -23,7 +23,7 @@ Los 8 roles ya existen en Twenty (prefijo `Parks —`). Falta **asignarlos a per
 | Catalina Moreno | `Parks — Admin Legal` |
 | Director Legal | `Parks — Director Legal` |
 | Subdirector Legal | `Parks — Subdirector Legal` |
-| Charlie Meta (CEO) | `Parks — CEO` |
+| Charles El-Mann Metta (CEO) | `Parks — CEO` |
 | Abogados del equipo | `Parks — Abogado asignado` |
 | Ejecutivos comerciales | `Parks — Ejecutivo Comercial` |
 | CxC / cobranza | `Parks — CxC` |

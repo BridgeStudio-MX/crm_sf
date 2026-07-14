@@ -82,7 +82,7 @@ npm run setup:demo-users
 | **Director Legal** | Parks — Director Legal | `roberto.salinas@apple.dev` | `tim@apple.dev` | Dashboard legal (vista ejecutiva), métricas equipo |
 | **Subdirector Legal** | Parks — Subdirector Legal | `patricia.nunez@apple.dev` | `tim@apple.dev` | Flujo de firmas internas (paso 2 del flujo firmas) |
 | **Abogado asignado** | Parks — Abogado asignado | `miguel.soto@apple.dev` | `tim@apple.dev` | Elaboración, versiones, negociación con cliente |
-| **Charlie Meta (CEO)** | Parks — CEO | `jony.ive@apple.dev` | `tim@apple.dev` | Aprobación condonación holdover, firma final en flujo interno |
+| **Charles El-Mann Metta (CEO)** | Parks — CEO | `jony.ive@apple.dev` | `tim@apple.dev` | Aprobación condonación holdover, firma final en flujo interno |
 | **CxC / Cobranza** | Parks — CxC | `scott.forstall@apple.dev` | `tim@apple.dev` | Solo lectura post-cierre; handoff CxC tras contrato firmado |
 
 **Nota:** Todos los usuarios demo comparten la misma contraseña en local: `tim@apple.dev`.

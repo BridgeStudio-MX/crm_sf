@@ -26,6 +26,7 @@ import { ParksToolSection } from '@/parks-industrial/components/ui/ParksToolSect
 import { ParksRoleLabel } from '@/parks-industrial/constants/parks-role-access.constants';
 import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
 import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRecords';
+import { isParksLeasingOfficerRole } from '@/parks-industrial/utils/parks-role-access.util';
 import {
   createParksHojaAcuerdos,
   fetchParksHojaByOpportunity,
@@ -355,7 +356,7 @@ export const ParksCommercialWorkflowPanel = ({
     parksRoleLabels.length === 0;
   const canRegisterClientSignature =
     hasFullParksAccess ||
-    parksRoleLabels.includes(ParksRoleLabel.EjecutivoComercial) ||
+    isParksLeasingOfficerRole(parksRoleLabels) ||
     parksRoleLabels.includes(ParksRoleLabel.DirectorComercial) ||
     parksRoleLabels.length === 0;
 
@@ -1184,7 +1185,7 @@ export const ParksCommercialWorkflowPanel = ({
             </StyledActionsRow>
 
             <StyledHint>
-              {t`Firmas: el CEM (Héctor / phil.schiler@apple.dev) firma primero. Luego el LO registra la firma del cliente. Con ambas, se crea el caso legal.`}
+              {t`Firmas: el CEM firma primero; luego el LO registra la firma del cliente. Con ambas, el deal entra al Comité de Autorización (mayoría 2 de 3) antes de Legal.`}
             </StyledHint>
 
             <StyledSignatureGrid>

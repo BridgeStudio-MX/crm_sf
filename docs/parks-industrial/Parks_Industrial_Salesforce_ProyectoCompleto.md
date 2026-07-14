@@ -23,7 +23,7 @@
 | Nombre | Área | Rol en el proyecto | Prioridad de acceso SF |
 | :---- | :---- | :---- | :---- |
 | Lilibeth López de la Cruz | Mercadotecnia | Punto de contacto principal, líder interno | Alta |
-| Charlie Meta | Dirección General (CEO) | Tomador de decisión final | Dashboard ejecutivo |
+| Charles El-Mann Metta | Dirección General (CEO) | Tomador de decisión final | Dashboard ejecutivo |
 | Catalina Moreno Monroy | Legal | Referente del proceso contractual | Admin legal |
 | Héctor Montelongo | Comercial | Director Comercial (CEM) | Admin comercial |
 | Claudia Rodríguez | Cuentas por Cobrar | Gerente CxC — 3 ejecutivos a cargo | Usuario CxC |
@@ -217,7 +217,7 @@ Subdirector Legal rubrica
 
         ↓
 
-Director General (Charlie Meta) — primera rúbrica
+Director General (Charles El-Mann Metta) — primera rúbrica
 
         ↓
 

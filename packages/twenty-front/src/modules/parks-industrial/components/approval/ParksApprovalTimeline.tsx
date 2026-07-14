@@ -19,6 +19,7 @@ import { ParksLegalActaRestitucionPanel } from '@/parks-industrial/components/le
 import { ParksLegalChecklistPanel } from '@/parks-industrial/components/legal/ParksLegalChecklistPanel';
 import { ParksLegalFirmasPanel } from '@/parks-industrial/components/legal/ParksLegalFirmasPanel';
 import { ParksLegalLawyerPanel } from '@/parks-industrial/components/legal/ParksLegalLawyerPanel';
+import { ParksLegalLoiPanel } from '@/parks-industrial/components/legal/ParksLegalLoiPanel';
 import { ParksLegalSlaPanel } from '@/parks-industrial/components/legal/ParksLegalSlaPanel';
 import { ParksLegalVersionPanel } from '@/parks-industrial/components/legal/ParksLegalVersionPanel';
 import { ParksContractEditorPanel } from '@/parks-industrial/components/legal/ParksContractEditorPanel';
@@ -32,7 +33,10 @@ import {
   StyledParksPageStack,
   StyledParksTwoColumnGrid,
 } from '@/parks-industrial/components/ui/ParksSectionCard';
-import { buildLegalWorkflowTimeline } from '@/parks-industrial/constants/parks-legal-workflow.constants';
+import {
+  buildLegalWorkflowTimeline,
+  type LegalWorkflowActionTab,
+} from '@/parks-industrial/constants/parks-legal-workflow.constants';
 import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
 import { useParksAiAssistant } from '@/parks-industrial/hooks/useParksAiAssistant';
 import { type ParksCasoLegalRecord } from '@/parks-industrial/hooks/useParksRecords';
@@ -177,6 +181,16 @@ export const ParksApprovalTimeline = ({
     }
   }, [activeTab, tabs]);
 
+  const handleStageAction = useCallback(
+    (actionTab: LegalWorkflowActionTab) => {
+      const targetTab: ApprovalTab = actionTab;
+      const tabExists = tabs.some((tab) => tab.id === targetTab);
+
+      setActiveTab(tabExists ? targetTab : 'workflow');
+    },
+    [tabs],
+  );
+
   const handleValidationComplete = async (result: DocumentValidationResult) => {
     await updateOneRecord({
       objectNameSingular: 'casoLegal',
@@ -191,7 +205,13 @@ export const ParksApprovalTimeline = ({
     if (activeTab === 'workflow') {
       return (
         <>
-          <ParksApprovalWorkflowTimeline timeline={timeline} embedded />
+          <ParksApprovalWorkflowTimeline
+            timeline={timeline}
+            embedded
+            onStageAction={
+              canEditLegalWorkflow ? handleStageAction : undefined
+            }
+          />
           {commentHistory.length > 0 ? (
             <ParksSectionCard title={t`Historial de comentarios`} accent="gray">
               <StyledCommentHistory>
@@ -210,6 +230,7 @@ export const ParksApprovalTimeline = ({
     if (activeTab === 'elaboracion' && canEditLegalWorkflow) {
       return (
         <StyledPanelsStack>
+          <ParksLegalLoiPanel casoLegal={casoLegal} />
           <ParksLegalChecklistPanel
             key={`checklist-${refreshKey}`}
             casoLegalId={casoLegal.id}

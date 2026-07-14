@@ -40,7 +40,11 @@ export const ParksStackingPlanContent = () => {
       {stackingNaves.length === 0 ? (
         <ParksEmptyState title={t`Este parque aún no tiene naves registradas`} />
       ) : (
-        <ParksStackingPlanGrid naves={stackingNaves} />
+        <ParksStackingPlanGrid
+          naves={stackingNaves}
+          parqueNombre={parque.nombre ?? t`Parque`}
+          parqueUbicacion={parque.ubicacion}
+        />
       )}
     </StyledParksPageStack>
   );

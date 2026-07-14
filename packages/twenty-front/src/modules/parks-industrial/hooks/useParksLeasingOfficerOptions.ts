@@ -3,9 +3,10 @@ import { useMemo } from 'react';
 import { currentWorkspaceMembersState } from '@/auth/states/currentWorkspaceMembersState';
 import {
   PARKS_DEMO_EMAIL_TO_ROLE_LABEL,
-  ParksRoleLabel,
+  PARKS_LEASING_OFFICER_ROLE_LABELS,
 } from '@/parks-industrial/constants/parks-role-access.constants';
 import { PARKS_LEASING_OFFICER_OPTIONS } from '@/parks-industrial/utils/parks-unassigned-leads.util';
+import { hasAnyParksRoleLabel } from '@/parks-industrial/utils/parks-role-access.util';
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 import { isDefined } from 'twenty-shared/utils';
 
@@ -25,7 +26,7 @@ const isLeasingOfficerMember = (member: {
 }): boolean => {
   const roleLabels = member.roles?.map((role) => role.label) ?? [];
 
-  if (roleLabels.includes(ParksRoleLabel.EjecutivoComercial)) {
+  if (hasAnyParksRoleLabel(roleLabels, PARKS_LEASING_OFFICER_ROLE_LABELS)) {
     return true;
   }
 
@@ -35,8 +36,11 @@ const isLeasingOfficerMember = (member: {
     return false;
   }
 
+  const demoRoleLabel = PARKS_DEMO_EMAIL_TO_ROLE_LABEL[email];
+
   return (
-    PARKS_DEMO_EMAIL_TO_ROLE_LABEL[email] === ParksRoleLabel.EjecutivoComercial
+    isDefined(demoRoleLabel) &&
+    hasAnyParksRoleLabel([demoRoleLabel], PARKS_LEASING_OFFICER_ROLE_LABELS)
   );
 };
 

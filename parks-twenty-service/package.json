@@ -27,6 +27,8 @@
     "webhook:test": "tsx scripts/webhook-test.ts",
     "crons:test": "tsx scripts/crons-test.ts",
     "e2e:test": "tsx scripts/e2e-test.ts",
+    "test:roles": "tsx scripts/test-roles-functional.ts",
+    "test:roles-live": "tsx scripts/test-roles-live.ts",
     "oracle:test": "tsx scripts/oracle-test.ts"
   },
   "engines": {

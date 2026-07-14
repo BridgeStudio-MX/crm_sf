@@ -53,7 +53,7 @@ export const ParksInquilino360Page = () => {
     <ParksPageShell
       title={pageTitle}
       subtitle={getParksIndustrialPageSubtitle(
-        t`Vista unificada del cliente — contratos, pipeline, pagos y decisores`,
+        t`Empresa, documentos, hojas, actividad, contratos, legal y CxC`,
       )}
       icon={<IconBuildingSkyscraper size={20} />}
     >

@@ -301,7 +301,7 @@ export const ParksUnassignedLeadsPanel = ({
                   ))}
                 </StyledParksSelect>
                 <Button
-                  title={isAssigning ? t`Asignando…` : t`Asignar`}
+                  title={isAssigning ? t`Asignando…` : t`Asignar a LO`}
                   size="small"
                   variant="secondary"
                   disabled={assigningLeadId !== null}

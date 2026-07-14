@@ -2,97 +2,620 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Ficha técnica — {{naveIdentificador}}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{d.naveIdentificador}} · {{d.parqueNombre}} · Parks Industrial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet"
+  />
   <style>
+    :root {
+      --ink: #1a1f27;
+      --steel: #5f6b7a;
+      --paper: #ffffff;
+      --soft: #f7f8fa;
+      --line: #d9dee5;
+      --accent: #1f4b7a;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
     body {
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      color: #111827;
-      margin: 0;
-      padding: 32px;
-      line-height: 1.5;
+      background: #eef1f4;
+      color: var(--ink);
+      font-family: 'Source Sans 3', system-ui, sans-serif;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
     }
-    .header {
-      border-bottom: 3px solid #2563eb;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
+    .sheet {
+      background: var(--paper);
+      margin: 0 auto;
+      max-width: 920px;
     }
-    .header h1 {
-      font-size: 24px;
-      margin: 0 0 8px;
+    .topbar {
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      padding: 18px 32px;
     }
-    .header p {
-      color: #6b7280;
-      margin: 0;
-    }
-    .grid {
-      display: grid;
-      gap: 16px;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      margin-bottom: 24px;
-    }
-    .card {
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 16px;
-    }
-    .label {
-      color: #6b7280;
-      font-size: 12px;
-      letter-spacing: 0.04em;
+    .brand-logo { display: block; height: 38px; width: auto; }
+    .doc-meta {
+      color: var(--steel);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-align: right;
       text-transform: uppercase;
     }
-    .value {
+    .hero { padding: 24px 32px 8px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      margin: 0 0 8px;
+      text-transform: uppercase;
+    }
+    .title {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: clamp(28px, 4.5vw, 40px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+      margin: 0 0 6px;
+    }
+    .subtitle {
+      color: var(--steel);
+      font-size: 15px;
+      margin: 0 0 18px;
+    }
+    .subtitle strong { color: var(--ink); }
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .chip {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+    }
+    .chip.accent {
+      background: #eef3f8;
+      border-color: #cfdceb;
+      color: var(--accent);
+    }
+    .body { padding: 8px 32px 32px; }
+    .block {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .block-head {
+      background: var(--soft);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 16px;
+    }
+    .block-head h2 {
+      font-family: 'Source Serif 4', Georgia, serif;
       font-size: 18px;
+      font-weight: 700;
+      margin: 0;
+    }
+    .block-head span {
+      color: var(--steel);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .block-body { padding: 14px 16px 16px; }
+    .grid-2 {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1.2fr 1fr;
+    }
+    .grid-3 {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .grid-4 {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .kv {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 10px 12px;
+    }
+    .kv .label {
+      color: var(--steel);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .kv .value {
+      font-size: 14px;
       font-weight: 600;
       margin-top: 4px;
     }
-    .note {
-      background: #eff6ff;
-      border-left: 4px solid #2563eb;
-      padding: 12px 16px;
+    .kv .value.lg {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 20px;
+    }
+    .spec-table { width: 100%; border-collapse: collapse; }
+    .spec-table th,
+    .spec-table td {
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+      padding: 9px 4px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .spec-table tr:first-child th,
+    .spec-table tr:first-child td { border-top: 0; }
+    .spec-table th {
+      color: var(--steel);
+      font-weight: 500;
+      width: 42%;
+    }
+    .spec-table td { font-weight: 600; }
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .list li {
+      align-items: flex-start;
+      display: flex;
+      font-size: 13px;
+      gap: 8px;
+    }
+    .list li::before {
+      background: var(--accent);
+      border-radius: 1px;
+      content: '';
+      flex-shrink: 0;
+      height: 12px;
+      margin-top: 4px;
+      width: 3px;
+    }
+    .photos {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1.3fr 1fr;
+    }
+    .photos .photo:first-child { grid-row: span 2; min-height: 280px; }
+    .photo {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      min-height: 132px;
+      overflow: hidden;
+      position: relative;
+    }
+    .photo img {
+      display: block;
+      height: 100%;
+      object-fit: cover;
+      width: 100%;
+    }
+    .photo .cap {
+      background: linear-gradient(transparent, rgba(255,255,255,.95));
+      bottom: 0;
+      font-size: 11px;
+      font-weight: 700;
+      left: 0;
+      letter-spacing: 0.05em;
+      padding: 24px 10px 8px;
+      position: absolute;
+      right: 0;
+      text-transform: uppercase;
+    }
+    .map-frame {
+      background: #e8eef4;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      height: 280px;
+      overflow: hidden;
+      position: relative;
+    }
+    .map-frame iframe {
+      border: 0;
+      display: block;
+      height: 100%;
+      width: 100%;
+    }
+    .map-frame .map-static {
+      display: none;
+      height: 100%;
+      object-fit: cover;
+      width: 100%;
+    }
+    .map-link {
+      color: var(--accent);
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+      text-decoration: none;
+    }
+    .map-coords {
+      color: var(--steel);
+      font-size: 11px;
+      margin-top: 4px;
+    }
+    .plano {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 10px;
+    }
+    .plano svg { display: block; width: 100%; height: auto; }
+    .plano-note {
+      color: var(--steel);
+      font-size: 11px;
+      margin-top: 8px;
+    }
+    .contact {
+      align-items: center;
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1fr auto;
+    }
+    .contact h3 {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 20px;
+      margin: 0 0 6px;
+    }
+    .contact p { color: var(--steel); font-size: 14px; margin: 2px 0; }
+    .contact a { color: var(--accent); text-decoration: none; }
+    .qr {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 8px;
+      text-align: center;
+    }
+    .qr img { display: block; height: 120px; margin: 0 auto; width: 120px; }
+    .qr span {
+      color: var(--steel);
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-top: 6px;
+      text-transform: uppercase;
+    }
+    .prepared {
+      color: var(--steel);
+      font-size: 13px;
+      margin: 0 0 14px;
+    }
+    .prepared strong { color: var(--ink); }
+    .disclaimer {
+      color: var(--steel);
+      font-size: 11px;
+      line-height: 1.5;
+      margin: 12px 0 0;
     }
     footer {
-      border-top: 1px solid #e5e7eb;
-      color: #6b7280;
-      font-size: 12px;
-      margin-top: 32px;
+      align-items: center;
+      border-top: 1px solid var(--line);
+      color: var(--steel);
+      display: flex;
+      font-size: 11px;
+      justify-content: space-between;
+      margin-top: 18px;
       padding-top: 12px;
+    }
+    footer img { height: 20px; width: auto; }
+    @media (max-width: 760px) {
+      .topbar, .hero, .body { padding-left: 18px; padding-right: 18px; }
+      .grid-2, .grid-3, .grid-4, .photos, .contact {
+        grid-template-columns: 1fr;
+      }
+      .photos .photo:first-child { grid-row: auto; min-height: 200px; }
+    }
+    @media print {
+      body { background: #fff; }
+      .sheet { max-width: none; }
+      .block, .photo, .kv, .map-frame {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .map-frame iframe { display: none; }
+      .map-frame .map-static { display: block; }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>Ficha técnica — {{naveIdentificador}}</h1>
-    <p>Parks Industrial · Preparado para {{companyName}}</p>
-  </div>
+  <article class="sheet">
+    <header class="topbar">
+      <img class="brand-logo" src="{{{logoUrl}}}" alt="Parks Industrial" />
+      <div class="doc-meta">
+        Ficha de propiedad<br />
+        {{generationDate}}
+      </div>
+    </header>
 
-  <div class="grid">
-    <div class="card">
-      <div class="label">Parque industrial</div>
-      <div class="value">{{parqueNombre}}</div>
-    </div>
-    <div class="card">
-      <div class="label">Ubicación</div>
-      <div class="value">{{ubicacion}}</div>
-    </div>
-    <div class="card">
-      <div class="label">Superficie</div>
-      <div class="value">{{m2}} m²</div>
-    </div>
-    <div class="card">
-      <div class="label">Precio referencia</div>
-      <div class="value">USD {{precioUsdM2}} / m²</div>
-    </div>
-  </div>
+    <section class="hero">
+      <p class="eyebrow">Bloque 1 · Identificación</p>
+      <h1 class="title">{{d.naveIdentificador}}</h1>
+      <p class="subtitle">
+        {{d.parqueNombre}} · <strong>{{d.ciudadEstado}}</strong> · Corredor {{d.corredorIndustrial}}
+      </p>
+      <div class="chip-row">
+        <span class="chip accent">{{d.disponibilidadEstatus}}</span>
+        <span class="chip">{{d.tipoOperacion}}</span>
+        <span class="chip">Desde USD {{d.precioUsdM2MesLabel}} / m² / mes</span>
+        <span class="chip">{{d.glaM2Label}} m² GLA</span>
+      </div>
+      <p class="prepared">Preparado para <strong>{{companyName}}</strong></p>
+    </section>
 
-  <div class="note">
-    Renta mensual estimada: <strong>USD {{rentaMensualEstimada}}</strong>
-    (referencia comercial sujeta a negociación y condiciones del contrato).
-  </div>
+    <div class="body">
+      <section class="block">
+        <div class="block-head">
+          <h2>Ubicación y distancias clave</h2>
+          <span>Nearshoring / logística</span>
+        </div>
+        <div class="block-body">
+          <div class="grid-2">
+            <div>
+              <div class="grid-2" style="margin-bottom: 10px">
+                <div class="kv">
+                  <div class="label">Autopista</div>
+                  <div class="value lg">{{d.distanciaAutopistaKm}} km</div>
+                </div>
+                <div class="kv">
+                  <div class="label">Aeropuerto</div>
+                  <div class="value lg">{{d.distanciaAeropuertoKm}} km</div>
+                </div>
+                <div class="kv">
+                  <div class="label">Puerto</div>
+                  <div class="value lg">{{d.distanciaPuertoLabel}}</div>
+                </div>
+                <div class="kv">
+                  <div class="label">Frontera</div>
+                  <div class="value lg">{{d.distanciaFronteraLabel}}</div>
+                </div>
+              </div>
+              <div class="kv">
+                <div class="label">Posición en parque</div>
+                <div class="value">{{manzanaLabel}} · {{d.naveIdentificador}}</div>
+              </div>
+            </div>
+            <div>
+              <div class="map-frame" aria-label="Mapa de ubicación del parque">
+                <iframe
+                  title="Mapa {{d.parqueNombre}}"
+                  loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade"
+                  src="{{{d.mapaEmbedUrl}}}"
+                ></iframe>
+                <img
+                  class="map-static"
+                  src="{{{d.mapaUbicacionUrl}}}"
+                  alt="Mapa {{d.parqueNombre}} · {{d.naveIdentificador}}"
+                />
+              </div>
+              <a class="map-link" href="{{{d.mapaEnlaceUrl}}}" target="_blank" rel="noreferrer">
+                Abrir ubicación en OpenStreetMap →
+              </a>
+              <p class="map-coords">
+                Pin · {{d.lat}}, {{d.lng}} · {{manzanaLabel}} · {{d.naveIdentificador}}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-  <footer>
-    Documento informativo · {{generationDate}} · Parks Industrial
-  </footer>
+      <section class="block">
+        <div class="block-head">
+          <h2>Especificaciones técnicas de la nave</h2>
+          <span>Bloque 2</span>
+        </div>
+        <div class="block-body">
+          <div class="grid-4" style="margin-bottom: 12px">
+            <div class="kv"><div class="label">GLA</div><div class="value lg">{{d.glaM2Label}} m²</div></div>
+            <div class="kv"><div class="label">Oficinas</div><div class="value lg">{{d.oficinasM2Label}} m²</div></div>
+            <div class="kv"><div class="label">Altura libre</div><div class="value lg">{{d.alturaLibreM}} m</div></div>
+            <div class="kv"><div class="label">Andenes</div><div class="value lg">{{d.andenes}}</div></div>
+          </div>
+          <table class="spec-table">
+            <tr><th>Andenes (detalle)</th><td>{{d.andenesDetalle}}</td></tr>
+            <tr><th>Puertas a nivel de piso</th><td>{{d.puertasNivelPiso}}</td></tr>
+            <tr><th>Carga de piso</th><td>{{d.cargaPisoTonM2}} ton / m²</td></tr>
+            <tr><th>Potencia eléctrica</th><td>{{d.potenciaKva}} kVA</td></tr>
+            <tr><th>Estacionamiento autos</th><td>{{d.cajonesAutos}} cajones</td></tr>
+            <tr><th>Estacionamiento trailers</th><td>{{d.cajonesTrailers}} cajones</td></tr>
+            <tr><th>Profundidad patio de maniobras</th><td>{{d.profundidadPatioM}} m</td></tr>
+            <tr><th>Iluminación</th><td>{{d.iluminacion}}</td></tr>
+            <tr><th>Sistema contra incendios</th><td>{{d.sistemaContraIncendios}}</td></tr>
+            <tr><th>Tipo de piso</th><td>{{d.tipoPiso}}</td></tr>
+            <tr><th>Skylights / domos</th><td>{{d.skylights}}</td></tr>
+            <tr><th>Gas natural</th><td>{{d.gasNaturalLabel}}</td></tr>
+          </table>
+        </div>
+      </section>
+
+      <section class="block">
+        <div class="block-head">
+          <h2>Disponibilidad y condiciones comerciales</h2>
+          <span>Bloque 3</span>
+        </div>
+        <div class="block-body">
+          <div class="grid-3">
+            <div class="kv"><div class="label">Estatus</div><div class="value">{{d.disponibilidadEstatus}}</div></div>
+            <div class="kv"><div class="label">Fecha disponibilidad</div><div class="value">{{d.fechaDisponibilidadLabel}}</div></div>
+            <div class="kv"><div class="label">Tipo de operación</div><div class="value">{{d.tipoOperacion}}</div></div>
+            <div class="kv"><div class="label">Renta</div><div class="value lg">USD {{d.precioUsdM2MesLabel}}</div><div class="label" style="margin-top:6px">por m² / mes</div></div>
+            <div class="kv"><div class="label">Renta mensual est.</div><div class="value lg">USD {{d.rentaMensualLabel}}</div></div>
+            <div class="kv"><div class="label">Moneda</div><div class="value">{{d.monedaContrato}}</div></div>
+            <div class="kv"><div class="label">Plazo mínimo</div><div class="value">{{d.plazoMinimoMeses}} meses</div></div>
+            <div class="kv"><div class="label">Periodo de gracia est.</div><div class="value">{{d.periodoGraciaMeses}} meses</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <div class="block-head">
+          <h2>Servicios y amenidades del parque</h2>
+          <span>Bloque 4</span>
+        </div>
+        <div class="block-body">
+          <div class="grid-2">
+            <div>
+              <div class="grid-2" style="margin-bottom: 12px">
+                <div class="kv"><div class="label">Acceso 24/7</div><div class="value">{{d.accesoControladoLabel}}</div></div>
+                <div class="kv"><div class="label">CCTV</div><div class="value">{{d.cctvLabel}}</div></div>
+                <div class="kv"><div class="label">Alumbrado perimetral</div><div class="value">{{d.alumbradoLabel}}</div></div>
+                <div class="kv"><div class="label">Vialidades pavimentadas</div><div class="value">{{d.vialidadesLabel}}</div></div>
+                <div class="kv"><div class="label">Área carga exclusiva</div><div class="value">{{d.areaCargaLabel}}</div></div>
+              </div>
+              <p class="label" style="color:var(--steel);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px">Servicios del parque</p>
+              <ul class="list">
+                {{#each d.serviciosParque}}
+                <li>{{this}}</li>
+                {{/each}}
+              </ul>
+            </div>
+            <div>
+              <p class="label" style="color:var(--steel);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px">Certificaciones</p>
+              <ul class="list" style="margin-bottom:14px">
+                {{#each d.certificaciones}}
+                <li>{{this}}</li>
+                {{/each}}
+              </ul>
+              <p class="label" style="color:var(--steel);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px">Servicios opcionales</p>
+              <ul class="list" style="margin-bottom:14px">
+                {{#each d.serviciosOpcionales}}
+                <li>{{this}}</li>
+                {{/each}}
+              </ul>
+              <p class="label" style="color:var(--steel);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px">Inquilinos de referencia</p>
+              <ul class="list">
+                {{#each d.inquilinosReferencia}}
+                <li>{{this}}</li>
+                {{/each}}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <div class="block-head">
+          <h2>Material visual</h2>
+          <span>Bloque 5</span>
+        </div>
+        <div class="block-body">
+          <div class="photos" style="margin-bottom: 12px">
+            <div class="photo">
+              <img src="{{{d.fotoExteriorUrl}}}" alt="Fachada {{d.naveIdentificador}}" />
+              <div class="cap">Exterior · fachada</div>
+            </div>
+            <div class="photo">
+              <img src="{{{d.fotoInteriorUrl}}}" alt="Interior {{d.naveIdentificador}}" />
+              <div class="cap">Interior · almacén</div>
+            </div>
+            <div class="photo">
+              <img src="{{{d.fotoAereaUrl}}}" alt="Aérea {{d.parqueNombre}}" />
+              <div class="cap">Aérea · parque</div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="plano">
+              <svg viewBox="0 0 480 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Plano de planta esquemático">
+                <rect width="480" height="260" fill="#f7f8fa"/>
+                <rect x="24" y="28" width="320" height="180" fill="#dce4ee" stroke="#1f4b7a" stroke-width="2"/>
+                <text x="184" y="120" text-anchor="middle" fill="#1f4b7a" font-size="14" font-family="Source Sans 3, sans-serif" font-weight="700">ALMACÉN / GLA</text>
+                <text x="184" y="140" text-anchor="middle" fill="#5f6b7a" font-size="11" font-family="Source Sans 3, sans-serif">{{d.glaM2Label}} m²</text>
+                <rect x="24" y="28" width="70" height="48" fill="#c5d4e6" stroke="#1f4b7a" stroke-width="1.5"/>
+                <text x="59" y="56" text-anchor="middle" fill="#1a1f27" font-size="10" font-family="Source Sans 3, sans-serif">OFICINAS</text>
+                <rect x="360" y="40" width="90" height="150" fill="#e8ece8" stroke="#8f9aa8" stroke-width="1.5"/>
+                <text x="405" y="118" text-anchor="middle" fill="#5f6b7a" font-size="10" font-family="Source Sans 3, sans-serif">PATIO</text>
+                <text x="405" y="134" text-anchor="middle" fill="#5f6b7a" font-size="10" font-family="Source Sans 3, sans-serif">{{d.profundidadPatioM}} m</text>
+                <g fill="#1f4b7a">
+                  <rect x="348" y="55" width="12" height="10"/><rect x="348" y="75" width="12" height="10"/>
+                  <rect x="348" y="95" width="12" height="10"/><rect x="348" y="115" width="12" height="10"/>
+                  <rect x="348" y="135" width="12" height="10"/><rect x="348" y="155" width="12" height="10"/>
+                </g>
+                <text x="24" y="240" fill="#5f6b7a" font-size="10" font-family="Source Sans 3, sans-serif">{{d.planoPlantaNota}}</text>
+              </svg>
+              <p class="plano-note">Plano de planta esquemático (no sustituye layout CAD definitivo).</p>
+            </div>
+            <div class="map-frame" style="height: auto; min-height: 220px">
+              <svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Plano del parque">
+                <rect width="400" height="220" fill="#eef3ef"/>
+                <rect x="16" y="16" width="368" height="24" fill="#9bb896" opacity=".7"/>
+                <rect x="16" y="180" width="368" height="24" fill="#9bb896" opacity=".7"/>
+                <rect x="60" y="95" width="280" height="18" fill="#cfd5dd"/>
+                <rect x="130" y="50" width="18" height="120" fill="#cfd5dd"/>
+                <rect x="250" y="50" width="18" height="120" fill="#cfd5dd"/>
+                <rect x="70" y="55" width="50" height="30" fill="#a8b4c2"/>
+                <rect x="160" y="55" width="70" height="30" fill="#b4bfcb"/>
+                <rect x="280" y="55" width="50" height="30" fill="#a8b4c2"/>
+                <rect x="70" y="125" width="50" height="30" fill="#b4bfcb"/>
+                <rect x="160" y="125" width="70" height="30" fill="#1f4b7a"/>
+                <rect x="280" y="125" width="50" height="30" fill="#a8b4c2"/>
+                <text x="195" y="144" text-anchor="middle" fill="#fff" font-size="9" font-family="Source Sans 3, sans-serif" font-weight="700">NAVE</text>
+                <text x="200" y="210" text-anchor="middle" fill="#5f6b7a" font-size="9" font-family="Source Sans 3, sans-serif">{{d.parqueNombre}} · plano ilustrativo · {{manzanaLabel}}</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <div class="block-head">
+          <h2>Contacto directo del Leasing Officer</h2>
+          <span>Bloque 6</span>
+        </div>
+        <div class="block-body">
+          <div class="contact">
+            <div>
+              <h3>{{d.loNombre}}</h3>
+              <p>Teléfono / WhatsApp: <a href="tel:{{d.loTelefono}}">{{d.loWhatsapp}}</a></p>
+              <p>Correo: <a href="mailto:{{d.loEmail}}">{{d.loEmail}}</a></p>
+              <p>Parks Industrial · Propiedad industrial en México</p>
+            </div>
+            <div class="qr">
+              <img src="{{{d.qrCodeUrl}}}" alt="QR contacto LO" />
+              <span>WhatsApp / contacto</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <p class="disclaimer">
+        Documento informativo de referencia comercial, optimizado para impresión.
+        Specs no capturados en CRM se completan con valores demo del corredor.
+        Montos, disponibilidad y condiciones finales sujetos a negociación e inventario.
+        El plano y mapa son esquemáticos (no topográficos / CAD).
+      </p>
+
+      <footer>
+        <img src="{{{logoUrl}}}" alt="Parks Industrial" />
+        <span>{{generationDate}} · Confidencial · {{d.naveIdentificador}}</span>
+      </footer>
+    </div>
+  </article>
 </body>
 </html>

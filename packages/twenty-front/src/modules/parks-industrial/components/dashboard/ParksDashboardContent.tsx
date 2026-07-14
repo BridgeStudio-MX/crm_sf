@@ -15,6 +15,7 @@ import { MOBILE_VIEWPORT, themeCssVariables } from 'twenty-ui/theme-constants';
 import { ParksAiQuickActions } from '@/parks-industrial/components/ai/ParksAiQuickActions';
 import { ParksCemDirectorDashboard } from '@/parks-industrial/components/dashboard/ParksCemDirectorDashboard';
 import { ParksCemQueueSection } from '@/parks-industrial/components/dashboard/ParksCemQueueSection';
+import { ParksCeoCommandCenter } from '@/parks-industrial/components/dashboard/ParksCeoCommandCenter';
 import { ParksDashboardAlertCard } from '@/parks-industrial/components/dashboard/ParksDashboardAlertCard';
 import { ParksDashboardDealCard } from '@/parks-industrial/components/dashboard/ParksDashboardDealCard';
 import {
@@ -35,6 +36,8 @@ import {
   StyledParksPageStack,
   StyledParksTwoColumnGrid,
 } from '@/parks-industrial/components/ui/ParksSectionCard';
+import { ParksRoleLabel } from '@/parks-industrial/constants/parks-role-access.constants';
+import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
 import {
   buildParksVencimientosPorMes,
   useParksDashboardMetrics,
@@ -47,6 +50,7 @@ import {
   getParksStackingStatusColor,
 } from '@/parks-industrial/utils/parks-format.util';
 import { getParksOcupacionMetricAccent } from '@/parks-industrial/utils/parks-portfolio-metrics.util';
+import { hasAnyParksRoleLabel } from '@/parks-industrial/utils/parks-role-access.util';
 
 const StyledMetricsGrid = styled.div`
   display: grid;
@@ -81,6 +85,19 @@ const StyledSectionLink = styled(Link)`
 `;
 
 export const ParksDashboardContent = () => {
+  const { parksRoleLabels, hasFullParksAccess } = useParksAccess();
+  const showCeoCommandCenter =
+    hasFullParksAccess ||
+    hasAnyParksRoleLabel(parksRoleLabels, [ParksRoleLabel.CEO]);
+
+  if (showCeoCommandCenter) {
+    return <ParksCeoCommandCenter />;
+  }
+
+  return <ParksCommercialDashboardContent />;
+};
+
+export const ParksCommercialDashboardContent = () => {
   const { metrics, charts, expedientes, loading } = useParksDashboardMetrics();
   const vencimientos = buildParksVencimientosPorMes(expedientes);
 

@@ -73,19 +73,26 @@ export const ParksNavigationSection = ({
 
   const itemLabels: Record<ParksNavigationItemKey, string> = {
     dashboard: t`Dashboard`,
+    dashboardComercial: t`Dashboard comercial`,
     stackingPlan: t`Stacking Plan`,
     pipeline: t`Pipeline`,
     leadsCem: t`Leads CEM`,
     prospectos: t`Prospectos`,
     notificaciones: t`Notificaciones`,
+    misPendientes: t`Mis pendientes`,
     contratos: t`Contratos`,
     legalPipeline: t`Pipeline legal`,
     legalDashboard: t`Dashboard legal`,
+    cxc: t`CxC`,
+    comite: t`Comité`,
+    valorAgregado: t`Valor agregado`,
+    asignacion: t`Asignación`,
+    loCampo: t`Campo LO`,
     renovaciones: t`Renovaciones`,
     reservas: t`Reservas`,
     comisiones: t`Comisiones`,
     miDesempeno: t`Mi desempeño`,
-    mapa: t`Mapa`,
+    mapa: t`Mapa de Inventario`,
   };
 
   const NotificacionesIcon = useMemo((): IconComponent => {

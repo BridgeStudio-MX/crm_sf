@@ -127,12 +127,48 @@ export const LEGAL_VERSION_RESPUESTA_OPTIONS = [
 
 export type LegalTimelineStageStatus = 'completed' | 'active' | 'pending';
 
+export type LegalWorkflowActionTab =
+  | 'elaboracion'
+  | 'firma'
+  | 'validacion'
+  | 'operaciones';
+
 export type LegalTimelineStage = {
   id: string;
   label: string;
   estatus: string;
   responsable: string;
   status: LegalTimelineStageStatus;
+  actionTab?: LegalWorkflowActionTab;
+  actionLabel?: string;
+};
+
+// CTA from the active timeline stage → the tab where the work happens
+export const LEGAL_STAGE_ACTION_BY_ID: Record<
+  string,
+  { tab: LegalWorkflowActionTab; label: string }
+> = {
+  nuevo: { tab: 'elaboracion', label: 'Asignar abogado' },
+  asignado: { tab: 'elaboracion', label: 'Revisar checklist' },
+  'docs-incompletas': { tab: 'elaboracion', label: 'Completar documentación' },
+  elaboracion: { tab: 'elaboracion', label: 'Elaborar y registrar versión' },
+  'primera-version': {
+    tab: 'elaboracion',
+    label: 'Registrar respuesta / siguiente versión',
+  },
+  negociacion: {
+    tab: 'elaboracion',
+    label: 'Continuar negociación de versiones',
+  },
+  'version-final': { tab: 'firma', label: 'Ir a cotejo y firmas' },
+  'espera-firma-cliente': {
+    tab: 'firma',
+    label: 'Registrar recepción firmada',
+  },
+  cotejo: { tab: 'firma', label: 'Realizar cotejo' },
+  firmas: { tab: 'firma', label: 'Registrar firmas físicas' },
+  funo: { tab: 'firma', label: 'Registrar firmas FUNO/NEXT' },
+  cerrado: { tab: 'operaciones', label: 'Ver handoff CxC' },
 };
 
 export const LEGAL_CLOSED_ESTATUS_LABELS = [
@@ -182,12 +218,16 @@ export const buildLegalWorkflowTimeline = (
       status = 'active';
     }
 
+    const stageAction = LEGAL_STAGE_ACTION_BY_ID[stage.id];
+
     return {
       id: stage.id,
       label: stage.label,
       estatus: stage.estatus,
       responsable: stage.responsable,
       status,
+      actionTab: stageAction?.tab,
+      actionLabel: stageAction?.label,
     };
   });
 };

@@ -82,6 +82,8 @@ export type FichaTecnicaLink = {
   ubicacion?: string;
   m2: number;
   precioUsdM2?: number;
+  fotoInmuebleUrl?: string;
+  fotoParqueUrl?: string;
   publicUrl: string;
   viewCount: number;
   lastViewedAt?: string;
@@ -156,11 +158,14 @@ export type DecisorCliente = {
 export type ParksAccount360Contrato = {
   id: string;
   numeroExpediente?: string;
+  fechaApertura?: string;
   fechaVencimiento?: string;
   rentaMensualUsd?: number;
   estatus?: string;
   naveIdentificador?: string;
   parqueNombre?: string;
+  m2?: number;
+  casoLegalId?: string;
   esPropiedadFuno?: boolean;
 };
 
@@ -177,18 +182,105 @@ export type ParksAccount360Oportunidad = {
   enProceso: boolean;
 };
 
+export type ParksAccount360CasoLegal = {
+  id: string;
+  referencia?: string;
+  tipoDocumento?: string;
+  estatus?: string;
+  semaforo?: string;
+  abogadoAsignado?: string;
+  diasTranscurridos?: number;
+  slaDiasHabiles?: number;
+  documentacionCompleta?: boolean;
+  slaPausado?: boolean;
+  naveIdentificador?: string;
+  parqueNombre?: string;
+  esPropiedadFuno?: boolean;
+  fechaHojaAcuerdos?: string;
+  hojaDeAcuerdosId?: string;
+};
+
+export type ParksAccount360HojaDeAcuerdos = {
+  id: string;
+  referencia?: string;
+  tipoContrato?: string;
+  m2Acordados?: number;
+  precioUsdM2?: number;
+  plazoMeses?: number;
+  fechaInicio?: string;
+  fechaFirma?: string;
+  depositoMeses?: number;
+  periodoGraciaMeses?: number;
+  escalacionAnualPct?: number;
+  estatus?: string;
+  firmadaPorCliente?: boolean;
+  firmadaPorCem?: boolean;
+  ejecutivoAsignado?: string;
+  naveIdentificador?: string;
+  parqueNombre?: string;
+  oportunidadVinculadaId?: string;
+  rentaMensualEstimadaUsd?: number;
+};
+
+export type ParksAccount360Documento = {
+  id: string;
+  titulo?: string;
+  tipoDocumento?: string;
+  entregado: boolean;
+  casoLegalId: string;
+  casoReferencia?: string;
+};
+
+export type ParksAccount360Actividad = {
+  id: string;
+  type: 'email' | 'call' | 'task' | 'meeting';
+  direction: 'inbound' | 'outbound' | 'internal';
+  subject: string;
+  summary: string;
+  participant: string;
+  occurredAt: string;
+  source: 'gmail' | 'crm' | 'email-parser';
+  opportunityId?: string;
+  opportunityName?: string;
+};
+
+export type ParksAccount360CxcResumen = {
+  accountId: string;
+  estatusPagos: string;
+  scoreRiesgo: number;
+  scoreLabel: string;
+  montoAdeudoTotal: number;
+  diasEnMora: number;
+  rentaMensual: number;
+  moneda: 'MXN' | 'USD';
+  ultimaFechaPago: string | null;
+  nave: string;
+  parque: string;
+  facturasPendientes: number;
+  cicloEstatus: string;
+};
+
 export type ParksAccount360Interaccion = {
   id: string;
   titulo: string;
   descripcion: string;
   fecha: string;
-  tipo: 'oportunidad' | 'notificacion';
+  tipo:
+    | 'oportunidad'
+    | 'notificacion'
+    | 'legal'
+    | 'cxc'
+    | 'hoja'
+    | 'documento';
+  linkId?: string;
 };
 
 export type ParksAccount360EstadoPagos = {
   alCorriente?: boolean;
   ultimoPagoFecha?: string;
-  fuente: 'oracle' | 'sin-datos';
+  fuente: 'oracle' | 'cxc' | 'sin-datos';
+  montoAdeudoTotal?: number;
+  diasEnMora?: number;
 };
 
 export type ParksAccount360Response = {
@@ -213,6 +305,14 @@ export type ParksAccount360Response = {
   contratos: ParksAccount360Contrato[];
   oportunidades: ParksAccount360Oportunidad[];
   oportunidadesEnProceso: number;
+  casosLegales: ParksAccount360CasoLegal[];
+  casosLegalesActivos: number;
+  hojasDeAcuerdos: ParksAccount360HojaDeAcuerdos[];
+  documentos: ParksAccount360Documento[];
+  documentosEntregados: number;
+  documentosPendientes: number;
+  actividades: ParksAccount360Actividad[];
+  cxc?: ParksAccount360CxcResumen;
   interacciones: ParksAccount360Interaccion[];
   estadoPagos: ParksAccount360EstadoPagos;
   tieneContratosFuno: boolean;
@@ -289,4 +389,21 @@ export type DealWinPreview = {
   willReserveNave: boolean;
   willOpenExpedienteOnClose: boolean;
   steps: string[];
+};
+
+export type MapOutreachDraft = {
+  opportunityId: string;
+  opportunityName: string;
+  companyName: string;
+  toEmail: string | null;
+  subject: string;
+  body: string;
+  mailtoUrl: string;
+};
+
+export type MapOutreachResult = {
+  sentCount: number;
+  drafts: MapOutreachDraft[];
+  message: string;
+  generatedAt: string;
 };

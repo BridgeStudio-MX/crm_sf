@@ -1,6 +1,7 @@
 export const PARKS_SERVICE_URL =
   import.meta.env.VITE_PARKS_SERVICE_URL ?? 'http://localhost:3002';
 
+export const PARKS_COMMERCIAL_INBOX_ENDPOINT = `${PARKS_SERVICE_URL}/commercial/inbox`;
 export const PARKS_COMMERCIAL_NOTIFICATIONS_ENDPOINT = `${PARKS_SERVICE_URL}/commercial/notifications`;
 export const PARKS_COMMERCIAL_ENRICH_PROSPECT_ENDPOINT = `${PARKS_SERVICE_URL}/commercial/enrich-prospect`;
 export const PARKS_COMMERCIAL_MATCH_NAVES_ENDPOINT = `${PARKS_SERVICE_URL}/commercial/match-naves`;
@@ -13,3 +14,4 @@ export const PARKS_COMMERCIAL_COMPOSER_ENDPOINT = `${PARKS_SERVICE_URL}/commerci
 export const PARKS_COMMERCIAL_ACTIVITY_TIMELINE_ENDPOINT = `${PARKS_SERVICE_URL}/commercial/activity-timeline`;
 export const PARKS_COMMERCIAL_DEAL_WIN_PREVIEW_ENDPOINT = `${PARKS_SERVICE_URL}/commercial/deal-win-preview`;
 export const PARKS_COMMERCIAL_BULK_FOLLOW_UP_ENDPOINT = `${PARKS_SERVICE_URL}/commercial/bulk-follow-up`;
+export const PARKS_COMMERCIAL_MAP_OUTREACH_ENDPOINT = `${PARKS_SERVICE_URL}/commercial/map-outreach`;

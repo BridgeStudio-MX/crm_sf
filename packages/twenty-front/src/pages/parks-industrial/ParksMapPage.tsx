@@ -8,18 +8,38 @@ import { getParksIndustrialPageSubtitle } from '@/parks-industrial/constants/par
 import { ParksMetadataGate } from '@/parks-industrial/components/layout/ParksMetadataGate';
 import { ParksPageShell } from '@/parks-industrial/components/layout/ParksPageShell';
 import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
-import { useParksNaves } from '@/parks-industrial/hooks/useParksRecords';
+import {
+  useParksExpedientesActivos,
+  useParksNaves,
+  useParksOpportunities,
+} from '@/parks-industrial/hooks/useParksRecords';
 import { useParksParques } from '@/parks-industrial/hooks/useParksParques';
 
 const ParksMapContentWrapper = () => {
   const { records: parques, loading: parquesLoading } = useParksParques();
   const { records: naves, loading: navesLoading } = useParksNaves();
+  const { records: opportunities, loading: opportunitiesLoading } =
+    useParksOpportunities();
+  const { records: expedientes, loading: expedientesLoading } =
+    useParksExpedientesActivos();
 
-  if (parquesLoading || navesLoading) {
+  if (
+    parquesLoading ||
+    navesLoading ||
+    opportunitiesLoading ||
+    expedientesLoading
+  ) {
     return <ParksLoadingSkeleton variant="map" />;
   }
 
-  return <ParksMapContent parques={parques} naves={naves} />;
+  return (
+    <ParksMapContent
+      parques={parques}
+      naves={naves}
+      opportunities={opportunities}
+      expedientes={expedientes}
+    />
+  );
 };
 
 export const ParksMapPage = () => {
@@ -27,9 +47,9 @@ export const ParksMapPage = () => {
 
   return (
     <ParksPageShell
-      title={t`Mapa de parques`}
+      title={t`Mapa de Inventario`}
       subtitle={getParksIndustrialPageSubtitle(
-        t`Explora la cartera en mapa, revisa ocupación y accede al stacking plan de cada parque`,
+        t`Selecciona leads por zona y ofréceles naves disponibles o próximas a liberar`,
       )}
       icon={<IconMap size={theme.icon.size.md} />}
     >

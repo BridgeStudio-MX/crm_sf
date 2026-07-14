@@ -2,6 +2,7 @@ import { styled } from '@linaria/react';
 import { t } from '@lingui/core/macro';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
+import { ParksBrandLogo } from '@/parks-industrial/components/ui/ParksBrandLogo';
 import { formatParksRoleLabelForDisplay } from '@/parks-industrial/constants/parks-role-access.constants';
 import { PARKS_BRAND } from '@/parks-industrial/constants/parks-theme.constants';
 import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
@@ -14,9 +15,17 @@ const StyledWelcomeBar = styled.div`
   color: ${themeCssVariables.font.color.primary};
   display: flex;
   flex-wrap: wrap;
-  gap: ${themeCssVariables.spacing[2]};
+  gap: ${themeCssVariables.spacing[3]};
   justify-content: space-between;
   padding: ${themeCssVariables.spacing[2]} ${themeCssVariables.spacing[3]};
+`;
+
+const StyledWelcomeLeft = styled.div`
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${themeCssVariables.spacing[3]};
+  min-width: 0;
 `;
 
 const StyledWelcomeText = styled.div`
@@ -47,10 +56,13 @@ export const ParksUserWelcomeBar = () => {
 
   return (
     <StyledWelcomeBar>
-      <StyledWelcomeText>
-        {t`Bienvenido`},{' '}
-        <StyledWelcomeName>{displayName}</StyledWelcomeName>
-      </StyledWelcomeText>
+      <StyledWelcomeLeft>
+        <ParksBrandLogo variant="auto" height={22} />
+        <StyledWelcomeText>
+          {t`Bienvenido`},{' '}
+          <StyledWelcomeName>{displayName}</StyledWelcomeName>
+        </StyledWelcomeText>
+      </StyledWelcomeLeft>
       {primaryParksRoleLabel ? (
         <StyledRoleBadge>
           {formatParksRoleLabelForDisplay(primaryParksRoleLabel)}

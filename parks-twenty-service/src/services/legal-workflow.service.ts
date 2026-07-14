@@ -18,12 +18,14 @@ import { type CasoLegalRecord } from '../types/parks.types';
 import { isSelectValueEqual, toSelectValue } from '../utils/select-value.util';
 import { toIsoDateString } from '../utils/business-days.util';
 import { checklistService } from './checklist.service';
+import { commercialHojaService } from './commercial-hoja.service';
 import { firmasService } from './firmas.service';
 import { brokerNotificationStore } from './broker-notification.store';
 import { notificacionService } from './notificacion.service';
 import { semaforoService } from './semaforo.service';
 import { slaService } from './sla.service';
 import { twentyDataService } from './twenty-data.service';
+import { valorAgregadoService } from './valor-agregado.service';
 import { buildContratoAprobacionActionPath } from '../utils/notification-action-path.util';
 
 export type LegalTimelineStageStatus = 'completed' | 'active' | 'pending';
@@ -324,6 +326,9 @@ export const legalWorkflowService = {
     casoLegalId: string,
     nextEstatus: string,
   ): Promise<CasoLegalRecord | null> => {
+    // F1 additive gate — does not replace checklist completeness checks
+    await valorAgregadoService.assertChecklistVigenteOrThrow(casoLegalId);
+
     await twentyDataService.updateCasoLegal(casoLegalId, {
       estatus: toSelectValue(nextEstatus),
     });
@@ -497,5 +502,40 @@ export const legalWorkflowService = {
 
     await firmasService.advanceAfterSignature(casoLegalId);
     await refreshSemaforo(casoLegalId);
+  },
+
+  // Lawyer drafts the contract from the signed LOI linked to the case
+  getHojaAcuerdosCopy: async (casoLegalId: string) => {
+    const casoLegal = await twentyDataService.getCasoLegalById(casoLegalId);
+
+    if (!casoLegal) {
+      throw new Error('Caso legal not found');
+    }
+
+    const hojaId =
+      casoLegal.hojaDeAcuerdosId ?? casoLegal.hojaDeAcuerdos?.id ?? null;
+
+    if (!hojaId) {
+      throw new Error(
+        'Este caso no tiene Hoja de Acuerdos (LOI) vinculada',
+      );
+    }
+
+    const hoja =
+      casoLegal.hojaDeAcuerdos ??
+      (await twentyDataService.getHojaDeAcuerdosById(hojaId));
+    const copy = await commercialHojaService.generateCopy(hojaId);
+
+    return {
+      ...copy,
+      hojaId,
+      firmadaPorCem: Boolean(hoja?.firmadaPorCem),
+      firmadaPorCliente: Boolean(hoja?.firmadaPorCliente),
+      m2Acordados: hoja?.m2Acordados ?? null,
+      precioUsdM2: hoja?.precioUsdM2 ?? null,
+      plazoMeses: hoja?.plazoMeses ?? null,
+      fechaInicio: hoja?.fechaInicio ?? null,
+      tipoContrato: hoja?.tipoContrato ?? null,
+    };
   },
 };

@@ -1,7 +1,7 @@
 # Parks Industrial — Qué falta
 
-> **Última actualización:** 2026-07-10  
-> **Referencia:** [PROGRESS.md](./PROGRESS.md) · [DASHBOARD_PROGRESS.md](./DASHBOARD_PROGRESS.md) · [FLUJO-COMERCIAL-DEMO.md](./FLUJO-COMERCIAL-DEMO.md) · [Blueprint UI](../../Parks_Industrial_Cursor_Blueprint.md)
+> **Última actualización:** 2026-07-14  
+> **Referencia:** [PROGRESS.md](./PROGRESS.md) · [DASHBOARD_PROGRESS.md](./DASHBOARD_PROGRESS.md) · [FLUJO-COMERCIAL-DEMO.md](./FLUJO-COMERCIAL-DEMO.md) · [CxC US](./Parks_Industrial_CxC_UserStories_Cursor.md) · [Blueprint UI](../../Parks_Industrial_Cursor_Blueprint.md) · [Roles inventario](./ROLES-INVENTARIO.md)
 
 Documento de seguimiento de trabajo pendiente tras completar los módulos base de UI en Twenty (`/parks/*`), el microservicio `parks-twenty-service` y las vistas **Renovaciones** y **Reservas**.
 
@@ -12,9 +12,112 @@ Documento de seguimiento de trabajo pendiente tras completar los módulos base d
 | Área | Estado general |
 | --- | --- |
 | Backend (microservicio + metadata Twenty) | ✅ Base completa + flujo comercial US |
-| UI integrada en Twenty (`packages/twenty-front`) | ✅ Flujo comercial + legal completo US-LEG-001…012 |
-| Demo lista para cliente | ✅ Flujo comercial + legal end-to-end |
-| Producción / integraciones reales | ⬜ Pendiente |
+| UI integrada en Twenty (`packages/twenty-front`) | ✅ Flujo comercial + legal + CxC + **Comité** + roles |
+| Demo lista para cliente | ✅ Comercial + legal + comité; CxC demo con datos mock |
+| Producción / integraciones reales | ⬜ Oracle real + portales + Fibra Uno |
+
+---
+
+## Roles y permisos (Jul 2026)
+
+Acoplado a `Parks_Industrial_Roles_Permisos_Cursor.md`:
+
+- [x] Inventario + reporte de cambios a roles existentes ([ROLES-INVENTARIO.md](./ROLES-INVENTARIO.md))
+- [x] 14 system codes / 16 labels Twenty (aliases LO + CxC)
+- [x] Matriz rutas front (CEO sin asignación; Dir. Legal sin comité; Admin Legal sin CxC)
+- [x] Asientos comité CFO/Ops + guard de voto por `viewerEmail`
+- [x] 12 usuarios nuevos `@parksindustrial.com` (`Parks2026!NN`); 8 `@apple.dev` sin cambio de password
+- [x] Prueba funcional `npx tsx scripts/test-roles-functional.ts`
+
+---
+
+## Asignación inteligente (Jul 2026)
+
+Acoplado a `Parks_Industrial_Asignacion_Inteligente_Cursor.md` (solo agregar):
+
+- [x] Scoring Capa 1 (pesos m²/presupuesto/canal/sector/internacional) + forzado AAA por m²
+- [x] Config umbrales editable (`GET|PATCH /asignacion-inteligente/config`)
+- [x] Selección LO por tier + especialidad + carga + top 3 sugerencias
+- [x] Fallbacks A–G (carga max, sin LO activos → CEM provisional, escalamiento SLA)
+- [x] Einstein mock (recomendación + razón) cuando `einsteinScoringActivo`
+- [x] Auto-clasifica al crear lead (`POST /commercial/leads` additive)
+- [x] UI CEM `/parks/asignacion` — equipo + pendientes + asignar 1 clic
+- [x] Campo nuevo `opportunity.paisOrigen` (metadata)
+- [ ] Persistencia Clasificacion_Lead / Config en Twenty (hoy store + API)
+
+**API:** `GET /asignacion-inteligente/dashboard`, `POST .../seed-demo`, `POST .../clasificar`, `POST .../confirmar-asignacion`, `POST .../jobs/escalation`
+
+---
+
+## Valor agregado (Jul 2026)
+
+Acoplado a `Parks_Industrial_Funcionalidades_ValorAgregado_Cursor.md` (solo agregar):
+
+- [x] F1 vigencia checklist + gate adicional en `advanceEstatus` + cron diario alerts
+- [x] F2 detección expansión (cron semanal + notificaciones)
+- [x] F3 concentración vencimientos (reporte + cron mensual + umbral en Parque)
+- [x] F4 ROI por canal (reporte demo)
+- [x] F5 ofertas renovación anticipada (API create/aceptar/expirar)
+- [x] F6 match automático naves (endpoint + overlay/`matchNavesSugeridas`)
+- [x] F7 tiempo respuesta leads (métricas + semáforo)
+- [x] F8 outreach brokers top 10 + inactividad 45d
+- [x] UI `/parks/valor-agregado`
+- [ ] Persistencia metadata Twenty en prod (campos nuevos listos en definitions)
+
+**API:** `GET /valor-agregado/dashboard`, checklist vigencia, ofertas, match-auto, lead-response, broker-outreach, jobs daily/weekly/monthly
+
+---
+
+## Comité de Autorización (Jul 2026)
+
+Acoplado a `Parks_Industrial_Comite_Autorizacion_V2_Cursor.md`:
+
+- [x] Store + API `/comite` (list, detail, vote, Q&A, config)
+- [x] Gate: Hoja firmada CEM+cliente → abre comité (no Legal directo) si `PARKS_COMITE_ENABLED=true`
+- [x] Mayoría simple 2/3 con resolución inmediata; abstenciones / empate → escalar CEO
+- [x] Aprobado → `commercialLegalHandoffService` crea caso legal
+- [x] Rechazado → oportunidad a negociación + razones al LO
+- [x] UI `/parks/comite` — listado, votación, semáforo descuento, broker naranja, Q&A
+- [x] 4 escenarios demo (FEMSA deliberación, LogiMex aprobado disidente, XYZ rechazado, Samsung empate)
+- [ ] Metadata Twenty persistente (`Comite_Autorizacion`, `Pregunta_Comite`)
+- [ ] SLA real por horas hábiles + jobs de recordatorio/vencimiento
+- [ ] Rol dedicado “Miembro del Comité” (hoy: Dir. Comercial / CEO / Dir. Legal votan en demo)
+
+**API:** `GET /comite`, `GET /comite/:id`, `POST .../vote`, `POST .../questions`, `POST .../questions/:id/answer`, `GET|PATCH /comite/config`
+
+**Demo votos:** Héctor=`phil.schiler@apple.dev` · CFO=`jony.ive@apple.dev` · Ops=`roberto.salinas@apple.dev`
+
+---
+
+## Flujo CEO Dashboard KPIs (Jul 2026)
+
+Acoplado a `Parks_Industrial_CEO_Dashboard_KPIs_Cursor.md`:
+
+- [x] API `GET /ceo/dashboard` — 16 KPIs + snapshots 6 meses + alertas
+- [x] Vista diaria (móvil-first): ocupación / MRR / cobranza + alertas + vencimientos + pipeline
+- [x] Vista de consejo: portafolio, ingresos, renovaciones, cobranza, eficiencia (gráficas)
+- [x] Toggle Diario ↔ Consejo en `/parks/dashboard` (rol CEO)
+- [x] Bandeja CEO en `/parks/mis-pendientes` (aprobaciones, condonaciones, firmas DG)
+- [x] Dashboard CEO enlaza pendientes vía badge / alerta (sin lista embebida)
+- [x] CEO ve Dashboard comercial (`/parks/dashboard-comercial`) y Dashboard legal (nav + CTAs)
+- [ ] Metadata Twenty persistente (`Snapshot_Ocupacion_Mensual`, tipo de cambio, campos Caso Legal)
+- [ ] Automatización mensual real de snapshots + Oracle como fuente de facturación
+
+---
+
+Acoplado a [Parks_Industrial_CxC_UserStories_Cursor.md](./Parks_Industrial_CxC_UserStories_Cursor.md):
+
+- [x] Dashboard `/parks/cxc` — KPIs, forecast 7/30/90, anomalías, riesgo, cartera por ejecutivo
+- [x] Seed demo in-memory (LogiMex, Norte portal/OC, Holdover GDL, depósito salida, ColdChain USD)
+- [x] Panel detalle operativo: OC, depósito, **aplicar pago**, bitácora cobranza, recordatorio/escala OC
+- [x] Handoff Legal → crea ciclo/cuenta en cartera CxC (además de tareas)
+- [x] Rol CxC + nav Operaciones → CxC
+- [ ] Metadata Twenty persistente (Ciclo_Facturacion, Factura_CxC, etc.) — demo usa store
+- [ ] Integración Oracle real (lectura/escritura facturas y pagos)
+- [ ] Recordatorios OC / cobranza por email automatizados en producción
+- [ ] Bloqueo renovación Legal ↔ adeudos CxC end-to-end
+
+**API:** `GET /cxc/dashboard`, `GET /cxc/accounts/:id`, `POST .../register-oc`, `.../deposit-step`, `.../suggest-payment`, `.../apply-payment`, `.../actions`, `.../oc-reminder`, `.../anomalies/:id/resolve`
 
 ---
 
@@ -38,6 +141,7 @@ Ver [FLUJO-COMERCIAL-DEMO.md](./FLUJO-COMERCIAL-DEMO.md).
 - [Parks_Industrial_Salesforce_ProyectoCompleto.md](./Parks_Industrial_Salesforce_ProyectoCompleto.md) — discovery maestro (incl. §4.8 decisores)
 - [Parks_Industrial_Comercial_UserStories_Cursor.md](./Parks_Industrial_Comercial_UserStories_Cursor.md) — US escenarios A–G
 - [Parks_Industrial_Legal_UserStories_Cursor.md](./Parks_Industrial_Legal_UserStories_Cursor.md) — US área legal US-LEG-001…012
+- [Parks_Industrial_CxC_UserStories_Cursor.md](./Parks_Industrial_CxC_UserStories_Cursor.md) — US área CxC US-CXC-001…010
 
 ---
 
@@ -91,6 +195,7 @@ Según [PROGRESS.md](./PROGRESS.md):
 | Renovaciones | `/parks/renovaciones` | Cola de vencimientos + holdovers |
 | Reservas | `/parks/reservas` | Naves en negociación |
 | Notificaciones | `/parks/notificaciones` | Centro broker: tareas IA, alertas, enriquecimiento |
+| CxC / Cobranza | `/parks/cxc` | Cartera, riesgo IA, OC, holdovers, forecast, anomalías |
 | Asistente IA | Panel en todas las vistas Parks | Fases 1–2 (demo + OpenAI opcional) |
 
 **Código principal:**
@@ -123,7 +228,7 @@ Mapeo demo (@apple.dev → persona Parks):
 | --- | --- | --- |
 | `jane.austen@apple.dev` | Admin Legal | Catalina |
 | `phil.schiler@apple.dev` | Director Comercial | Héctor |
-| `jony.ive@apple.dev` | CEO | Charlie |
+| `jony.ive@apple.dev` | CEO | Charles El-Mann Metta |
 | `scott.forstall@apple.dev` | CxC | Cobranza |
 | `tim@apple.dev` | Ejecutivo Comercial | Broker principal |
 
@@ -326,6 +431,8 @@ npx nx build twenty-shared
 
 | Fecha | Cambio |
 | --- | --- |
+| 2026-07-13 | Módulo CxC demo: `/parks/cxc`, API `/cxc/*`, handoff→cartera, US doc |
+| 2026-07-13 | App móvil Campo LO: `/parks/campo` — notas de tour, guión, checklist |
 | 2026-07-10 | Sprint E Ascendix: OCR, prospect search, Composer, timeline, deal-win |
 | 2026-06-25 | Scoring pipeline + secuencia nurture simulada; seed verificado |
 | 2026-06-20 | Creación inicial tras fix Renovaciones/Reservas y revisión de roadmap |

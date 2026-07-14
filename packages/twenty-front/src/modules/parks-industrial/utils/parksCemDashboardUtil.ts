@@ -132,11 +132,24 @@ export const buildParksCemPendingApprovals = (
   limit = 8,
 ): ParksCemPendingApproval[] =>
   opportunities
-    .filter(
-      (opportunity) =>
-        opportunity.aprobacionRequerida === true &&
-        !isParksApprovalApproved(opportunity.estatusAprobacion),
-    )
+    .filter((opportunity) => {
+      if (
+        opportunity.aprobacionRequerida !== true ||
+        isParksApprovalApproved(opportunity.estatusAprobacion)
+      ) {
+        return false;
+      }
+
+      // CEO-level approvals belong to Charles, not the CEM bandeja.
+      if (opportunity.nivelAprobacion === 'CEO') {
+        return false;
+      }
+
+      return (
+        opportunity.nivelAprobacion === 'CEM' ||
+        !opportunity.nivelAprobacion
+      );
+    })
     .map((opportunity) => ({
       id: opportunity.id,
       name: opportunity.name ?? t`Sin nombre`,

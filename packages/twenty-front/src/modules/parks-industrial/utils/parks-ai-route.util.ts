@@ -18,6 +18,10 @@ export const resolveParksAiScreenFromPath = (
     return 'pipeline';
   }
 
+  if (pathname.includes(AppPath.ParksLoCampo)) {
+    return 'pipeline';
+  }
+
   if (pathname.includes(AppPath.ParksLeadsCem)) {
     return 'pipeline';
   }
@@ -63,7 +67,7 @@ export const resolveParksAiScreenFromPath = (
 export const getParksAiScreenLabel = (screen: ParksAiScreen): string => {
   const labels: Record<ParksAiScreen, string> = {
     dashboard: t`Dashboard ejecutivo`,
-    map: t`Mapa de cartera`,
+    map: t`Mapa de Inventario`,
     pipeline: t`Pipeline comercial`,
     contratos: t`Contratos`,
     approval: t`Aprobación legal`,

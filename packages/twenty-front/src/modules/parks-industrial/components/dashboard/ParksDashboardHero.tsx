@@ -212,7 +212,7 @@ export const ParksDashboardHero = ({
           </StyledHeroAction>
           <StyledHeroAction to={AppPath.ParksMapa}>
             <IconMap size={16} />
-            {t`Mapa de parques`}
+            {t`Mapa de Inventario`}
             <IconArrowRight size={14} />
           </StyledHeroAction>
           <StyledHeroAction to={AppPath.ParksStackingPlanIndex}>

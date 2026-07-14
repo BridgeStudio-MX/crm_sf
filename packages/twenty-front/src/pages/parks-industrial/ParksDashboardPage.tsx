@@ -13,9 +13,9 @@ export const ParksDashboardPage = () => {
 
   return (
     <ParksPageShell
-      title={t`Dashboard Ejecutivo`}
+      title={t`Command Center CEO`}
       subtitle={getParksIndustrialPageSubtitle(
-        t`Métricas consolidadas de ocupación, ingresos y pipeline`,
+        t`Pulso del grupo: ocupación, ingresos, legal, CxC y renovaciones`,
       )}
       icon={<IconChartBar size={theme.icon.size.md} />}
     >

@@ -152,7 +152,7 @@ const StyledProgressLabel = styled.span`
 `;
 
 const StyledProgressValue = styled.span`
-  color: ${PARKS_BRAND.accent};
+  color: ${themeCssVariables.font.color.inverted};
   font-size: ${themeCssVariables.font.size.lg};
   font-weight: ${themeCssVariables.font.weight.semiBold};
 `;

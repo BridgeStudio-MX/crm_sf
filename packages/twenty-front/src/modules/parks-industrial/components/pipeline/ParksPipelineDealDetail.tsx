@@ -38,6 +38,7 @@ import {
 import { getParksInquilino360Path } from '@/parks-industrial/constants/parks-routes.constants';
 import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRecords';
 import { ParksActivityTimelinePanel } from '@/parks-industrial/components/pipeline/ParksActivityTimelinePanel';
+import { ParksAssignLeasingOfficerPanel } from '@/parks-industrial/components/pipeline/ParksAssignLeasingOfficerPanel';
 import { ParksCommercialProposalSection } from '@/parks-industrial/components/pipeline/ParksCommercialProposalSection';
 import { ParksCommercialWorkflowPanel } from '@/parks-industrial/components/pipeline/ParksCommercialWorkflowPanel';
 import { ParksDealStageGuidePanel } from '@/parks-industrial/components/pipeline/ParksDealStageGuidePanel';
@@ -506,6 +507,17 @@ export const ParksPipelineDealDetail = ({
         currentStageId={deal.stage}
         onSelectStage={(stageId) => onMoveToStage?.(deal.id, stageId)}
       />
+
+      <div
+        style={{
+          margin: '12px 16px 0',
+        }}
+      >
+        <ParksAssignLeasingOfficerPanel
+          deal={deal}
+          onAssigned={onDealUpdated}
+        />
+      </div>
 
       <ParksDealStageGuidePanel
         guide={stageGuide}

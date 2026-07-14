@@ -5,8 +5,13 @@ import { envConfig } from './config/env.config';
 import { registerCrons } from './crons/register-crons';
 import { parksAiRouter } from './ai/parks-ai.router';
 import { commercialRouter } from './api/commercial.router';
+import { ceoRouter } from './api/ceo.router';
+import { cxcRouter } from './api/cxc.router';
+import { comiteRouter } from './api/comite.router';
 import { legalRouter } from './api/legal.router';
 import { operationsRouter } from './api/operations.router';
+import { valorAgregadoRouter } from './api/valor-agregado.router';
+import { asignacionInteligenteRouter } from './api/asignacion-inteligente.router';
 import { oracleService } from './services/oracle.service';
 import { webhookRouter } from './webhooks/webhook.router';
 
@@ -50,7 +55,12 @@ export const createApp = (): express.Application => {
   application.use('/ai', parksAiRouter);
   application.use('/commercial', commercialRouter);
   application.use('/legal', legalRouter);
+  application.use('/cxc', cxcRouter);
+  application.use('/comite', comiteRouter);
+  application.use('/ceo', ceoRouter);
   application.use('/operations', operationsRouter);
+  application.use('/valor-agregado', valorAgregadoRouter);
+  application.use('/asignacion-inteligente', asignacionInteligenteRouter);
 
   application.post('/oracle/sync', async (_request, response) => {
     try {

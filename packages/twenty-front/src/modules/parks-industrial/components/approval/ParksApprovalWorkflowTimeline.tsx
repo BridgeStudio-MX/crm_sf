@@ -1,14 +1,19 @@
 import { styled } from '@linaria/react';
 import { t } from '@lingui/core/macro';
 import { IconCheck, IconCircle, IconClock } from 'twenty-ui/icon';
+import { Button } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
-import { type LegalTimelineStage } from '@/parks-industrial/constants/parks-legal-workflow.constants';
+import {
+  type LegalTimelineStage,
+  type LegalWorkflowActionTab,
+} from '@/parks-industrial/constants/parks-legal-workflow.constants';
 import { PARKS_BRAND } from '@/parks-industrial/constants/parks-theme.constants';
 
 type ParksApprovalWorkflowTimelineProps = {
   timeline: LegalTimelineStage[];
   embedded?: boolean;
+  onStageAction?: (tab: LegalWorkflowActionTab) => void;
 };
 
 const StyledRoot = styled.section<{ embedded: boolean }>`
@@ -35,14 +40,18 @@ const StyledHeader = styled.div<{ embedded: boolean }>`
   border-bottom: ${({ embedded }) =>
     embedded ? 'none' : `1px solid ${PARKS_BRAND.borderSoft}`};
   padding: ${({ embedded }) =>
-    embedded ? `0 0 ${themeCssVariables.spacing[3]}` : `${themeCssVariables.spacing[4]} ${themeCssVariables.spacing[5]}`};
+    embedded
+      ? `0 0 ${themeCssVariables.spacing[3]}`
+      : `${themeCssVariables.spacing[4]} ${themeCssVariables.spacing[5]}`};
 `;
 
 const StyledTimeline = styled.ol<{ embedded: boolean }>`
   list-style: none;
   margin: 0;
   padding: ${({ embedded }) =>
-    embedded ? '0' : `${themeCssVariables.spacing[4]} ${themeCssVariables.spacing[5]}`};
+    embedded
+      ? '0'
+      : `${themeCssVariables.spacing[4]} ${themeCssVariables.spacing[5]}`};
 `;
 
 const StyledTitle = styled.h3`
@@ -98,9 +107,7 @@ const StyledNode = styled.div<{ status: LegalTimelineStage['status'] }>`
     }};
   border-radius: 50%;
   box-shadow: ${({ status }) =>
-    status === 'active'
-      ? `0 0 0 4px ${PARKS_BRAND.accentSoft}`
-      : 'none'};
+    status === 'active' ? `0 0 0 4px ${PARKS_BRAND.accentSoft}` : 'none'};
   color: ${({ status }) =>
     status === 'completed'
       ? themeCssVariables.font.color.inverted
@@ -148,6 +155,10 @@ const StyledStageHint = styled.div`
   margin-top: 2px;
 `;
 
+const StyledStageAction = styled.div`
+  margin-top: ${themeCssVariables.spacing[2]};
+`;
+
 const getStageHint = (status: LegalTimelineStage['status']) => {
   if (status === 'completed') return t`Completada`;
   if (status === 'active') return t`En curso`;
@@ -157,6 +168,7 @@ const getStageHint = (status: LegalTimelineStage['status']) => {
 export const ParksApprovalWorkflowTimeline = ({
   timeline,
   embedded = false,
+  onStageAction,
 }: ParksApprovalWorkflowTimelineProps) => {
   const completedCount = timeline.filter(
     (stage) => stage.status === 'completed',
@@ -171,29 +183,53 @@ export const ParksApprovalWorkflowTimeline = ({
         </StyledSubtitle>
       </StyledHeader>
       <StyledTimeline embedded={embedded}>
-        {timeline.map((stage) => (
-          <StyledTimelineItem key={stage.id} status={stage.status}>
-            <StyledNode status={stage.status}>
-              {stage.status === 'completed' ? (
-                <IconCheck size={16} />
-              ) : stage.status === 'active' ? (
-                <IconClock size={16} />
-              ) : (
-                <IconCircle size={10} />
-              )}
-            </StyledNode>
-            <StyledContent status={stage.status}>
-              <StyledStageLabel status={stage.status}>
-                {stage.label}
-              </StyledStageLabel>
-              <StyledStageHint>
-                {stage.status === 'active'
-                  ? t`${getStageHint(stage.status)} · ${stage.responsable}`
-                  : getStageHint(stage.status)}
-              </StyledStageHint>
-            </StyledContent>
-          </StyledTimelineItem>
-        ))}
+        {timeline.map((stage) => {
+          const showAction =
+            stage.status === 'active' &&
+            Boolean(stage.actionTab) &&
+            Boolean(stage.actionLabel) &&
+            Boolean(onStageAction);
+
+          return (
+            <StyledTimelineItem key={stage.id} status={stage.status}>
+              <StyledNode status={stage.status}>
+                {stage.status === 'completed' ? (
+                  <IconCheck size={16} />
+                ) : stage.status === 'active' ? (
+                  <IconClock size={16} />
+                ) : (
+                  <IconCircle size={10} />
+                )}
+              </StyledNode>
+              <StyledContent status={stage.status}>
+                <StyledStageLabel status={stage.status}>
+                  {stage.label}
+                </StyledStageLabel>
+                <StyledStageHint>
+                  {stage.status === 'active'
+                    ? t`${getStageHint(stage.status)} · ${stage.responsable}`
+                    : getStageHint(stage.status)}
+                </StyledStageHint>
+                {showAction && stage.actionTab && stage.actionLabel ? (
+                  <StyledStageAction>
+                    <Button
+                      title={stage.actionLabel}
+                      variant="secondary"
+                      size="small"
+                      onClick={() => {
+                        if (!stage.actionTab) {
+                          return;
+                        }
+
+                        onStageAction?.(stage.actionTab);
+                      }}
+                    />
+                  </StyledStageAction>
+                ) : null}
+              </StyledContent>
+            </StyledTimelineItem>
+          );
+        })}
       </StyledTimeline>
     </StyledRoot>
   );

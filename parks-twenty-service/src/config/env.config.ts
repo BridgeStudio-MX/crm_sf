@@ -50,6 +50,14 @@ export const envConfig = {
   cronHoldoverScanner: process.env.CRON_HOLDOVER_SCANNER ?? '0 8 * * *',
   cronRenovacionAlerts: process.env.CRON_RENOVACION_ALERTS ?? '0 7 * * *',
   cronOracleSync: process.env.CRON_ORACLE_SYNC ?? '0 */4 * * *',
+  // Valor agregado F1/F5 daily 6am, F2/F8 weekly Mon 8am, F3 monthly 1st Mon 8am
+  cronValorAgregadoDaily: process.env.CRON_VALOR_AGREGADO_DAILY ?? '0 6 * * *',
+  cronValorAgregadoWeekly:
+    process.env.CRON_VALOR_AGREGADO_WEEKLY ?? '0 8 * * 1',
+  cronValorAgregadoMonthly:
+    process.env.CRON_VALOR_AGREGADO_MONTHLY ?? '0 8 * * 1',
+  cronAsignacionEscalation:
+    process.env.CRON_ASIGNACION_ESCALATION ?? '*/15 * * * *',
   forceDemoSeed: parseBoolean(process.env.FORCE_DEMO_SEED, false),
   openAiApiKey: process.env.OPENAI_API_KEY ?? '',
   openAiModel: process.env.OPENAI_MODEL ?? 'gpt-4o-mini',
@@ -58,6 +66,17 @@ export const envConfig = {
   parksLegalHandoffEnabled: parseBoolean(
     process.env.PARKS_LEGAL_HANDOFF_ENABLED,
     true,
+  ),
+  // When true, signed Hoja opens Comité before Legal handoff
+  parksComiteEnabled: parseBoolean(process.env.PARKS_COMITE_ENABLED, true),
+  parksComiteSlaHoras: parseNumber(process.env.PARKS_COMITE_SLA_HORAS, 48),
+  parksComiteSemaforoVerdeMaxPct: parseNumber(
+    process.env.PARKS_COMITE_SEMAFORO_VERDE_MAX_PCT,
+    5,
+  ),
+  parksComiteSemaforoAmarilloMaxPct: parseNumber(
+    process.env.PARKS_COMITE_SEMAFORO_AMARILLO_MAX_PCT,
+    10,
   ),
   // Placeholder thresholds until Héctor confirms exact discount rules
   aprobacionCemDescuentoPctMax: parseNumber(

@@ -96,6 +96,12 @@ export type NaveRecord = {
   m2?: number;
   alturaLibreM?: number;
   andenes?: number;
+  cargaPisoTon?: number;
+  potenciaKva?: number;
+  oficinasM2?: number;
+  precioBaseUsd?: number;
+  fotoInmuebleUrl?: string;
+  parqueId?: string;
   parque?: ParqueRecord;
 };
 
@@ -103,6 +109,7 @@ export type ParqueRecord = {
   id: string;
   nombre?: string;
   ubicacion?: string;
+  fotoEntradaUrl?: string;
 };
 
 export type InquilinoRecord = {
@@ -198,6 +205,8 @@ export type OpportunityRecord = {
   escalacionAnual?: string;
   aprobacionRequerida?: boolean;
   estatusAprobacion?: string;
+  nivelAprobacion?: string;
+  comentarioAprobacion?: string;
   updatedAt?: string;
   createdAt?: string;
   ubicacionDeseada?: string;

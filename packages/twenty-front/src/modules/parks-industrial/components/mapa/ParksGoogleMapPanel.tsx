@@ -12,6 +12,7 @@ import { themeCssVariables } from 'twenty-ui/theme-constants';
 import {
   ParksMapMarkerBalloon,
 } from '@/parks-industrial/components/mapa/ParksMapMarkerBalloon';
+import { ParksMapLeadClusterBalloon } from '@/parks-industrial/components/mapa/ParksMapLeadClusterBalloon';
 import { ParksEmptyState } from '@/parks-industrial/components/ui/ParksEmptyState';
 import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
 import { getParksGoogleMapOptions } from '@/parks-industrial/constants/parks-google-map.constants';
@@ -22,6 +23,12 @@ import {
   getParksOcupacionMarkerHex,
   getParksParqueOcupacion,
 } from '@/parks-industrial/utils/parks-format.util';
+import {
+  PARKS_MAP_LEAD_MARKER_COLOR,
+  PARKS_MAP_LEAD_MARKER_SELECTED_COLOR,
+  type ParksMapLeadMarker,
+  type ParksMapLeadRegionId,
+} from '@/parks-industrial/utils/parks-map-leads.util';
 
 const MAP_CONTAINER_STYLE = { width: '100%', height: '100%' };
 const MAP_LOADER_ID = 'parks-industrial-google-map';
@@ -57,12 +64,16 @@ const StyledLegendItem = styled.div`
   gap: 6px;
 `;
 
-const StyledLegendDot = styled.span<{ dotColor: string }>`
+const StyledLegendDot = styled.span<{
+  dotColor: string;
+  isDiamond?: boolean;
+}>`
   background: ${({ dotColor }) => dotColor};
   border: 2px solid ${themeCssVariables.background.primary};
-  border-radius: 50%;
+  border-radius: ${({ isDiamond }) => (isDiamond ? '2px' : '50%')};
   box-shadow: ${themeCssVariables.boxShadow.light};
   height: 10px;
+  transform: ${({ isDiamond }) => (isDiamond ? 'rotate(45deg)' : 'none')};
   width: 10px;
 `;
 
@@ -75,9 +86,15 @@ export type ParksMapMarker = {
 type ParksGoogleMapPanelProps = {
   parques: ParksParqueRecord[];
   naves: ParksNaveRecord[];
+  leadMarkers?: ParksMapLeadMarker[];
+  showParques?: boolean;
+  showLeads?: boolean;
   selectedParqueId: string | null;
+  selectedLeadRegionId?: ParksMapLeadRegionId | null;
   colorScheme: 'light' | 'dark';
   onSelectParque: (parqueId: string | null) => void;
+  onSelectLeadRegion?: (regionId: ParksMapLeadRegionId | null) => void;
+  onSelectRegionLeads?: (regionId: ParksMapLeadRegionId) => void;
 };
 
 export const getParksGoogleMapsApiKey = (): string =>
@@ -104,6 +121,25 @@ const buildMarkerIcon = (
   };
 };
 
+const buildLeadMarkerIcon = (
+  isSelected: boolean,
+): google.maps.Symbol | undefined => {
+  if (typeof google === 'undefined') {
+    return undefined;
+  }
+
+  return {
+    path: 'M 0,-1.2 L 1.2,0 L 0,1.2 L -1.2,0 z',
+    scale: isSelected ? 14 : 11,
+    fillColor: isSelected
+      ? PARKS_MAP_LEAD_MARKER_SELECTED_COLOR
+      : PARKS_MAP_LEAD_MARKER_COLOR,
+    fillOpacity: 1,
+    strokeColor: '#ffffff',
+    strokeWeight: isSelected ? 3 : 2,
+  };
+};
+
 const getMapBalloonPixelOffset = (
   balloonWidth: number,
   balloonHeight: number,
@@ -115,9 +151,15 @@ const getMapBalloonPixelOffset = (
 export const ParksGoogleMapPanel = ({
   parques,
   naves,
+  leadMarkers = [],
+  showParques = true,
+  showLeads = false,
   selectedParqueId,
+  selectedLeadRegionId = null,
   colorScheme,
   onSelectParque,
+  onSelectLeadRegion,
+  onSelectRegionLeads,
 }: ParksGoogleMapPanelProps) => {
   const apiKey = getParksGoogleMapsApiKey();
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
@@ -132,41 +174,62 @@ export const ParksGoogleMapPanel = ({
 
   const markers: ParksMapMarker[] = useMemo(
     () =>
-      parques.map((parque) => ({
-        parque,
-        coords: getParqueCoordinates(parque.nombre ?? '', parque.ubicacion),
-        ocupacion: getParksParqueOcupacion(
-          parque.m2Totales,
-          parque.m2Rentados,
-        ),
-      })),
-    [parques],
+      showParques
+        ? parques.map((parque) => ({
+            parque,
+            coords: getParqueCoordinates(parque.nombre ?? '', parque.ubicacion),
+            ocupacion: getParksParqueOcupacion(
+              parque.m2Totales,
+              parque.m2Rentados,
+            ),
+          }))
+        : [],
+    [parques, showParques],
   );
 
-  const center = markers[0]?.coords ?? { lat: 23.6345, lng: -102.5528 };
+  const visibleLeadMarkers = showLeads ? leadMarkers : [];
+
+  const allCoords = useMemo(
+    () => [
+      ...markers.map((marker) => marker.coords),
+      ...visibleLeadMarkers.map((marker) => marker.coords),
+    ],
+    [markers, visibleLeadMarkers],
+  );
+
+  const center = allCoords[0] ?? { lat: 23.6345, lng: -102.5528 };
   const selectedMarker = markers.find(
     (marker) => marker.parque.id === selectedParqueId,
   );
+  const selectedLeadMarker = visibleLeadMarkers.find(
+    (marker) => marker.regionId === selectedLeadRegionId,
+  );
 
-  const handleMapLoad = useCallback(
-    (map: google.maps.Map) => {
-      setMapInstance(map);
-
-      if (markers.length === 0) {
+  const fitMapToCoords = useCallback(
+    (map: google.maps.Map, coords: Array<{ lat: number; lng: number }>) => {
+      if (coords.length === 0) {
         return;
       }
 
-      if (markers.length === 1) {
-        map.setCenter(markers[0]!.coords);
+      if (coords.length === 1) {
+        map.setCenter(coords[0]!);
         map.setZoom(10);
         return;
       }
 
       const bounds = new google.maps.LatLngBounds();
-      markers.forEach((marker) => bounds.extend(marker.coords));
+      coords.forEach((coord) => bounds.extend(coord));
       map.fitBounds(bounds, 48);
     },
-    [markers],
+    [],
+  );
+
+  const handleMapLoad = useCallback(
+    (map: google.maps.Map) => {
+      setMapInstance(map);
+      fitMapToCoords(map, allCoords);
+    },
+    [allCoords, fitMapToCoords],
   );
 
   useEffect(() => {
@@ -178,42 +241,44 @@ export const ParksGoogleMapPanel = ({
   }, [mapInstance, mapOptions]);
 
   useEffect(() => {
-    if (!mapInstance || markers.length === 0) {
+    if (!mapInstance) {
       return;
     }
 
-    if (markers.length === 1) {
-      mapInstance.setCenter(markers[0]!.coords);
-      mapInstance.setZoom(10);
-      return;
-    }
-
-    const bounds = new google.maps.LatLngBounds();
-    markers.forEach((marker) => bounds.extend(marker.coords));
-    mapInstance.fitBounds(bounds, 48);
-  }, [mapInstance, markers]);
+    fitMapToCoords(mapInstance, allCoords);
+  }, [mapInstance, allCoords, fitMapToCoords]);
 
   useEffect(() => {
-    if (!mapInstance || !selectedParqueId) {
+    if (!mapInstance) {
       return;
     }
 
-    const marker = markers.find(
-      (markerItem) => markerItem.parque.id === selectedParqueId,
-    );
+    if (selectedParqueId && selectedMarker) {
+      mapInstance.panTo(selectedMarker.coords);
+      const currentZoom = mapInstance.getZoom() ?? 6;
 
-    if (!marker) {
+      if (currentZoom < 9) {
+        mapInstance.setZoom(9);
+      }
+
       return;
     }
 
-    mapInstance.panTo(marker.coords);
+    if (selectedLeadRegionId && selectedLeadMarker) {
+      mapInstance.panTo(selectedLeadMarker.coords);
+      const currentZoom = mapInstance.getZoom() ?? 6;
 
-    const currentZoom = mapInstance.getZoom() ?? 6;
-
-    if (currentZoom < 9) {
-      mapInstance.setZoom(9);
+      if (currentZoom < 8) {
+        mapInstance.setZoom(8);
+      }
     }
-  }, [mapInstance, markers, selectedParqueId]);
+  }, [
+    mapInstance,
+    selectedParqueId,
+    selectedMarker,
+    selectedLeadRegionId,
+    selectedLeadMarker,
+  ]);
 
   if (loadError) {
     return (
@@ -228,9 +293,15 @@ export const ParksGoogleMapPanel = ({
     return <ParksLoadingSkeleton variant="map" />;
   }
 
-  if (markers.length === 0) {
+  if (allCoords.length === 0) {
     return (
-      <ParksEmptyState title={t`Ningún parque coincide con la búsqueda`} />
+      <ParksEmptyState
+        title={
+          showLeads && !showParques
+            ? t`Ningún lead coincide con los filtros`
+            : t`Ningún parque coincide con la búsqueda`
+        }
+      />
     );
   }
 
@@ -242,11 +313,14 @@ export const ParksGoogleMapPanel = ({
         zoom={6}
         options={mapOptions}
         onLoad={handleMapLoad}
-        onClick={() => onSelectParque(null)}
+        onClick={() => {
+          onSelectParque(null);
+          onSelectLeadRegion?.(null);
+        }}
       >
         {markers.map(({ parque, coords, ocupacion }) => (
           <Marker
-            key={parque.id}
+            key={`parque-${parque.id}`}
             position={coords}
             icon={buildMarkerIcon(
               ocupacion,
@@ -254,9 +328,34 @@ export const ParksGoogleMapPanel = ({
             )}
             onClick={(mapMouseEvent) => {
               mapMouseEvent.domEvent.stopPropagation();
+              onSelectLeadRegion?.(null);
               onSelectParque(parque.id);
             }}
             zIndex={selectedParqueId === parque.id ? 2 : 1}
+          />
+        ))}
+
+        {visibleLeadMarkers.map((leadMarker) => (
+          <Marker
+            key={`lead-${leadMarker.regionId}`}
+            position={leadMarker.coords}
+            icon={buildLeadMarkerIcon(
+              selectedLeadRegionId === leadMarker.regionId,
+            )}
+            label={{
+              text: String(leadMarker.leadCount),
+              color: '#ffffff',
+              fontSize: '11px',
+              fontWeight: '700',
+            }}
+            onClick={(mapMouseEvent) => {
+              mapMouseEvent.domEvent.stopPropagation();
+              onSelectParque(null);
+              onSelectLeadRegion?.(leadMarker.regionId);
+            }}
+            zIndex={
+              selectedLeadRegionId === leadMarker.regionId ? 3 : 2
+            }
           />
         ))}
 
@@ -273,21 +372,50 @@ export const ParksGoogleMapPanel = ({
             />
           </OverlayView>
         ) : null}
+
+        {!selectedMarker && selectedLeadMarker ? (
+          <OverlayView
+            position={selectedLeadMarker.coords}
+            mapPaneName={OverlayView.FLOAT_PANE}
+            getPixelPositionOffset={getMapBalloonPixelOffset}
+          >
+            <ParksMapLeadClusterBalloon
+              marker={selectedLeadMarker}
+              onClose={() => onSelectLeadRegion?.(null)}
+              onSelectRegionLeads={() =>
+                onSelectRegionLeads?.(selectedLeadMarker.regionId)
+              }
+            />
+          </OverlayView>
+        ) : null}
       </GoogleMap>
 
       <StyledMapLegendOverlay>
-        <StyledLegendItem>
-          <StyledLegendDot dotColor={getParksOcupacionMarkerHex(90)} />
-          {t`≥85%`}
-        </StyledLegendItem>
-        <StyledLegendItem>
-          <StyledLegendDot dotColor={getParksOcupacionMarkerHex(70)} />
-          {t`60–84%`}
-        </StyledLegendItem>
-        <StyledLegendItem>
-          <StyledLegendDot dotColor={getParksOcupacionMarkerHex(40)} />
-          {t`<60%`}
-        </StyledLegendItem>
+        {showParques ? (
+          <>
+            <StyledLegendItem>
+              <StyledLegendDot dotColor={getParksOcupacionMarkerHex(90)} />
+              {t`≥85%`}
+            </StyledLegendItem>
+            <StyledLegendItem>
+              <StyledLegendDot dotColor={getParksOcupacionMarkerHex(70)} />
+              {t`60–84%`}
+            </StyledLegendItem>
+            <StyledLegendItem>
+              <StyledLegendDot dotColor={getParksOcupacionMarkerHex(40)} />
+              {t`<60%`}
+            </StyledLegendItem>
+          </>
+        ) : null}
+        {showLeads ? (
+          <StyledLegendItem>
+            <StyledLegendDot
+              dotColor={PARKS_MAP_LEAD_MARKER_COLOR}
+              isDiamond
+            />
+            {t`Leads`}
+          </StyledLegendItem>
+        ) : null}
       </StyledMapLegendOverlay>
     </StyledMapShell>
   );

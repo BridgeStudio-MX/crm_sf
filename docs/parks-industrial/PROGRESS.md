@@ -148,7 +148,7 @@ WEBHOOK_URL=http://localhost:3002/webhooks/twenty
 - **Lilibeth** — contacto principal del proyecto
 - **Catalina Moreno Monroy** — legal, cotejo y documentación
 - **Héctor Montelongo** — proceso comercial
-- **Charlie Meta** — CEO, aprobaciones ejecutivas
+- **Charles El-Mann Metta** — CEO, aprobaciones ejecutivas
 - **Javier (Bridge Studio)** — integración Oracle producción
 
 ---

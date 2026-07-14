@@ -10,6 +10,7 @@ import { commercialQuotationService } from '../services/commercial-quotation.ser
 import { commercialTourService } from '../services/commercial-tour.service';
 import { activityTimelineService } from '../services/activity-timeline.service';
 import { brokerNotificationStore } from '../services/broker-notification.store';
+import { cemInboxService } from '../services/cem-inbox.service';
 import { composerService } from '../services/composer.service';
 import { dealWinService } from '../services/deal-win.service';
 import { demandSearchService } from '../services/demand-search.service';
@@ -18,7 +19,9 @@ import { fichaTecnicaService } from '../services/ficha-tecnica.service';
 import { naveMatchingService } from '../services/nave-matching.service';
 import { prospectEnrichmentService } from '../services/prospect-enrichment.service';
 import { prospectScoringService } from '../services/prospect-scoring.service';
+import { mapOutreachService } from '../services/map-outreach.service';
 import { salesScriptService } from '../services/sales-script.service';
+import { asignacionInteligenteService } from '../services/asignacion-inteligente.service';
 import { twentyClient } from '../services/twenty.client';
 import { twentyDataService } from '../services/twenty-data.service';
 import { type FichaTecnicaSentVia } from '../types/commercial.types';
@@ -27,6 +30,16 @@ import { validateCommercialStageTransition } from '../utils/commercial-stage-gat
 import { toSelectValue } from '../utils/select-value.util';
 
 export const commercialRouter = Router();
+
+commercialRouter.get('/inbox', async (_request, response) => {
+  try {
+    const inbox = await cemInboxService.getInbox();
+    response.json(inbox);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    response.status(500).json({ error: message });
+  }
+});
 
 commercialRouter.post('/leads', async (request, response) => {
   try {
@@ -42,6 +55,28 @@ commercialRouter.post('/leads', async (request, response) => {
     }
 
     const result = await commercialLeadService.createLead(body);
+
+    // Additive: intelligent assignment classification (does not alter createLead)
+    try {
+      const clasificacion = asignacionInteligenteService.clasificarLead({
+        opportunityId: result.opportunityId,
+        empresa: body.empresa,
+        m2Requeridos: body.metrosCuadradosRequeridos,
+        presupuestoMensualUsd: body.presupuestoMensualUsd,
+        canalOrigen: body.canalOrigen,
+        giroEmpresa: body.giroEmpresa,
+        paisOrigen: (body as { paisOrigen?: string }).paisOrigen,
+      });
+
+      response.status(201).json({ ...result, clasificacion });
+      return;
+    } catch (classifyError) {
+      console.error(
+        '[commercial] Asignación inteligente classify skipped:',
+        classifyError,
+      );
+    }
+
     response.status(201).json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -842,25 +877,27 @@ commercialRouter.post('/ficha-tecnica', async (request, response) => {
       ubicacion?: string;
       m2?: number;
       precioUsdM2?: number;
+      source?: 'pipeline' | 'stacking-plan' | 'inventory';
     };
 
-    if (
-      !body.opportunityId ||
-      !body.opportunityName ||
-      !body.naveId ||
-      !body.naveIdentificador ||
-      !body.m2
-    ) {
+    if (!body.naveId || !body.naveIdentificador || !body.m2) {
       response.status(400).json({
-        error:
-          'opportunityId, opportunityName, naveId, naveIdentificador and m2 are required',
+        error: 'naveId, naveIdentificador and m2 are required',
       });
       return;
     }
 
+    const opportunityId =
+      body.opportunityId?.trim() || `inventario-${body.naveId}`;
+    const opportunityName =
+      body.opportunityName?.trim() ||
+      (body.source === 'stacking-plan' || body.source === 'inventory'
+        ? `Inventario · ${body.naveIdentificador}`
+        : 'Prospecto Parks');
+
     const link = await fichaTecnicaService.createLink({
-      opportunityId: body.opportunityId,
-      opportunityName: body.opportunityName,
+      opportunityId,
+      opportunityName,
       naveId: body.naveId,
       naveIdentificador: body.naveIdentificador,
       parqueNombre: body.parqueNombre,
@@ -1097,6 +1134,86 @@ commercialRouter.post('/bulk-follow-up', async (request, response) => {
       tasksCreated: body.opportunityIds.length,
       message: `Se crearon ${body.opportunityIds.length} tareas de seguimiento.`,
     });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    response.status(500).json({ error: message });
+  }
+});
+
+commercialRouter.post('/map-outreach', async (request, response) => {
+  try {
+    const body = request.body as {
+      leads?: Array<{
+        opportunityId?: string;
+        opportunityName?: string;
+        companyName?: string;
+        ubicacionDeseada?: string;
+        m2Requeridos?: number;
+        contactEmail?: string;
+      }>;
+      nave?: {
+        naveId?: string;
+        naveIdentificador?: string;
+        parqueNombre?: string;
+        ubicacion?: string;
+        m2?: number;
+        precioUsdM2?: number;
+        availabilityLabel?: string;
+      };
+      personalNote?: string;
+      senderName?: string;
+    };
+
+    if (!body.leads || body.leads.length === 0) {
+      response.status(400).json({ error: 'leads array is required' });
+      return;
+    }
+
+    if (!body.nave?.naveId || !body.nave.naveIdentificador) {
+      response.status(400).json({
+        error: 'nave.naveId and nave.naveIdentificador are required',
+      });
+      return;
+    }
+
+    const leads = body.leads
+      .filter(
+        (lead) =>
+          Boolean(lead.opportunityId?.trim()) &&
+          Boolean(lead.opportunityName?.trim()),
+      )
+      .map((lead) => ({
+        opportunityId: lead.opportunityId!.trim(),
+        opportunityName: lead.opportunityName!.trim(),
+        companyName: lead.companyName,
+        ubicacionDeseada: lead.ubicacionDeseada,
+        m2Requeridos: lead.m2Requeridos,
+        contactEmail: lead.contactEmail,
+      }));
+
+    if (leads.length === 0) {
+      response.status(400).json({
+        error: 'Each lead requires opportunityId and opportunityName',
+      });
+      return;
+    }
+
+    const result = await mapOutreachService.send({
+      leads,
+      nave: {
+        naveId: body.nave.naveId,
+        naveIdentificador: body.nave.naveIdentificador,
+        parqueNombre: body.nave.parqueNombre,
+        ubicacion: body.nave.ubicacion,
+        m2: body.nave.m2,
+        precioUsdM2: body.nave.precioUsdM2,
+        availabilityLabel: body.nave.availabilityLabel,
+      },
+      personalNote: body.personalNote,
+      senderName: body.senderName,
+    });
+
+    response.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     response.status(500).json({ error: message });

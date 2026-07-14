@@ -263,7 +263,12 @@ export const commercialLeadService = {
           filter: {
             and: [
               { stage: { eq: "LEAD_RECIBIDO" } }
-              { asignadoPor: { is: NULL } }
+              {
+                or: [
+                  { asignadoPor: { is: NULL } }
+                  { asignadoPor: { eq: "" } }
+                ]
+              }
             ]
           }
           first: 50
@@ -295,15 +300,16 @@ export const commercialLeadService = {
     const today = twentyDataService.todayIsoDate();
     // Keep asignadoPor as the durable signal ("CEM → LO") even if the
     // dedicated LO field is not yet in workspace metadata.
-    await twentyDataService.updateOpportunity(input.opportunityId, {
+    const assignPayload: Record<string, unknown> = {
       asignadoPor: `${input.assignedBy} → ${input.leasingOfficerName}`,
       asignadoEn: today,
-      pointOfContactId: undefined,
-    });
-
-    await twentyDataService.updateOpportunity(input.opportunityId, {
       leasingOfficerAsignado: input.leasingOfficerName,
-    });
+    };
+
+    await twentyDataService.updateOpportunity(
+      input.opportunityId,
+      assignPayload,
+    );
 
     // Store LO name in ejecutivo-style text field via note + notification
     await twentyDataService.createTask(

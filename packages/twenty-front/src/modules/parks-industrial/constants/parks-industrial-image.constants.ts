@@ -1,6 +1,11 @@
 const buildUnsplashUrl = (photoId: string): string =>
   `https://images.unsplash.com/photo-${photoId}?auto=format&fit=crop&w=1200&q=80`;
 
+// Wordmark oficial — color (fondos claros) y on-dark (heroes / modo oscuro)
+export const PARKS_LOGO_COLOR = '/images/parks-industrial/parks-logo-color.png';
+export const PARKS_LOGO_ON_DARK =
+  '/images/parks-industrial/parks-logo-on-dark.png';
+
 export const PARKS_GUADALAJARA_PARK_ENTRANCE_IMAGE =
   '/images/parks-industrial/guadalajara-park-entrada.png';
 

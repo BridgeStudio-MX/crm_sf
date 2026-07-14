@@ -62,9 +62,9 @@ const pipelineStageThemeByColor: Record<
     dragHighlight: themeCssVariables.color.orange3,
   },
   yellow: {
-    background: themeCssVariables.color.yellow1,
-    border: themeCssVariables.color.yellow4,
-    accent: themeCssVariables.color.yellow,
+    background: themeCssVariables.color.yellow2,
+    border: themeCssVariables.color.yellow6,
+    accent: themeCssVariables.color.yellow11,
     dragHighlight: themeCssVariables.color.yellow3,
   },
   green: {
@@ -203,7 +203,7 @@ export const getParksOcupacionColor = (ocupacion: number): string => {
   }
 
   if (level === 'medium') {
-    return themeCssVariables.color.yellow;
+    return themeCssVariables.color.yellow11;
   }
 
   return themeCssVariables.color.orange;

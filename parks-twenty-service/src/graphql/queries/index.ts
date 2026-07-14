@@ -68,12 +68,90 @@ export const GET_ALL_CASOS_LEGALES = `
           slaDiasHabiles
           diasTranscurridos
           semaforo
+          inquilinoId
           inquilino {
             empresa
           }
           nave {
             identificador
             parque {
+              nombre
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const FIND_CASOS_LEGALES_BY_INQUILINO = `
+  query FindCasosLegalesByInquilino($inquilinoId: UUID!) {
+    casosLegales(
+      filter: { inquilinoId: { eq: $inquilinoId } }
+      first: 50
+      orderBy: [{ updatedAt: DescNullsLast }]
+    ) {
+      edges {
+        node {
+          id
+          referencia
+          tipoDocumento
+          estatus
+          abogadoAsignado
+          fechaHojaAcuerdos
+          slaDiasHabiles
+          slaFechaLimite
+          diasTranscurridos
+          documentacionCompleta
+          cotejoAprobado
+          slaPausado
+          esPropiedadFuno
+          semaforo
+          hojaDeAcuerdosId
+          inquilinoId
+          naveId
+          nave {
+            id
+            identificador
+            esPropiedadFuno
+            parque {
+              id
+              nombre
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const FIND_EXPEDIENTES_BY_INQUILINO = `
+  query FindExpedientesByInquilino($inquilinoId: UUID!) {
+    expedientesContrato(
+      filter: { inquilinoId: { eq: $inquilinoId } }
+      first: 50
+      orderBy: [{ fechaVencimiento: AscNullsLast }]
+    ) {
+      edges {
+        node {
+          id
+          numeroExpediente
+          fechaApertura
+          fechaVencimiento
+          rentaMensualUsd
+          estatus
+          oracleSincronizado
+          oracleContratoId
+          casoLegalId
+          inquilinoId
+          naveId
+          nave {
+            id
+            identificador
+            m2
+            esPropiedadFuno
+            parque {
+              id
               nombre
             }
           }
@@ -252,17 +330,70 @@ export const FIND_HOJA_DE_ACUERDOS_BY_OPPORTUNITY = `
   }
 `;
 
+export const FIND_HOJAS_DE_ACUERDOS_BY_INQUILINO = `
+  query FindHojasDeAcuerdosByInquilino($inquilinoId: UUID!) {
+    hojasDeAcuerdos(
+      filter: { inquilinoId: { eq: $inquilinoId } }
+      first: 50
+      orderBy: [{ updatedAt: DescNullsLast }]
+    ) {
+      edges {
+        node {
+          id
+          referencia
+          tipoContrato
+          m2Acordados
+          precioUsdM2
+          plazoMeses
+          fechaInicio
+          fechaFirma
+          periodoGraciaMeses
+          depositoMeses
+          escalacionAnualPct
+          condicionesEspeciales
+          estatus
+          firmadaPorCliente
+          firmadaPorCem
+          ejecutivoAsignado
+          naveId
+          inquilinoId
+          oportunidadVinculadaId
+          nave {
+            id
+            identificador
+            esPropiedadFuno
+            parque {
+              id
+              nombre
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const GET_NAVE_BY_ID = `
   query GetNaveById($naveId: UUID!) {
     nave(filter: { id: { eq: $naveId } }) {
       id
       identificador
       esPropiedadFuno
+      m2
+      alturaLibreM
+      andenes
+      cargaPisoTon
+      potenciaKva
+      oficinasM2
+      precioBaseUsd
+      estatus
+      fotoInmuebleUrl
       parqueId
       parque {
         id
         nombre
         ubicacion
+        fotoEntradaUrl
       }
     }
   }
@@ -444,6 +575,10 @@ export const GET_OPPORTUNITIES_SUMMARY = `
           stage
           m2Requeridos
           updatedAt
+          aprobacionRequerida
+          estatusAprobacion
+          nivelAprobacion
+          comentarioAprobacion
           amount {
             amountMicros
             currencyCode
@@ -734,9 +869,11 @@ export const GET_EXPEDIENTES_ACTIVOS = `
         node {
           id
           numeroExpediente
+          fechaApertura
           fechaVencimiento
           rentaMensualUsd
           estatus
+          casoLegalId
           inquilinoId
           naveId
           inquilino {
@@ -748,6 +885,7 @@ export const GET_EXPEDIENTES_ACTIVOS = `
           nave {
             id
             identificador
+            m2
             esPropiedadFuno
             parque {
               id

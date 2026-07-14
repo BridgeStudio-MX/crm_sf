@@ -22,7 +22,7 @@ Director Legal
         ├── Abogado 2
         └── Abogado N (asignados por caso)
 
-Director General (Charlie Meta) — aprueba en flujo de firmas
+Director General (Charles El-Mann Metta) — aprueba en flujo de firmas
 Representantes FUNO / NEXT — externos, firman contratos de propiedades FUNO
 ```
 
@@ -320,7 +320,7 @@ FIRMA 1 — Subdirector Legal
   El Subdirector rubrica físicamente
   Catalina registra en el sistema: fecha de rúbrica del Subdirector
   
-FIRMA 2 — Director General (Charlie Meta)
+FIRMA 2 — Director General (Charles El-Mann Metta)
   Sistema notifica al CEO: "Contrato listo para primera rúbrica — [Empresa]"
   El CEO rubrica físicamente
   Catalina registra en el sistema: fecha de rúbrica del CEO

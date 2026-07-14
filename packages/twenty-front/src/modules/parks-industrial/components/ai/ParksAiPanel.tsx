@@ -6,14 +6,20 @@ import { IconSparkles, IconX } from 'twenty-ui/icon';
 import { Button, LightIconButton } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
+import { ParksAiCeoSpotlight } from '@/parks-industrial/components/ai/ParksAiCeoSpotlight';
+import { ParksRoleLabel } from '@/parks-industrial/constants/parks-role-access.constants';
+import { PARKS_BRAND } from '@/parks-industrial/constants/parks-theme.constants';
+import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
 import { useParksAiAssistant } from '@/parks-industrial/hooks/useParksAiAssistant';
 import { type ParksAiScreen } from '@/parks-industrial/types/parks-ai.types';
 import {
   buildParksApprovalQuickActions,
+  buildParksCeoQuickActions,
   buildParksDashboardQuickActions,
   buildParksMapQuickActions,
 } from '@/parks-industrial/utils/parks-ai-quick-actions.util';
 import { getParksAiScreenLabel } from '@/parks-industrial/utils/parks-ai-route.util';
+import { hasAnyParksRoleLabel } from '@/parks-industrial/utils/parks-role-access.util';
 
 const StyledOverlay = styled.div`
   animation: parks-ai-overlay-enter 0.2s ease;
@@ -62,14 +68,19 @@ const StyledPanel = styled.aside`
   }
 `;
 
-const StyledHeader = styled.div`
+const StyledHeader = styled.div<{ $ceoMode: boolean }>`
   align-items: center;
-  background: linear-gradient(
+  background: ${({ $ceoMode }) =>
+    $ceoMode
+      ? `linear-gradient(135deg, ${PARKS_BRAND.primary} 0%, #004d29 58%)`
+      : `linear-gradient(
     135deg,
     ${themeCssVariables.color.green1} 0%,
     ${themeCssVariables.background.primary} 55%
-  );
-  border-bottom: 1px solid ${themeCssVariables.color.green3};
+  )`};
+  border-bottom: 1px solid
+    ${({ $ceoMode }) =>
+      $ceoMode ? 'rgba(255,255,255,0.16)' : themeCssVariables.color.green3};
   display: flex;
   gap: ${themeCssVariables.spacing[2]};
   justify-content: space-between;
@@ -83,15 +94,19 @@ const StyledHeaderIdentity = styled.div`
   min-width: 0;
 `;
 
-const StyledHeaderIcon = styled.div`
+const StyledHeaderIcon = styled.div<{ $ceoMode: boolean }>`
   align-items: center;
-  background: linear-gradient(
+  background: ${({ $ceoMode }) =>
+    $ceoMode
+      ? 'rgba(255,255,255,0.16)'
+      : `linear-gradient(
     135deg,
     ${themeCssVariables.color.green7},
     ${themeCssVariables.color.green5}
-  );
+  )`};
   border-radius: ${themeCssVariables.border.radius.sm};
-  box-shadow: 0 0 12px ${themeCssVariables.color.green3};
+  box-shadow: ${({ $ceoMode }) =>
+    $ceoMode ? 'none' : `0 0 12px ${themeCssVariables.color.green3}`};
   color: #ffffff;
   display: flex;
   flex-shrink: 0;
@@ -100,24 +115,34 @@ const StyledHeaderIcon = styled.div`
   width: 36px;
 `;
 
-const StyledTitle = styled.h3`
-  color: ${themeCssVariables.font.color.primary};
+const StyledTitle = styled.h3<{ $ceoMode: boolean }>`
+  color: ${({ $ceoMode }) =>
+    $ceoMode
+      ? themeCssVariables.font.color.inverted
+      : themeCssVariables.font.color.primary};
   font-size: ${themeCssVariables.font.size.md};
   font-weight: ${themeCssVariables.font.weight.semiBold};
   margin: 0;
 `;
 
-const StyledSubtitle = styled.p`
-  color: ${themeCssVariables.font.color.secondary};
+const StyledSubtitle = styled.p<{ $ceoMode: boolean }>`
+  color: ${({ $ceoMode }) =>
+    $ceoMode
+      ? 'rgba(255,255,255,0.82)'
+      : themeCssVariables.font.color.secondary};
   font-size: ${themeCssVariables.font.size.xs};
   margin: 2px 0 0;
 `;
 
-const StyledContextBadge = styled.span`
-  background: ${themeCssVariables.color.green2};
-  border: 1px solid ${themeCssVariables.color.green3};
+const StyledContextBadge = styled.span<{ $ceoMode: boolean }>`
+  background: ${({ $ceoMode }) =>
+    $ceoMode ? 'rgba(255,255,255,0.14)' : themeCssVariables.color.green2};
+  border: 1px solid
+    ${({ $ceoMode }) =>
+      $ceoMode ? 'rgba(255,255,255,0.22)' : themeCssVariables.color.green3};
   border-radius: ${themeCssVariables.border.radius.pill};
-  color: ${themeCssVariables.color.green8};
+  color: ${({ $ceoMode }) =>
+    $ceoMode ? themeCssVariables.font.color.inverted : themeCssVariables.color.green8};
   display: inline-block;
   font-size: ${themeCssVariables.font.size.xs};
   font-weight: ${themeCssVariables.font.weight.medium};
@@ -386,7 +411,11 @@ const StyledComposerActions = styled.div`
   justify-content: space-between;
 `;
 
-const getScreenSuggestions = (screen: ParksAiScreen) => {
+const getScreenSuggestions = (screen: ParksAiScreen, isCeo: boolean) => {
+  if (isCeo) {
+    return buildParksCeoQuickActions();
+  }
+
   switch (screen) {
     case 'approval':
       return buildParksApprovalQuickActions();
@@ -418,12 +447,15 @@ export const ParksAiPanel = () => {
     runQuickAction,
     clearConversation,
   } = useParksAiAssistant();
+  const { displayName, parksRoleLabels } = useParksAccess();
   const [draftMessage, setDraftMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const isCeo = hasAnyParksRoleLabel(parksRoleLabels, [ParksRoleLabel.CEO]);
+
   const screenSuggestions = useMemo(
-    () => getScreenSuggestions(routeContext.screen),
-    [routeContext.screen],
+    () => getScreenSuggestions(routeContext.screen, isCeo),
+    [isCeo, routeContext.screen],
   );
 
   useEffect(() => {
@@ -449,16 +481,26 @@ export const ParksAiPanel = () => {
     <>
       <StyledOverlay onClick={closeAssistant} />
       <StyledPanel>
-        <StyledHeader>
+        <StyledHeader $ceoMode={isCeo}>
           <StyledHeaderIdentity>
-            <StyledHeaderIcon>
+            <StyledHeaderIcon $ceoMode={isCeo}>
               <IconSparkles size={18} />
             </StyledHeaderIcon>
             <div>
-              <StyledTitle>{t`Asistente Parks Industrial`}</StyledTitle>
-              <StyledSubtitle>{t`Inteligencia sobre cartera, legal y disponibilidad`}</StyledSubtitle>
-              <StyledContextBadge>
-                {getParksAiScreenLabel(routeContext.screen)}
+              <StyledTitle $ceoMode={isCeo}>
+                {isCeo
+                  ? t`IA Dirección General`
+                  : t`Asistente Parks Industrial`}
+              </StyledTitle>
+              <StyledSubtitle $ceoMode={isCeo}>
+                {isCeo
+                  ? t`Copiloto para decisiones, riesgos y board`
+                  : t`Inteligencia sobre cartera, legal y disponibilidad`}
+              </StyledSubtitle>
+              <StyledContextBadge $ceoMode={isCeo}>
+                {isCeo
+                  ? t`Modo CEO`
+                  : getParksAiScreenLabel(routeContext.screen)}
               </StyledContextBadge>
             </div>
           </StyledHeaderIdentity>
@@ -473,25 +515,36 @@ export const ParksAiPanel = () => {
 
         <StyledMessages>
           {messages.length === 0 ? (
-            <StyledEmptyState>
-              <StyledEmptyTitle>{t`¿En qué te ayudo?`}</StyledEmptyTitle>
-              <StyledEmptyIntro>
-                {t`Revisa checklist legal, resume casos o busca naves disponibles según el contexto de esta pantalla.`}
-              </StyledEmptyIntro>
-              <StyledSuggestionList>
-                {screenSuggestions.map((suggestion) => (
-                  <StyledSuggestionCard
-                    key={suggestion.id}
-                    type="button"
-                    disabled={isLoading}
-                    onClick={() => void runQuickAction(suggestion)}
-                  >
-                    <StyledSuggestionLabel>{suggestion.label}</StyledSuggestionLabel>
-                    {suggestion.message}
-                  </StyledSuggestionCard>
-                ))}
-              </StyledSuggestionList>
-            </StyledEmptyState>
+            isCeo ? (
+              <ParksAiCeoSpotlight
+                actions={screenSuggestions}
+                isLoading={isLoading}
+                ceoName={displayName}
+                onSelectAction={(action) => void runQuickAction(action)}
+              />
+            ) : (
+              <StyledEmptyState>
+                <StyledEmptyTitle>{t`¿En qué te ayudo?`}</StyledEmptyTitle>
+                <StyledEmptyIntro>
+                  {t`Revisa checklist legal, resume casos o busca naves disponibles según el contexto de esta pantalla.`}
+                </StyledEmptyIntro>
+                <StyledSuggestionList>
+                  {screenSuggestions.map((suggestion) => (
+                    <StyledSuggestionCard
+                      key={suggestion.id}
+                      type="button"
+                      disabled={isLoading}
+                      onClick={() => void runQuickAction(suggestion)}
+                    >
+                      <StyledSuggestionLabel>
+                        {suggestion.label}
+                      </StyledSuggestionLabel>
+                      {suggestion.message}
+                    </StyledSuggestionCard>
+                  ))}
+                </StyledSuggestionList>
+              </StyledEmptyState>
+            )
           ) : (
             messages.map((message) => (
               <StyledMessageRow
@@ -552,7 +605,11 @@ export const ParksAiPanel = () => {
           <StyledTextarea
             value={draftMessage}
             onChange={(event) => setDraftMessage(event.target.value)}
-            placeholder={t`Escribe tu pregunta sobre Parks...`}
+            placeholder={
+              isCeo
+                ? t`Pregunta a tu copiloto: riesgos, firmas, cobranza…`
+                : t`Escribe tu pregunta sobre Parks...`
+            }
             onKeyDown={(event) => {
               if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();

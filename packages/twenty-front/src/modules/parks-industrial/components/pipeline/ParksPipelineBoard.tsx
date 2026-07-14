@@ -33,7 +33,7 @@ import {
   getParksOwnerName,
   isParksOpportunityAssignedToViewer,
 } from '@/parks-industrial/utils/parks-format.util';
-import { ParksRoleLabel } from '@/parks-industrial/constants/parks-role-access.constants';
+import { isParksLeasingOfficerRole } from '@/parks-industrial/utils/parks-role-access.util';
 import { StyledParksPageStack } from '@/parks-industrial/components/ui/ParksSectionCard';
 import { validateParksStageGate } from '@/parks-industrial/services/parks-commercial.client';
 import {
@@ -132,9 +132,7 @@ export const ParksPipelineBoard = ({
   onOpportunitiesRefresh,
 }: ParksPipelineBoardProps) => {
   const { displayName, parksRoleLabels } = useParksAccess();
-  const isLeasingOfficer = parksRoleLabels.includes(
-    ParksRoleLabel.EjecutivoComercial,
-  );
+  const isLeasingOfficer = isParksLeasingOfficerRole(parksRoleLabels);
   const safeOpportunities = opportunities ?? [];
   const [items, setItems] = useState(safeOpportunities);
   const [filters, setFilters] = useState<ParksPipelineFilters>({

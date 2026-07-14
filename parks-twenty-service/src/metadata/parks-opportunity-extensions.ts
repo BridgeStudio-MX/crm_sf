@@ -76,6 +76,12 @@ export const OPPORTUNITY_FIELD_DEFINITIONS: FieldDefinition[] = [
       'Otro',
     ]),
   },
+  // Asignación inteligente — país de origen del prospecto
+  {
+    name: 'paisOrigen',
+    label: 'País de origen',
+    type: 'TEXT',
+  },
   { name: 'plazoContratoMeses', label: 'Plazo contrato (meses)', type: 'NUMBER' },
   {
     name: 'presupuestoMensualUsd',
@@ -197,6 +203,28 @@ export const OPPORTUNITY_FIELD_DEFINITIONS: FieldDefinition[] = [
       'Broker top 10',
       'Broker no top 10',
     ]),
+  },
+  // Valor agregado F4 / F6 / F7 — only additive analytics fields
+  { name: 'fechaCierreReal', label: 'Fecha cierre real', type: 'DATE' },
+  {
+    name: 'costoBrokerComision',
+    label: 'Costo broker comisión',
+    type: 'NUMBER',
+  },
+  {
+    name: 'matchNavesSugeridas',
+    label: 'Match naves sugeridas',
+    type: 'TEXT',
+  },
+  {
+    name: 'fechaPrimeraActividad',
+    label: 'Fecha primera actividad',
+    type: 'DATE',
+  },
+  {
+    name: 'tiempoPrimeraRespuestaHoras',
+    label: 'Tiempo primera respuesta (horas)',
+    type: 'NUMBER',
   },
 ];
 

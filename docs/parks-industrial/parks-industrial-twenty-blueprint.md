@@ -1103,7 +1103,7 @@ export const handleCasoLegalEvent = async (event: TwentyWebhookEvent) => {
 **Acciones:**
 1. Crear registros de `FlujoDeFirmas` en orden estricto:
    - Orden 1: Subdirector Legal
-   - Orden 2: Director General (Charlie Meta)
+   - Orden 2: Director General (Charles El-Mann Metta)
    - Orden 3 y 4: Apoderados FUNO/NEXT (solo si `es_propiedad_funo = true`)
 2. Activar el primero en espera
 3. Al completarse cada firma → activar el siguiente
@@ -1149,7 +1149,7 @@ Para cada ExpedienteContrato activo:
 | Admin Legal (Catalina) | Todos los objetos legales | CRUD completo |
 | Director Legal | Todos los objetos legales | CRUD completo |
 | Subdirector Legal | Todos los objetos legales | CRUD completo |
-| CEO (Charlie Meta) | Todos | Solo lectura + aprobaciones |
+| CEO (Charles El-Mann Metta) | Todos | Solo lectura + aprobaciones |
 | Abogado asignado | Solo sus CasosLegales | Read + update estatus |
 | Ejecutivo Comercial | Oportunidades + CasoLegal vinculado | Read oportunidades, read legal |
 | CxC | ExpedienteContrato + Holdover | Solo lectura |
@@ -1509,7 +1509,7 @@ Complementa: Oracle ERP (permanece — integración bidireccional vía REST API 
 - Catalina Moreno Monroy: coordinadora legal — única persona que aprueba documentación
   y sube información al sistema actualmente
 - Héctor Montelongo: referente del proceso comercial
-- Charlie Meta: Director General / CEO — aprobaciones ejecutivas, primera rúbrica
+- Charles El-Mann Metta: Director General / CEO — aprobaciones ejecutivas, primera rúbrica
 
 ## Dependencias externas
 - Javier (Bridge Studio): responsable de la integración real con Oracle ERP en producción

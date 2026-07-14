@@ -70,6 +70,11 @@ export const PARKS_OBJECT_DEFINITIONS: ParksObjectDefinition[] = [
       { name: 'ubicacion', label: 'Ubicación', type: 'TEXT', isNullable: false },
       { name: 'm2Totales', label: 'm² totales', type: 'NUMBER' },
       { name: 'm2Rentados', label: 'm² rentados', type: 'NUMBER' },
+      {
+        name: 'umbralConcentracionVencimientos',
+        label: 'Umbral concentración vencimientos %',
+        type: 'NUMBER',
+      },
       { name: 'administrador', label: 'Administrador', type: 'TEXT' },
       {
         name: 'fotoEntradaUrl',
@@ -216,6 +221,16 @@ export const PARKS_OBJECT_DEFINITIONS: ParksObjectDefinition[] = [
       },
       { name: 'activo', label: 'Activo', type: 'BOOLEAN' },
       { name: 'operacionesCnt', label: 'Operaciones', type: 'NUMBER' },
+      {
+        name: 'ultimaActividadFecha',
+        label: 'Última actividad',
+        type: 'DATE',
+      },
+      {
+        name: 'zonasOperacion',
+        label: 'Zonas de operación',
+        type: 'TEXT',
+      },
     ],
   },
   {
@@ -432,6 +447,11 @@ export const PARKS_OBJECT_DEFINITIONS: ParksObjectDefinition[] = [
       },
       { name: 'entregado', label: 'Entregado', type: 'BOOLEAN' },
       { name: 'fechaEntrega', label: 'Fecha entrega', type: 'DATE' },
+      {
+        name: 'fechaVencimiento',
+        label: 'Fecha vencimiento',
+        type: 'DATE',
+      },
       { name: 'archivoUrl', label: 'Archivo URL', type: 'TEXT' },
       { name: 'observaciones', label: 'Observaciones', type: 'TEXT' },
     ],
