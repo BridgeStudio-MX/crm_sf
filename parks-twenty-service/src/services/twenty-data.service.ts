@@ -7,9 +7,11 @@ import {
 } from '../constants/parks.constants';
 import {
   CREATE_ACTA_RESTITUCION,
+  CREATE_BROKER,
   CREATE_CASO_LEGAL,
   CREATE_COMISION,
   CREATE_DOCUMENTO_CHECKLIST,
+  CREATE_EMPRESA_BROKER,
   CREATE_EXPEDIENTE_CONTRATO,
   CREATE_FLUJO_FIRMAS,
   CREATE_HOLDOVER,
@@ -17,9 +19,11 @@ import {
   CREATE_TASK,
   CREATE_VERSION_DOCUMENTO,
   UPDATE_ACTA_RESTITUCION,
+  UPDATE_BROKER,
   UPDATE_CASO_LEGAL,
   UPDATE_COMISION,
   UPDATE_DOCUMENTO_CHECKLIST,
+  UPDATE_EMPRESA_BROKER,
   UPDATE_EXPEDIENTE_CONTRATO,
   UPDATE_FLUJO_FIRMAS,
   UPDATE_HOLDOVER,
@@ -34,7 +38,9 @@ import {
   FIND_HOJAS_DE_ACUERDOS_BY_INQUILINO,
   GET_CASO_LEGAL_BY_ID,
   GET_ACTAS_BY_CASO,
+  GET_ALL_BROKERS,
   GET_ALL_CASOS_LEGALES,
+  GET_ALL_EMPRESAS_BROKER,
   GET_CASOS_LEGALES_ACTIVOS,
   GET_ALL_COMISIONES,
   GET_COMISIONES_BY_HOJA,
@@ -60,8 +66,10 @@ import {
   GET_OPPORTUNITIES_SUMMARY,
 } from '../graphql/queries';
 import {
+  type BrokerRecord,
   type CasoLegalRecord,
   type ComisionRecord,
+  type EmpresaBrokerRecord,
   type ExpedienteContratoRecord,
   type FlujoFirmasRecord,
   type GraphQlConnection,
@@ -597,6 +605,94 @@ export const twentyDataService = {
     }
   },
 
+  findAllBrokers: async (): Promise<BrokerRecord[]> => {
+    try {
+      const response = await twentyClient.query<{
+        brokers: GraphQlConnection<BrokerRecord>;
+      }>(GET_ALL_BROKERS, {});
+
+      return mapConnectionNodes(response.brokers);
+    } catch (error) {
+      logGraphQlError('findAllBrokers failed', error);
+      return [];
+    }
+  },
+
+  createBroker: async (
+    data: Record<string, unknown>,
+  ): Promise<BrokerRecord | null> => {
+    try {
+      const response = await twentyClient.mutate<{
+        createBroker: BrokerRecord;
+      }>(CREATE_BROKER, { data });
+
+      return response.createBroker;
+    } catch (error) {
+      logGraphQlError('createBroker failed', error);
+      return null;
+    }
+  },
+
+  updateBroker: async (
+    brokerId: string,
+    data: Record<string, unknown>,
+  ): Promise<BrokerRecord | null> => {
+    try {
+      const response = await twentyClient.mutate<{
+        updateBroker: BrokerRecord;
+      }>(UPDATE_BROKER, { brokerId, data });
+
+      return response.updateBroker;
+    } catch (error) {
+      logGraphQlError(`updateBroker(${brokerId}) failed`, error);
+      return null;
+    }
+  },
+
+  findAllEmpresasBroker: async (): Promise<EmpresaBrokerRecord[]> => {
+    try {
+      const response = await twentyClient.query<{
+        empresasBroker: GraphQlConnection<EmpresaBrokerRecord>;
+      }>(GET_ALL_EMPRESAS_BROKER, {});
+
+      return mapConnectionNodes(response.empresasBroker);
+    } catch (error) {
+      logGraphQlError('findAllEmpresasBroker failed', error);
+      return [];
+    }
+  },
+
+  createEmpresaBroker: async (
+    data: Record<string, unknown>,
+  ): Promise<EmpresaBrokerRecord | null> => {
+    try {
+      const response = await twentyClient.mutate<{
+        createEmpresaBroker: EmpresaBrokerRecord;
+      }>(CREATE_EMPRESA_BROKER, { data });
+
+      return response.createEmpresaBroker;
+    } catch (error) {
+      logGraphQlError('createEmpresaBroker failed', error);
+      return null;
+    }
+  },
+
+  updateEmpresaBroker: async (
+    empresaBrokerId: string,
+    data: Record<string, unknown>,
+  ): Promise<EmpresaBrokerRecord | null> => {
+    try {
+      const response = await twentyClient.mutate<{
+        updateEmpresaBroker: EmpresaBrokerRecord;
+      }>(UPDATE_EMPRESA_BROKER, { empresaBrokerId, data });
+
+      return response.updateEmpresaBroker;
+    } catch (error) {
+      logGraphQlError(`updateEmpresaBroker(${empresaBrokerId}) failed`, error);
+      return null;
+    }
+  },
+
   findOpportunitiesByInquilino: async (
     inquilinoId: string,
   ): Promise<OpportunityRecord[]> => {
@@ -697,17 +793,25 @@ export const twentyDataService = {
     }
   },
 
-  createTask: async (title: string, body: string): Promise<void> => {
+  createTask: async (
+    title: string,
+    body: string,
+    options?: { dueAt?: string },
+  ): Promise<void> => {
     try {
-      await twentyClient.mutate(CREATE_TASK, {
-        data: {
-          title,
-          bodyV2: {
-            blocknote: buildBlocknoteJson(body),
-            markdown: body,
-          },
+      const data: Record<string, unknown> = {
+        title,
+        bodyV2: {
+          blocknote: buildBlocknoteJson(body),
+          markdown: body,
         },
-      });
+      };
+
+      if (options?.dueAt) {
+        data.dueAt = options.dueAt;
+      }
+
+      await twentyClient.mutate(CREATE_TASK, { data });
     } catch (error) {
       logGraphQlError('createTask failed — falling back to note', error);
       await twentyDataService.createNote(title, body);

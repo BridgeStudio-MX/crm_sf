@@ -245,6 +245,12 @@ const ParksComisionesPage = lazy(() =>
   })),
 );
 
+const ParksBrokersPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksBrokersPage').then((module) => ({
+    default: module.ParksBrokersPage,
+  })),
+);
+
 const ParksMapPage = lazy(() =>
   import('~/pages/parks-industrial/ParksMapPage').then((module) => ({
     default: module.ParksMapPage,
@@ -573,6 +579,14 @@ export const useCreateAppRouter = (
               element={
                 <ParksLazyRoute>
                   <ParksComisionesPage />
+                </ParksLazyRoute>
+              }
+            />
+            <Route
+              path={AppPath.ParksBrokers}
+              element={
+                <ParksLazyRoute>
+                  <ParksBrokersPage />
                 </ParksLazyRoute>
               }
             />

@@ -44,8 +44,15 @@ const isHoliday = (date: Date): boolean => {
   return holidaySet.has(toDateKey(date));
 };
 
-export const isBusinessDay = (date: Date): boolean =>
-  !isWeekend(date) && !isHoliday(date);
+// Normalizes to local noon first so this is safe even when called with a raw
+// Date parsed from an ISO string (e.g. `new Date('2026-06-06')`), which is
+// UTC midnight and can shift to the previous local day in negative UTC
+// offsets, making getDay() return the wrong weekday.
+export const isBusinessDay = (date: Date): boolean => {
+  const normalizedDate = parseLocalDate(date);
+
+  return !isWeekend(normalizedDate) && !isHoliday(normalizedDate);
+};
 
 export const addBusinessDays = (
   startDate: Date | string,

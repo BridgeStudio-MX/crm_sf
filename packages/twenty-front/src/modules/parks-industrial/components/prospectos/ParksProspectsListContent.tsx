@@ -1,6 +1,6 @@
 import { styled } from '@linaria/react';
 import { t } from '@lingui/core/macro';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppPath } from 'twenty-shared/types';
 import { IconBuildingWarehouse, IconSearch, IconUsers } from 'twenty-ui/icon';
@@ -26,6 +26,7 @@ import {
   type ParksOpportunityRecord,
   useParksOpportunities,
 } from '@/parks-industrial/hooks/useParksRecords';
+import { fetchParksExpansionSignals } from '@/parks-industrial/services/parks-commercial.client';
 import {
   formatParksNumber,
   getParksAssignedLeasingOfficerName,
@@ -35,7 +36,6 @@ import {
   formatParksProspectUrgencyLabel,
   getParksProspectScoreBadgeColor,
 } from '@/parks-industrial/utils/parks-prospect-scoring.util';
-
 const CLIENT_STAGE = 'GANADO_CONTRATO_FIRMADO';
 
 const EMPTY_OPPORTUNITIES: ParksOpportunityRecord[] = [];
@@ -214,6 +214,54 @@ export const ParksProspectsListContent = ({
   const { records, loading, error } = useParksOpportunities();
   const [searchQuery, setSearchQuery] = useState('');
   const [stageFilter, setStageFilter] = useState('all');
+  const [expansionEmpresas, setExpansionEmpresas] = useState<Set<string>>(
+    () => new Set(),
+  );
+
+  useEffect(() => {
+    if (variant !== 'clientes') {
+      return;
+    }
+
+    let cancelled = false;
+
+    fetchParksExpansionSignals()
+      .then((response) => {
+        if (cancelled) {
+          return;
+        }
+
+        setExpansionEmpresas(
+          new Set(
+            response.summaries.map((summary) =>
+              summary.inquilinoNombre.trim().toLowerCase(),
+            ),
+          ),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setExpansionEmpresas(new Set());
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [variant]);
+
+  const hasExpansionSignal = (empresa?: string | null): boolean => {
+    if (!empresa?.trim()) {
+      return false;
+    }
+
+    const normalized = empresa.trim().toLowerCase();
+    return Array.from(expansionEmpresas).some(
+      (signalEmpresa) =>
+        normalized.includes(signalEmpresa) ||
+        signalEmpresa.includes(normalized),
+    );
+  };
 
   const scopedDeals = useMemo(() => {
     const source = records ?? EMPTY_OPPORTUNITIES;
@@ -297,7 +345,7 @@ export const ParksProspectsListContent = ({
         title={isClientes ? t`Clientes` : t`Todos los prospectos`}
         description={
           isClientes
-            ? t`Deals con contrato firmado. Abre la cuenta 360 del inquilino.`
+            ? t`Clientes con contrato firmado. El chip de expansión marca señales IA de crecimiento.`
             : t`Todos los leads del pipeline con su etapa. Abre un row para ir al 360 del prospecto.`
         }
         accent={isClientes ? 'green' : 'blue'}
@@ -308,8 +356,14 @@ export const ParksProspectsListContent = ({
             value: String(scopedDeals.length),
           },
           {
-            label: t`Filtrados`,
-            value: String(filteredDeals.length),
+            label: isClientes ? t`Con señal expansión` : t`Filtrados`,
+            value: String(
+              isClientes
+                ? scopedDeals.filter((deal) =>
+                    hasExpansionSignal(deal.inquilinoVinculado?.empresa),
+                  ).length
+                : filteredDeals.length,
+            ),
           },
         ]}
       />
@@ -398,6 +452,17 @@ export const ParksProspectsListContent = ({
                                 deal.naveVinculada?.identificador ||
                                 t`Sin ubicación`}
                             </StyledDealMeta>
+                            {isClientes &&
+                            hasExpansionSignal(
+                              deal.inquilinoVinculado?.empresa,
+                            ) ? (
+                              <div style={{ marginTop: 6 }}>
+                                <ParksStatusBadge
+                                  color="green"
+                                  label={t`Expansión detectada`}
+                                />
+                              </div>
+                            ) : null}
                           </StyledTd>
                           <StyledTd>
                             <ParksStatusBadge

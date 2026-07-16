@@ -479,4 +479,11 @@ export const comiteStore = {
 
     return saved;
   },
+
+  clearAll: (): void => {
+    comitesById.clear();
+    hojaToComiteId.clear();
+    seeded = true;
+    sequence = 50;
+  },
 };

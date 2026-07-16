@@ -1,10 +1,13 @@
 import { useLingui } from '@lingui/react/macro';
+import { useLocation } from 'react-router-dom';
 import { SettingsPath } from 'twenty-shared/types';
-import { IconHelpCircle, IconSettings } from 'twenty-ui/icon';
+import { IconHelpCircle, IconSettings, IconSparkles } from 'twenty-ui/icon';
 import { AnimatedExpandableContainer } from 'twenty-ui/layout';
 
 import { currentWorkspaceMemberState } from '@/auth/states/currentWorkspaceMemberState';
 import { INTERNAL_CRM_NAVIGATION_CONFIG } from '@/navigation/constants/internal-crm-navigation.config';
+import { PARKS_NAVIGATION_ITEMS } from '@/parks-industrial/constants/parks-navigation.constants';
+import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
 import { getDocumentationUrl } from '@/support/utils/getDocumentationUrl';
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 
@@ -19,14 +22,23 @@ import { useNavigateSettings } from '~/hooks/useNavigateSettings';
 
 export const NavigationDrawerOtherSection = () => {
   const { t } = useLingui();
+  const { pathname } = useLocation();
   const navigateSettings = useNavigateSettings();
   const currentWorkspaceMember = useAtomStateValue(currentWorkspaceMemberState);
+  const { canAccessRoute } = useParksAccess();
 
   const { toggleNavigationSection } = useNavigationSection('Other');
   const isNavigationSectionOpen = useAtomFamilyStateValue(
     isNavigationSectionOpenFamilyState,
     'Other',
   );
+
+  const valorAgregadoItem = PARKS_NAVIGATION_ITEMS.valorAgregado;
+  const canAccessValorAgregado = canAccessRoute(valorAgregadoItem.accessKey);
+  const isValorAgregadoActive =
+    pathname === valorAgregadoItem.to ||
+    pathname.startsWith(`${valorAgregadoItem.to}/`) ||
+    pathname.startsWith(`${valorAgregadoItem.to}?`);
 
   // onClick-only: useMouseDownNavigation ignores `to` when onClick is set.
   // navigateSettings memorizes the current Parks URL then goes to /settings/profile.
@@ -50,6 +62,15 @@ export const NavigationDrawerOtherSection = () => {
         containAnimation
         initial={false}
       >
+        {canAccessValorAgregado ? (
+          <NavigationDrawerItem
+            label={t`Valor agregado`}
+            to={valorAgregadoItem.to}
+            Icon={IconSparkles}
+            iconColor={valorAgregadoItem.iconColor}
+            active={isValorAgregadoActive}
+          />
+        ) : null}
         <NavigationDrawerItem
           label={t`Settings`}
           Icon={IconSettings}

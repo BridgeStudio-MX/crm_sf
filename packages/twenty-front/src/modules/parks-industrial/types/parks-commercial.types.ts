@@ -316,7 +316,42 @@ export type ParksAccount360Response = {
   interacciones: ParksAccount360Interaccion[];
   estadoPagos: ParksAccount360EstadoPagos;
   tieneContratosFuno: boolean;
+  senalesExpansion?: ParksExpansionSignal[];
   note?: string;
+};
+
+export type ParksExpansionSignal = {
+  id: string;
+  inquilinoId?: string;
+  inquilinoNombre: string;
+  titulo: string;
+  detalle: string;
+  fuente: string;
+  confianza: string;
+  zonaObjetivo: string;
+  naveActual?: string;
+  parqueActual?: string;
+  mesesOcupado?: number;
+  navesCandidatas: Array<{
+    identificador: string;
+    parqueNombre: string;
+    m2: number;
+    estatus: string;
+    precioBaseUsd?: number;
+  }>;
+  detectedAt: string;
+  refreshedAt: string;
+};
+
+export type ParksExpansionSignalsResponse = {
+  signals: ParksExpansionSignal[];
+  summaries: Array<{
+    inquilinoNombre: string;
+    signalCount: number;
+    topTitulo: string;
+    confianza: string;
+  }>;
+  refreshedAt: string;
 };
 
 export type DemandSearchFilters = {

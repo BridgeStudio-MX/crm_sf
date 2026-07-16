@@ -75,11 +75,11 @@ const SCRIPT_TEMPLATES: Record<
       '¿En qué plazo necesitan ocupar?',
     ],
     valueProposition:
-      'Contamos con naves disponibles en corredores industriales clave con renta competitiva y soporte FUNO.',
+      'Contamos con naves disponibles en corredores industriales clave con renta competitiva.',
     visitAgenda: [
       'Recorrido general de la nave',
       'Revisión de servicios e infraestructura',
-      'Sesión de preguntas con el broker',
+      'Sesión de preguntas con el prospecto',
     ],
     closingLine:
       '¿Le comparto ficha técnica y coordinamos visita esta semana?',
@@ -176,7 +176,7 @@ export const salesScriptService = {
             {
               role: 'system',
               content:
-                'Genera guiones comerciales B2B para arrendamiento industrial en México. Responde JSON con: scriptTitle, openingLine, discoveryQuestions (array), valueProposition, visitAgenda (array), closingLine. Español México, tono profesional.',
+                'Genera guiones comerciales B2B para arrendamiento industrial en México. Responde JSON con: scriptTitle, openingLine, discoveryQuestions (array), valueProposition, visitAgenda (array), closingLine. Español México, tono profesional. No menciones FUNO, NEXT ni soporte corporativo del fondo.',
             },
             {
               role: 'user',

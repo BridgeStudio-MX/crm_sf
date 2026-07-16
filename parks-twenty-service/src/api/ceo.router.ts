@@ -4,13 +4,57 @@ import { ceoDashboardService } from '../services/ceo-dashboard.service';
 import { ceoInboxService } from '../services/ceo-inbox.service';
 import { commercialApprovalService } from '../services/commercial-approval.service';
 import { holdoverCondonacionService } from '../services/holdover-condonacion.service';
+import { performanceWeightsStore } from '../services/performance-weights.store';
 
 export const ceoRouter = Router();
 
-ceoRouter.get('/dashboard', async (_request, response) => {
+ceoRouter.get('/dashboard', async (request, response) => {
   try {
-    const result = await ceoDashboardService.getExecutiveDashboard();
+    const yearRaw = request.query.year;
+    const monthRaw = request.query.month;
+    const segmentoRaw = String(request.query.segmento ?? 'TOTAL').toUpperCase();
+
+    const year =
+      typeof yearRaw === 'string' && yearRaw.trim()
+        ? Number(yearRaw)
+        : undefined;
+    const month =
+      typeof monthRaw === 'string' && monthRaw.trim()
+        ? Number(monthRaw)
+        : undefined;
+    const segmento =
+      segmentoRaw === 'INDUSTRIAL' ? 'INDUSTRIAL' : ('TOTAL' as const);
+
+    const result = await ceoDashboardService.getExecutiveDashboard({
+      year: Number.isFinite(year) ? year : undefined,
+      month: Number.isFinite(month) ? month : undefined,
+      segmento,
+    });
     response.json(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    response.status(500).json({ error: message });
+  }
+});
+
+ceoRouter.get('/performance-weights', (_request, response) => {
+  response.json({ weights: performanceWeightsStore.get() });
+});
+
+ceoRouter.put('/performance-weights', (request, response) => {
+  try {
+    const body = request.body as { weights?: Record<string, number> };
+
+    if (!body.weights) {
+      response.status(400).json({ error: 'weights is required' });
+      return;
+    }
+
+    const weights = performanceWeightsStore.save({
+      ...performanceWeightsStore.get(),
+      ...body.weights,
+    });
+    response.json({ weights });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     response.status(500).json({ error: message });

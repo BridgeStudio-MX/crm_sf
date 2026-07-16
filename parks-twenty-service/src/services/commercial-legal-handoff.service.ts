@@ -125,7 +125,12 @@ export const commercialLegalHandoffService = {
       };
     }
 
+    const folio =
+      hojaDeAcuerdos.folio ??
+      opportunity.folio ??
+      null;
     const referencia =
+      folio ??
       hojaDeAcuerdos.referencia ??
       `${opportunity.name ?? 'Oportunidad'} — Caso legal`;
     const tipoDocumento = resolveTipoDocumento(
@@ -139,6 +144,7 @@ export const commercialLegalHandoffService = {
 
     const createdCasoLegal = await twentyDataService.createCasoLegal({
       referencia,
+      folio: folio ?? undefined,
       tipoDocumento: toSelectValue(tipoDocumento),
       estatus: toSelectValue('Nuevo'),
       semaforo: 'AZUL',

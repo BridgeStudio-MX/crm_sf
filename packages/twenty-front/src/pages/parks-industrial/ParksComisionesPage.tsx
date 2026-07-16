@@ -27,7 +27,7 @@ export const ParksComisionesPage = () => {
     <ParksPageShell
       title={t`Motor de comisiones`}
       subtitle={getParksIndustrialPageSubtitle(
-        t`Control de pagos a brokers y comisiones pendientes`,
+        t`Folio · matriz · aprobación · pago interno/externo`,
       )}
       icon={<IconCoins size={theme.icon.size.md} />}
     >

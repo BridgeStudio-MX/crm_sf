@@ -2,6 +2,7 @@ import { activityTimelineService } from './activity-timeline.service';
 import { brokerNotificationStore } from './broker-notification.store';
 import { commercialDecisorService } from './commercial-decisor.service';
 import { cxcStore } from './cxc.store';
+import { expansionSignalsStore } from './expansion-signals.store';
 import { twentyDataService } from './twenty-data.service';
 import {
   CASO_LEGAL_ESTATUS_CANCELADO,
@@ -28,10 +29,15 @@ import {
 } from '../types/parks.types';
 import { isSelectValueEqual } from '../utils/select-value.util';
 
-const CLOSED_OPPORTUNITY_STAGES = new Set([
-  'GANADO_CONTRATO_FIRMADO',
-  'PERDIDO',
-]);
+const CLOSED_OPPORTUNITY_STAGE_LABELS = [
+  'Ganado — Contrato firmado',
+  'Perdido',
+] as const;
+
+const isClosedOpportunityStage = (stage?: string | null): boolean =>
+  CLOSED_OPPORTUNITY_STAGE_LABELS.some((label) =>
+    isSelectValueEqual(stage, label),
+  );
 
 const OPEN_INVOICE_STATUSES = new Set([
   'Emitida',
@@ -82,7 +88,7 @@ const mapOportunidad = (
   updatedAt: opportunity.updatedAt,
   createdAt: opportunity.createdAt,
   naveIdentificador: opportunity.naveVinculada?.identificador,
-  enProceso: !CLOSED_OPPORTUNITY_STAGES.has(opportunity.stage ?? ''),
+  enProceso: !isClosedOpportunityStage(opportunity.stage),
 });
 
 const mapCasoLegal = (casoLegal: CasoLegalRecord): Account360CasoLegal => ({
@@ -510,6 +516,9 @@ export const commercialAccountService = {
       }),
       estadoPagos,
       tieneContratosFuno,
+      senalesExpansion: expansionSignalsStore.listByInquilinoNombre(
+        inquilino?.empresa,
+      ),
       note: noteParts.join(' — '),
     };
   },

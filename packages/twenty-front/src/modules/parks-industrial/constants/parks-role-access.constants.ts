@@ -55,6 +55,7 @@ export type ParksRouteAccessKey =
   | 'renovaciones'
   | 'reservas'
   | 'comisiones'
+  | 'brokers'
   | 'miDesempeno'
   | 'inquilino360'
   | 'mapa';
@@ -212,7 +213,12 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
     ParksRoleLabel.AdminLegal,
     ParksRoleLabel.DirectorLegal,
   ]),
-  comisiones: withAdminSistema([ParksRoleLabel.DirectorComercial]),
+  comisiones: withAdminSistema([
+    ParksRoleLabel.DirectorComercial,
+    ParksRoleLabel.CEO,
+    ParksRoleLabel.AdminSistema,
+  ]),
+  brokers: withAdminSistema([ParksRoleLabel.DirectorComercial]),
   miDesempeno: withAdminSistema([...PARKS_LEASING_OFFICER_ROLE_LABELS]),
   inquilino360: withAdminSistema([
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
@@ -256,6 +262,7 @@ export const PARKS_NAV_ROUTE_ACCESS: Array<{
   { accessKey: 'renovaciones', to: AppPath.ParksRenovaciones },
   { accessKey: 'reservas', to: AppPath.ParksReservas },
   { accessKey: 'comisiones', to: AppPath.ParksComisiones },
+  { accessKey: 'brokers', to: AppPath.ParksBrokers },
   { accessKey: 'miDesempeno', to: AppPath.ParksMiDesempeno },
   { accessKey: 'mapa', to: AppPath.ParksMapa },
 ];

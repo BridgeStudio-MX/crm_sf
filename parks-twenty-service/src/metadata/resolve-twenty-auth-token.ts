@@ -19,7 +19,7 @@ const loginAsUser = async (
   console.log(`[auth] Using user login (${email})`);
 
   const loginResponse = await axios.post<{ data: Record<string, unknown> }>(
-    `${twentyConfig.apiUrl}/metadata`,
+    twentyConfig.metadataUrl,
     {
       query: `
         mutation GetLoginTokenFromCredentials(
@@ -43,6 +43,12 @@ const loginAsUser = async (
     { headers: { Origin: origin, 'Content-Type': 'application/json' } },
   );
 
+  if (!loginResponse.data?.data) {
+    throw new Error(
+      `getLoginTokenFromCredentials failed: ${JSON.stringify(loginResponse.data)}`,
+    );
+  }
+
   const loginToken = (
     loginResponse.data.data as {
       getLoginTokenFromCredentials: { loginToken: { token: string } };
@@ -50,7 +56,7 @@ const loginAsUser = async (
   ).getLoginTokenFromCredentials.loginToken.token;
 
   const authResponse = await axios.post<{ data: Record<string, unknown> }>(
-    `${twentyConfig.apiUrl}/metadata`,
+    twentyConfig.metadataUrl,
     {
       query: `
         mutation GetAuthTokensFromLoginToken(

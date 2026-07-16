@@ -2,6 +2,7 @@ import { AppPath } from 'twenty-shared/types';
 import {
   IconBookmark,
   IconBell,
+  IconBriefcase,
   IconChartBar,
   IconCoins,
   IconFileText,
@@ -55,6 +56,7 @@ export type ParksNavigationItemKey =
   | 'renovaciones'
   | 'reservas'
   | 'comisiones'
+  | 'brokers'
   | 'miDesempeno'
   | 'mapa';
 
@@ -195,6 +197,12 @@ export const PARKS_NAVIGATION_ITEMS: Record<
     Icon: IconCoins,
     iconColor: 'yellow',
   },
+  brokers: {
+    accessKey: 'brokers',
+    to: AppPath.ParksBrokers,
+    Icon: IconBriefcase,
+    iconColor: 'blue',
+  },
   miDesempeno: {
     accessKey: 'miDesempeno',
     to: AppPath.ParksMiDesempeno,
@@ -227,7 +235,6 @@ export const PARKS_NAVIGATION_GROUPS: ParksNavigationGroupDefinition[] = [
       'stackingPlan',
       'pipeline',
       'comite',
-      'valorAgregado',
       'loCampo',
       'mapa',
       'leadsCem',
@@ -235,6 +242,7 @@ export const PARKS_NAVIGATION_GROUPS: ParksNavigationGroupDefinition[] = [
       'prospectos',
       'miDesempeno',
       'comisiones',
+      'brokers',
     ],
   },
   {

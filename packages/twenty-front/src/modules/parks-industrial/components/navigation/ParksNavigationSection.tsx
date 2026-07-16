@@ -91,6 +91,7 @@ export const ParksNavigationSection = ({
     renovaciones: t`Renovaciones`,
     reservas: t`Reservas`,
     comisiones: t`Comisiones`,
+    brokers: t`Brokers`,
     miDesempeno: t`Mi desempeño`,
     mapa: t`Mapa de Inventario`,
   };

@@ -1,5 +1,3 @@
-export type ParksCeoDashboardView = 'diario' | 'consejo';
-
 export type ParksCeoTrendPoint = {
   mesAnio: string;
   label: string;
@@ -175,6 +173,75 @@ export type ParksCeoInboxSummary = {
   items: ParksCeoInboxItem[];
 };
 
+export type ParksCeoPortfolioSegment = 'TOTAL' | 'INDUSTRIAL';
+
+export type ParksCeoOcupacionGauge = {
+  key: 'terminados' | 'construccion' | 'proyectados';
+  label: string;
+  ocupacionPct: number;
+  metaPct: number;
+  m2Totales: number;
+  m2Rentados: number;
+  m2Disponibles: number;
+  m2Anterior: number;
+  variacionPct: number;
+};
+
+export type ParksCeoLegalSlaBlock = {
+  key: string;
+  label: string;
+  cumplimientoPct: number;
+  metaPct: number;
+  diasPromedioCierre: number;
+  metaDiasCierre: number;
+  abiertos: number;
+  fueraDeTiempo: number;
+};
+
+export type ParksCeoLitigioBucket = {
+  categoria: string;
+  enProceso: number;
+  porcentaje: number;
+};
+
+export type ParksCeoPerformanceAreaScore = {
+  area: string;
+  ponderacionPct: number;
+  scorePct: number;
+};
+
+export type ParksCeoExecutiveIndicators = {
+  filters: {
+    year: number;
+    month: number;
+    segmento: ParksCeoPortfolioSegment;
+  };
+  performanceConsolidadoPct: number;
+  performanceAreas: ParksCeoPerformanceAreaScore[];
+  performanceFormulaNote: string;
+  ocupacion: ParksCeoOcupacionGauge[];
+  ocupacionMetaTerminados: number;
+  litigios: ParksCeoLitigioBucket[];
+  contratosNoRenovados: number;
+  m2NoRenovados: number;
+  pctNoRenovados: number;
+  renovacionIncrementoPct: number;
+  renovacionIncrementoMetaPct: number;
+  renovacionesFirmadasAntesVencerPct: number;
+  renovacionesFirmadasMetaPct: number;
+  hojasAcuerdoNuevos: number;
+  hojasAcuerdoRenovacion: number;
+  varContratosNuevosPct: number;
+  varM2RentadosPct: number;
+  varValorM2MxnPct: number;
+  varValorM2UsdPct: number;
+  varAnosPromedioRentaPct: number;
+  legalSla: ParksCeoLegalSlaBlock[];
+  ultimaActualizacionLabel: string;
+};
+
+export type ParksCeoDashboardView = 'ejecutivo' | 'diario' | 'consejo';
+
 export type ParksCeoExecutiveDashboardResult = {
   generatedAt: string;
   asOfDate: string;
@@ -183,6 +250,7 @@ export type ParksCeoExecutiveDashboardResult = {
   board: ParksCeoBoardSection;
   inbox: ParksCeoInboxSummary;
   snapshots: ParksCeoMonthlySnapshot[];
+  indicators: ParksCeoExecutiveIndicators;
   kpisCatalog: Array<{
     id: string;
     name: string;

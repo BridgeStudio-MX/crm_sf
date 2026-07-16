@@ -1,11 +1,21 @@
+import {
+  PARKS_LEGAL_SLA_DAYS,
+  PARKS_LEGAL_SLA_META_PCT,
+  PARKS_OCUPACION_METAS,
+  PARKS_RENOVACION_INCREMENTO_META_PCT,
+  type ParksPortfolioSegment,
+} from '../constants/parks-executive.constants';
 import { ceoDashboardStore } from './ceo-dashboard.store';
 import { ceoInboxService } from './ceo-inbox.service';
 import { cxcStore } from './cxc.store';
+import { performanceWeightsStore } from './performance-weights.store';
 import {
   type CeoBoardSection,
   type CeoDailyKpis,
   type CeoExecutiveDashboardResult,
+  type CeoExecutiveIndicators,
   type CeoMonthlySnapshot,
+  type CeoPortfolioSegment,
   type CeoTrendPoint,
 } from '../types/ceo-dashboard.types';
 
@@ -356,11 +366,312 @@ const buildBoard = (
   };
 };
 
+const resolveSnapshotForFilters = (
+  snapshots: CeoMonthlySnapshot[],
+  year?: number,
+  month?: number,
+): { latest: CeoMonthlySnapshot; previous?: CeoMonthlySnapshot } => {
+  if (!year || !month) {
+    const latest = snapshots[snapshots.length - 1];
+    const previous =
+      snapshots.length > 1 ? snapshots[snapshots.length - 2] : undefined;
+
+    return { latest, previous };
+  }
+
+  const mesAnio = `${year}-${String(month).padStart(2, '0')}`;
+  const index = snapshots.findIndex((snapshot) => snapshot.mesAnio === mesAnio);
+
+  if (index >= 0) {
+    return {
+      latest: snapshots[index],
+      previous: index > 0 ? snapshots[index - 1] : undefined,
+    };
+  }
+
+  const latest = snapshots[snapshots.length - 1];
+  const previous =
+    snapshots.length > 1 ? snapshots[snapshots.length - 2] : undefined;
+
+  return { latest, previous };
+};
+
+const buildIndicators = (
+  latest: CeoMonthlySnapshot,
+  previous: CeoMonthlySnapshot | undefined,
+  filters: {
+    year: number;
+    month: number;
+    segmento: CeoPortfolioSegment;
+  },
+): CeoExecutiveIndicators => {
+  // Segment filter reserved for TOTAL | INDUSTRIAL — seed data is TOTAL-shaped.
+  const segmentFactor = filters.segmento === 'INDUSTRIAL' ? 0.92 : 1;
+  const weights = performanceWeightsStore.get();
+
+  const ocupacionTerminados = latest.porcentajeOcupacion * segmentFactor;
+  const ocupacionConstruccion = Math.min(
+    100,
+    (latest.metrosEnConstruccion > 0
+      ? (latest.metrosRentados * 0.18) / latest.metrosEnConstruccion
+      : 0.42) *
+      100 *
+      segmentFactor,
+  );
+  const ocupacionProyectados = 18 * segmentFactor;
+
+  const comercialScore = Math.min(
+    100,
+    ocupacionTerminados * 0.4 +
+      latest.tasaRenovacionMes * 0.3 +
+      Math.max(0, 50 + (previous
+        ? ((latest.contratosNuevosMes - previous.contratosNuevosMes) /
+            Math.max(previous.contratosNuevosMes, 1)) *
+          50
+        : 10)) *
+        0.3,
+  );
+  const cxcScore = latest.porcentajeCobranzaMes;
+  const legalScore = latest.porcentajeSlaCumplido;
+  const marketingScore = Math.min(
+    100,
+    latest.tasaConversionLeadContrato * 100,
+  );
+  const direccionScore = 72;
+
+  const performanceAreas = [
+    {
+      area: 'Comercial',
+      ponderacionPct: weights.COMERCIAL,
+      scorePct: Number(comercialScore.toFixed(1)),
+    },
+    {
+      area: 'CxC',
+      ponderacionPct: weights.CXC,
+      scorePct: Number(cxcScore.toFixed(1)),
+    },
+    {
+      area: 'Legal',
+      ponderacionPct: weights.LEGAL,
+      scorePct: Number(legalScore.toFixed(1)),
+    },
+    {
+      area: 'Marketing',
+      ponderacionPct: weights.MARKETING,
+      scorePct: Number(marketingScore.toFixed(1)),
+    },
+    {
+      area: 'Dirección',
+      ponderacionPct: weights.DIRECCION,
+      scorePct: direccionScore,
+    },
+  ];
+
+  const performanceConsolidadoPct = Number(
+    (
+      performanceAreas.reduce(
+        (sum, area) => sum + (area.scorePct * area.ponderacionPct) / 100,
+        0,
+      )
+    ).toFixed(1),
+  );
+
+  const m2AnteriorTerminados = previous?.metrosRentablesTotales ?? latest.metrosRentablesTotales;
+  const varTerminados =
+    m2AnteriorTerminados > 0
+      ? Number(
+          (
+            ((latest.metrosRentablesTotales - m2AnteriorTerminados) /
+              m2AnteriorTerminados) *
+            100
+          ).toFixed(1),
+        )
+      : 0;
+
+  const litigiosBase = [
+    { categoria: 'Extrajudicial', enProceso: 2 },
+    { categoria: 'De 0 a 6 meses', enProceso: 3 },
+    { categoria: 'De 6 a 12 meses', enProceso: 1 },
+    { categoria: 'De 12 a 24 meses', enProceso: 1 },
+    { categoria: 'Más de 24 meses', enProceso: 0 },
+  ];
+  const litigiosTotal = litigiosBase.reduce(
+    (sum, row) => sum + row.enProceso,
+    0,
+  );
+
+  const contratosNoRenovados = Math.max(
+    0,
+    latest.contratosVencidosMes - latest.contratosRenovadosMes,
+  );
+  const m2NoRenovados = latest.m2ChurnMes;
+  const baseRenovables = Math.max(
+    latest.contratosRenovadosMes + contratosNoRenovados,
+    1,
+  );
+
+  return {
+    filters,
+    performanceConsolidadoPct,
+    performanceAreas,
+    performanceFormulaNote:
+      'Fórmula ilustrativa de Performance — pendiente validar el cálculo real',
+    ocupacion: [
+      {
+        key: 'terminados',
+        label: 'M² Terminados',
+        ocupacionPct: Number(ocupacionTerminados.toFixed(1)),
+        metaPct: PARKS_OCUPACION_METAS.M2_TERMINADOS,
+        m2Totales: Math.round(latest.metrosRentablesTotales * segmentFactor),
+        m2Rentados: Math.round(latest.metrosRentados * segmentFactor),
+        m2Disponibles: Math.round(latest.metrosDisponibles * segmentFactor),
+        m2Anterior: Math.round(m2AnteriorTerminados * segmentFactor),
+        variacionPct: varTerminados,
+      },
+      {
+        key: 'construccion',
+        label: 'M² en Construcción',
+        ocupacionPct: Number(ocupacionConstruccion.toFixed(1)),
+        metaPct: PARKS_OCUPACION_METAS.M2_CONSTRUCCION,
+        m2Totales: Math.round(latest.metrosEnConstruccion * segmentFactor),
+        m2Rentados: Math.round(latest.metrosEnConstruccion * 0.42 * segmentFactor),
+        m2Disponibles: Math.round(
+          latest.metrosEnConstruccion * 0.58 * segmentFactor,
+        ),
+        m2Anterior: Math.round(
+          (previous?.metrosEnConstruccion ?? latest.metrosEnConstruccion) *
+            segmentFactor,
+        ),
+        variacionPct: previous
+          ? Number(
+              (
+                ((latest.metrosEnConstruccion - previous.metrosEnConstruccion) /
+                  Math.max(previous.metrosEnConstruccion, 1)) *
+                100
+              ).toFixed(1),
+            )
+          : 0,
+      },
+      {
+        key: 'proyectados',
+        label: 'M² Proyectados',
+        ocupacionPct: Number(ocupacionProyectados.toFixed(1)),
+        metaPct: PARKS_OCUPACION_METAS.M2_PROYECTADOS,
+        m2Totales: Math.round(12_000 * segmentFactor),
+        m2Rentados: Math.round(2_160 * segmentFactor),
+        m2Disponibles: Math.round(9_840 * segmentFactor),
+        m2Anterior: Math.round(11_500 * segmentFactor),
+        variacionPct: 4.3,
+      },
+    ],
+    ocupacionMetaTerminados: PARKS_OCUPACION_METAS.M2_TERMINADOS,
+    litigios: litigiosBase.map((row) => ({
+      ...row,
+      porcentaje:
+        litigiosTotal > 0
+          ? Number(((row.enProceso / litigiosTotal) * 100).toFixed(2))
+          : 0,
+    })),
+    contratosNoRenovados,
+    m2NoRenovados,
+    pctNoRenovados: Number(
+      ((contratosNoRenovados / baseRenovables) * 100).toFixed(1),
+    ),
+    renovacionIncrementoPct: Number(
+      (latest.tasaRenovacionMes * 0.18).toFixed(1),
+    ),
+    renovacionIncrementoMetaPct: PARKS_RENOVACION_INCREMENTO_META_PCT,
+    renovacionesFirmadasAntesVencerPct: Number(
+      (latest.tasaRenovacionMes * 0.9).toFixed(1),
+    ),
+    renovacionesFirmadasMetaPct: PARKS_LEGAL_SLA_META_PCT,
+    hojasAcuerdoNuevos: latest.contratosNuevosMes + 2,
+    hojasAcuerdoRenovacion: latest.contratosRenovadosMes + 1,
+    varContratosNuevosPct: previous
+      ? Number(
+          (
+            ((latest.contratosNuevosMes - previous.contratosNuevosMes) /
+              Math.max(previous.contratosNuevosMes, 1)) *
+            100
+          ).toFixed(1),
+        )
+      : 0,
+    varM2RentadosPct: previous
+      ? Number(
+          (
+            ((latest.metrosNuevosMes - previous.metrosNuevosMes) /
+              Math.max(previous.metrosNuevosMes, 1)) *
+            100
+          ).toFixed(1),
+        )
+      : 0,
+    varValorM2MxnPct: 1.8,
+    varValorM2UsdPct: 0.6,
+    varAnosPromedioRentaPct: -2.1,
+    legalSla: [
+      {
+        key: 'nuevos-terminadas',
+        label: 'Contratos nuevos · naves terminadas',
+        cumplimientoPct: Number((legalScore * 0.95).toFixed(1)),
+        metaPct: PARKS_LEGAL_SLA_META_PCT,
+        diasPromedioCierre: 38,
+        metaDiasCierre: PARKS_LEGAL_SLA_DAYS.CONTRATOS_NUEVOS_NAVES_TERMINADAS,
+        abiertos: 4,
+        fueraDeTiempo: 1,
+      },
+      {
+        key: 'nuevos-construccion',
+        label: 'Contratos nuevos · naves en construcción',
+        cumplimientoPct: Number((legalScore * 0.88).toFixed(1)),
+        metaPct: PARKS_LEGAL_SLA_META_PCT,
+        diasPromedioCierre: 71,
+        metaDiasCierre:
+          PARKS_LEGAL_SLA_DAYS.CONTRATOS_NUEVOS_NAVES_EN_CONSTRUCCION,
+        abiertos: 2,
+        fueraDeTiempo: 0,
+      },
+      {
+        key: 'renovaciones',
+        label: 'Renovaciones',
+        cumplimientoPct: Number((legalScore * 0.92).toFixed(1)),
+        metaPct: PARKS_LEGAL_SLA_META_PCT,
+        diasPromedioCierre: 41,
+        metaDiasCierre: PARKS_LEGAL_SLA_DAYS.RENOVACIONES,
+        abiertos: 5,
+        fueraDeTiempo: 2,
+      },
+      {
+        key: 'post-contrato',
+        label: 'Documentos post contrato',
+        cumplimientoPct: Number((legalScore * 0.97).toFixed(1)),
+        metaPct: PARKS_LEGAL_SLA_META_PCT,
+        diasPromedioCierre: 22,
+        metaDiasCierre: PARKS_LEGAL_SLA_DAYS.DOCUMENTOS_POST_CONTRATO,
+        abiertos: 3,
+        fueraDeTiempo: 0,
+      },
+    ],
+    ultimaActualizacionLabel: latest.fechaSnapshot,
+  };
+};
+
 export const ceoDashboardService = {
-  getExecutiveDashboard: async (): Promise<CeoExecutiveDashboardResult> => {
+  getExecutiveDashboard: async (input?: {
+    year?: number;
+    month?: number;
+    segmento?: ParksPortfolioSegment;
+  }): Promise<CeoExecutiveDashboardResult> => {
     const snapshots = ceoDashboardStore.listSnapshots();
-    const latest = ceoDashboardStore.getLatestSnapshot();
-    const previous = ceoDashboardStore.getPreviousSnapshot();
+    const now = new Date();
+    const year = input?.year ?? now.getFullYear();
+    const month = input?.month ?? now.getMonth() + 1;
+    const segmento: CeoPortfolioSegment = input?.segmento ?? 'TOTAL';
+
+    const { latest, previous } = resolveSnapshotForFilters(
+      snapshots,
+      year,
+      month,
+    );
 
     const cxcAccounts = cxcStore.listAccounts();
     const holdoversLive = cxcAccounts.filter(
@@ -373,6 +684,11 @@ export const ceoDashboardService = {
     });
     const board = buildBoard(snapshots, latest, previous);
     const inbox = await ceoInboxService.getInbox();
+    const indicators = buildIndicators(latest, previous, {
+      year,
+      month,
+      segmento,
+    });
 
     if (inbox.total > 0) {
       daily.alertas = [
@@ -399,6 +715,7 @@ export const ceoDashboardService = {
       board,
       inbox,
       snapshots,
+      indicators,
       kpisCatalog: [
         {
           id: 'kpi-1',

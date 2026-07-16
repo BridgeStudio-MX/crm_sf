@@ -73,6 +73,10 @@ const resolveParksPageTitle = (pathname: string): string | null => {
     return t`Comisiones`;
   }
 
+  if (pathname.startsWith(AppPath.ParksBrokers)) {
+    return t`Brokers`;
+  }
+
   if (pathname.startsWith(AppPath.ParksRenovaciones)) {
     return t`Renovaciones`;
   }

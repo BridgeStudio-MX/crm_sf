@@ -23,6 +23,7 @@ import {
   IconPhone,
   IconPlus,
   IconReportMoney,
+  IconSparkles,
   IconUser,
   IconUsers,
 } from 'twenty-ui/icon';
@@ -576,7 +577,9 @@ export const ParksAccount360Content = ({
           trend={
             rentaMensualTotal > 0
               ? `${formatParksUsd(rentaMensualTotal)}/mes`
-              : undefined
+              : data.contratos.length > 0
+                ? t`${data.contratos.length} en portafolio`
+                : t`Sin expediente aún`
           }
         />
         <ParksMetricCard
@@ -584,6 +587,11 @@ export const ParksAccount360Content = ({
           value={data.oportunidadesEnProceso}
           icon={IconLayoutKanban}
           accent="purple"
+          trend={
+            data.oportunidades.length > 0
+              ? t`${data.oportunidades.length} en historial`
+              : t`Sin oportunidades`
+          }
         />
         <ParksMetricCard
           label={t`Casos legales`}
@@ -614,6 +622,15 @@ export const ParksAccount360Content = ({
         </StyledAlertBanner>
       ) : null}
 
+      {(data.senalesExpansion?.length ?? 0) > 0 ? (
+        <StyledAlertBanner>
+          <IconSparkles size={18} />
+          <span>
+            {t`IA detectó ${data.senalesExpansion!.length} señal(es) de expansión. Revisa el resumen para naves candidatas.`}
+          </span>
+        </StyledAlertBanner>
+      ) : null}
+
       <StyledTabBar>
         <ParksSegmentedControl
           options={tabOptions}
@@ -624,6 +641,66 @@ export const ParksAccount360Content = ({
 
       {activeTab === 'resumen' ? (
         <StyledCardList>
+          {(data.senalesExpansion?.length ?? 0) > 0 ? (
+            <ParksSectionCard
+              title={t`Señales de expansión (IA)`}
+              accent="green"
+            >
+              <StyledCardList>
+                {data.senalesExpansion!.map((signal) => (
+                  <StyledEntityCard
+                    key={signal.id}
+                    type="button"
+                    onClick={() => setIsNewOpportunityOpen(true)}
+                  >
+                    <StyledCardHeader>
+                      <StyledCardTitle>{signal.titulo}</StyledCardTitle>
+                      <Tag
+                        color={
+                          signal.confianza === 'alta'
+                            ? 'green'
+                            : signal.confianza === 'media'
+                              ? 'orange'
+                              : 'gray'
+                        }
+                        text={`${signal.fuente} · ${signal.confianza}`}
+                        variant="solid"
+                        weight="medium"
+                      />
+                    </StyledCardHeader>
+                    <StyledMetaItem>{signal.detalle}</StyledMetaItem>
+                    <StyledMetaGrid>
+                      <StyledMetaItem>
+                        <IconMap size={14} />
+                        {signal.zonaObjetivo}
+                      </StyledMetaItem>
+                      <StyledMetaItem>
+                        <IconBuildingSkyscraper size={14} />
+                        {signal.naveActual
+                          ? `${signal.naveActual} · ${signal.parqueActual ?? ''}`
+                          : t`Sin nave actual`}
+                      </StyledMetaItem>
+                    </StyledMetaGrid>
+                    {signal.navesCandidatas.length > 0 ? (
+                      <StyledMetaItem>
+                        {t`Naves candidatas:`}{' '}
+                        {signal.navesCandidatas
+                          .map(
+                            (nave) =>
+                              `${nave.identificador} (${nave.m2.toLocaleString('es-MX')} m² · ${nave.estatus})`,
+                          )
+                          .join(' · ')}
+                      </StyledMetaItem>
+                    ) : null}
+                    <StyledMetaItem>
+                      {t`Clic para crear oportunidad de expansión`}
+                    </StyledMetaItem>
+                  </StyledEntityCard>
+                ))}
+              </StyledCardList>
+            </ParksSectionCard>
+          ) : null}
+
           <ParksSectionCard title={t`Datos de la empresa`} accent="blue">
             <StyledContactGrid>
               <ParksDetailField

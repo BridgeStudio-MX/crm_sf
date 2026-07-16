@@ -6,6 +6,7 @@ import { twentyDataService } from './twenty-data.service';
 export type TourResultInput = {
   opportunityId: string;
   tourFecha: string;
+  tourHora?: string;
   tourParque?: string;
   tourNavesMostradas?: string;
   tourAsistentes?: string;
@@ -33,6 +34,7 @@ export const commercialTourService = {
 
     await twentyDataService.updateOpportunity(input.opportunityId, {
       tourFecha: input.tourFecha,
+      tourHora: input.tourHora,
       tourParque: input.tourParque,
       tourNavesMostradas: input.tourNavesMostradas,
       tourAsistentes,

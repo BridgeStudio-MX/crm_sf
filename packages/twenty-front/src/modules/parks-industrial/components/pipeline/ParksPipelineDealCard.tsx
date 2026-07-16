@@ -234,6 +234,11 @@ export const ParksPipelineDealCardView = ({
             {getParksOwnerInitials(deal)}
           </StyledOwnerAvatar>
         </StyledDealHeader>
+        {deal.folio ? (
+          <StyledDealMeta>
+            <strong>{deal.folio}</strong>
+          </StyledDealMeta>
+        ) : null}
         <StyledDealMeta>
           {deal.inquilinoVinculado?.empresa ?? t`Prospecto`}
         </StyledDealMeta>

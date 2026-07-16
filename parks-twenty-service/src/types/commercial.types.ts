@@ -187,6 +187,28 @@ export type Account360Response = {
   interacciones: Account360Interaccion[];
   estadoPagos: Account360EstadoPagos;
   tieneContratosFuno: boolean;
+  senalesExpansion?: Array<{
+    id: string;
+    inquilinoId?: string;
+    inquilinoNombre: string;
+    titulo: string;
+    detalle: string;
+    fuente: string;
+    confianza: string;
+    zonaObjetivo: string;
+    naveActual?: string;
+    parqueActual?: string;
+    mesesOcupado?: number;
+    navesCandidatas: Array<{
+      identificador: string;
+      parqueNombre: string;
+      m2: number;
+      estatus: string;
+      precioBaseUsd?: number;
+    }>;
+    detectedAt: string;
+    refreshedAt: string;
+  }>;
   note?: string;
 };
 

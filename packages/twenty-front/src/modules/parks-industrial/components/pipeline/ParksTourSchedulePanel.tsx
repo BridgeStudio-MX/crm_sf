@@ -208,6 +208,7 @@ export const ParksTourSchedulePanel = ({
       await registerParksTour({
         opportunityId,
         tourFecha,
+        tourHora,
         tourParque: linkedNaveIdentificador ?? undefined,
         tourNavesMostradas:
           tourNavesMostradas ?? linkedNaveIdentificador ?? undefined,
@@ -220,6 +221,7 @@ export const ParksTourSchedulePanel = ({
       onTourScheduled?.({
         stage: 'TOUR_VISITA',
         tourFecha,
+        tourHora,
         tourNavesMostradas: tourNavesMostradas ?? undefined,
         tourAsistentes: attendedDecisorIds.join(','),
       });

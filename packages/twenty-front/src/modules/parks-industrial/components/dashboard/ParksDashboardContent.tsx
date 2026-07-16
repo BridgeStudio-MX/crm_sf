@@ -36,8 +36,7 @@ import {
   StyledParksPageStack,
   StyledParksTwoColumnGrid,
 } from '@/parks-industrial/components/ui/ParksSectionCard';
-import { ParksRoleLabel } from '@/parks-industrial/constants/parks-role-access.constants';
-import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
+import { useParksDashboardAudience } from '@/parks-industrial/hooks/useParksDashboardAudience';
 import {
   buildParksVencimientosPorMes,
   useParksDashboardMetrics,
@@ -50,7 +49,6 @@ import {
   getParksStackingStatusColor,
 } from '@/parks-industrial/utils/parks-format.util';
 import { getParksOcupacionMetricAccent } from '@/parks-industrial/utils/parks-portfolio-metrics.util';
-import { hasAnyParksRoleLabel } from '@/parks-industrial/utils/parks-role-access.util';
 
 const StyledMetricsGrid = styled.div`
   display: grid;
@@ -85,12 +83,9 @@ const StyledSectionLink = styled(Link)`
 `;
 
 export const ParksDashboardContent = () => {
-  const { parksRoleLabels, hasFullParksAccess } = useParksAccess();
-  const showCeoCommandCenter =
-    hasFullParksAccess ||
-    hasAnyParksRoleLabel(parksRoleLabels, [ParksRoleLabel.CEO]);
+  const audience = useParksDashboardAudience();
 
-  if (showCeoCommandCenter) {
+  if (audience === 'ceo') {
     return <ParksCeoCommandCenter />;
   }
 

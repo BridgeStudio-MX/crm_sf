@@ -15,3 +15,4 @@ export const PARKS_COMMERCIAL_ACTIVITY_TIMELINE_ENDPOINT = `${PARKS_SERVICE_URL}
 export const PARKS_COMMERCIAL_DEAL_WIN_PREVIEW_ENDPOINT = `${PARKS_SERVICE_URL}/commercial/deal-win-preview`;
 export const PARKS_COMMERCIAL_BULK_FOLLOW_UP_ENDPOINT = `${PARKS_SERVICE_URL}/commercial/bulk-follow-up`;
 export const PARKS_COMMERCIAL_MAP_OUTREACH_ENDPOINT = `${PARKS_SERVICE_URL}/commercial/map-outreach`;
+export const PARKS_COMMERCIAL_EXPANSION_SIGNALS_ENDPOINT = `${PARKS_SERVICE_URL}/commercial/expansion-signals`;

@@ -27,6 +27,7 @@ export type TipoDocumentoChecklist =
 export type CasoLegalRecord = {
   id: string;
   referencia?: string;
+  folio?: string;
   tipoDocumento?: string;
   estatus: string;
   fechaHojaAcuerdos?: string;
@@ -62,6 +63,7 @@ export type CasoLegalRecord = {
 export type HojaDeAcuerdosRecord = {
   id: string;
   referencia?: string;
+  folio?: string;
   tipoContrato?: string;
   naveId?: string;
   inquilinoId?: string;
@@ -132,8 +134,55 @@ export type BrokerRecord = {
   id: string;
   empresa?: string;
   contacto?: string;
+  email?: string;
+  telefono?: string;
+  firma?: string;
   clasificacion?: string;
   activo?: boolean;
+  operacionesCnt?: number;
+  ultimaActividadFecha?: string;
+  zonasOperacion?: string;
+  empresaBrokerId?: string;
+  empresaBroker?: {
+    id?: string;
+    nombre?: string;
+    comisionPct?: number;
+    clasificacion?: string;
+  };
+};
+
+export type BrokerWithCommissionStats = BrokerRecord & {
+  totalComisionesUsd: number;
+  comisionesPendientesUsd: number;
+  comisionesAprobadasUsd: number;
+  comisionesPagadasUsd: number;
+  dealsCount: number;
+};
+
+export type EmpresaBrokerRecord = {
+  id: string;
+  nombre?: string;
+  contactoPrincipal?: string;
+  email?: string;
+  telefono?: string;
+  comisionPct?: number;
+  comisionPctNuevo?: number;
+  comisionPctPreventa?: number;
+  comisionPctRenovacion?: number;
+  clasificacion?: string;
+  clasificacionHistorialJson?: string;
+  sectores?: string;
+  zonasOperacion?: string;
+  documentacionUrl?: string;
+  notas?: string;
+  activo?: boolean;
+};
+
+export type EmpresaBrokerWithStats = EmpresaBrokerRecord & {
+  brokersCount: number;
+  totalComisionesUsd: number;
+  comisionesPendientesUsd: number;
+  dealsCount: number;
 };
 
 export type ExpedienteContratoRecord = {
@@ -165,19 +214,39 @@ export type HoldoverRecord = {
 export type ComisionRecord = {
   id: string;
   tipo?: string;
+  tipoPago?: string;
   beneficiario?: string;
+  folio?: string;
+  clienteNombre?: string;
+  leasingOfficer?: string;
+  origenDeal?: string;
+  tipoContratoComision?: string;
+  estatusNaveComision?: string;
+  brokerTierSnapshot?: string;
+  rentaTotalContrato?: number;
+  pctAplicado?: number;
   montoUsd?: number;
   estatus?: string;
   baseCalculo?: string;
+  aprobadoPor?: string;
+  fechaAprobacion?: string;
+  ajusteMonto?: number;
+  motivoAjuste?: string;
+  fechaCierre?: string;
+  fechaPago?: string;
+  opportunityId?: string;
   hojaDeAcuerdosId?: string;
   casoLegalId?: string;
+  brokerId?: string;
+  broker?: { id?: string; empresa?: string };
   hojaDeAcuerdos?: {
     referencia?: string;
+    folio?: string;
     m2Acordados?: number;
     precioUsdM2?: number;
     nave?: { identificador?: string };
   };
-  casoLegal?: { referencia?: string };
+  casoLegal?: { referencia?: string; folio?: string };
 };
 
 export type NotificacionTicket = {
@@ -207,6 +276,14 @@ export type OpportunityRecord = {
   estatusAprobacion?: string;
   nivelAprobacion?: string;
   comentarioAprobacion?: string;
+  monedaCotizacion?: string;
+  costosAledanosJson?: string;
+  cotizacionHistorialJson?: string;
+  primerContactoRealizado?: boolean;
+  rentaMensualCalculada?: number;
+  folio?: string;
+  leasingOfficerAsignado?: string;
+  esquemaComision?: string;
   updatedAt?: string;
   createdAt?: string;
   ubicacionDeseada?: string;

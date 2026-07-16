@@ -33,6 +33,7 @@ export enum AppPath {
   ParksContratos = '/parks/contratos',
   ParksContratoAprobacion = '/parks/contratos/:contratoId/aprobacion',
   ParksComisiones = '/parks/comisiones',
+  ParksBrokers = '/parks/brokers',
   ParksRenovaciones = '/parks/renovaciones',
   ParksReservas = '/parks/reservas',
   ParksMapa = '/parks/mapa',
