@@ -96,6 +96,10 @@ cxcRouter.post('/accounts/:accountId/actions', (request, response) => {
       type?: string;
       detail?: string;
       createdBy?: string;
+      compromisoPagoFecha?: string;
+      compromisoMonto?: number;
+      proximaAccionFecha?: string;
+      proximaAccionNota?: string;
     };
 
     const allowedTypes = new Set([
@@ -103,6 +107,7 @@ cxcRouter.post('/accounts/:accountId/actions', (request, response) => {
       'email',
       'whatsapp',
       'nota',
+      'compromiso_pago',
       'escalar_claudia',
       'recordatorio_oc',
       'pago_aplicado',
@@ -121,12 +126,17 @@ cxcRouter.post('/accounts/:accountId/actions', (request, response) => {
           | 'email'
           | 'whatsapp'
           | 'nota'
+          | 'compromiso_pago'
           | 'escalar_claudia'
           | 'recordatorio_oc'
           | 'pago_aplicado'
           | 'oc_registrada',
         detail: body.detail,
         createdBy: body.createdBy,
+        compromisoPagoFecha: body.compromisoPagoFecha,
+        compromisoMonto: body.compromisoMonto,
+        proximaAccionFecha: body.proximaAccionFecha,
+        proximaAccionNota: body.proximaAccionNota,
       }),
     );
   } catch (error) {

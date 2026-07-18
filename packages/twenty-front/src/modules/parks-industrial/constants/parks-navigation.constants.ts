@@ -25,7 +25,10 @@ import { type ThemeColor } from 'twenty-ui/theme';
 
 import { type ParksRouteAccessKey } from '@/parks-industrial/constants/parks-role-access.constants';
 import {
+  PARKS_ASIGNACION_PATH,
+  PARKS_BROKERS_PATH,
   PARKS_COMITE_PATH,
+  PARKS_CXC_CARTERA_PATH,
   PARKS_CXC_PATH,
   PARKS_DASHBOARD_COMERCIAL_PATH,
   PARKS_LEGAL_DASHBOARD_PATH,
@@ -33,7 +36,6 @@ import {
   PARKS_LO_CAMPO_PATH,
   PARKS_MIS_PENDIENTES_PATH,
   PARKS_VALOR_AGREGADO_PATH,
-  PARKS_ASIGNACION_PATH,
 } from '@/parks-industrial/constants/parks-routes.constants';
 
 export type ParksNavigationItemKey =
@@ -49,6 +51,7 @@ export type ParksNavigationItemKey =
   | 'legalPipeline'
   | 'legalDashboard'
   | 'cxc'
+  | 'cxcCartera'
   | 'comite'
   | 'valorAgregado'
   | 'asignacion'
@@ -155,6 +158,12 @@ export const PARKS_NAVIGATION_ITEMS: Record<
     Icon: IconReportMoney,
     iconColor: 'orange',
   },
+  cxcCartera: {
+    accessKey: 'cxcCartera',
+    to: PARKS_CXC_CARTERA_PATH,
+    Icon: IconLayoutKanban,
+    iconColor: 'orange',
+  },
   comite: {
     accessKey: 'comite',
     to: PARKS_COMITE_PATH,
@@ -199,7 +208,7 @@ export const PARKS_NAVIGATION_ITEMS: Record<
   },
   brokers: {
     accessKey: 'brokers',
-    to: AppPath.ParksBrokers,
+    to: PARKS_BROKERS_PATH,
     Icon: IconBriefcase,
     iconColor: 'blue',
   },
@@ -253,6 +262,6 @@ export const PARKS_NAVIGATION_GROUPS: ParksNavigationGroupDefinition[] = [
   {
     id: 'operations',
     groupKey: 'operations',
-    itemKeys: ['cxc', 'renovaciones', 'reservas', 'notificaciones'],
+    itemKeys: ['cxc', 'cxcCartera', 'renovaciones', 'reservas', 'notificaciones'],
   },
 ];

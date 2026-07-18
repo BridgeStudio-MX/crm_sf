@@ -227,6 +227,8 @@ export type ParksAccount360Documento = {
   titulo?: string;
   tipoDocumento?: string;
   entregado: boolean;
+  // Documentos entregados pasan por extracción/validación IA (CSF, acta, etc.)
+  validadoIa?: boolean;
   casoLegalId: string;
   casoReferencia?: string;
 };

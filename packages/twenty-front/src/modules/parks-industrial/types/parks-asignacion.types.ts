@@ -6,7 +6,7 @@ export type AsignacionDashboard = {
     umbralM2Estandar: number;
     maxHorasSinAsignarAaa: number;
     maxHorasSinAsignarEstandar: number;
-    einsteinScoringActivo: boolean;
+    iaScoringActivo: boolean;
   };
   equipo: {
     los: Array<{
@@ -35,8 +35,8 @@ export type AsignacionDashboard = {
       alertaCarga: boolean;
       mensajeCarga?: string | null;
       scoreFinalUsado: string;
-      einsteinScore?: number | null;
-      einsteinRazonTop?: string | null;
+      iaScore?: number | null;
+      iaRazonTop?: string | null;
       pendienteAsignacion: boolean;
       fechaClasificacion: string;
       situacionFallback?: string | null;

@@ -2,8 +2,8 @@ import { styled } from '@linaria/react';
 import { t } from '@lingui/core/macro';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { AppPath } from 'twenty-shared/types';
 import { getAppPath } from 'twenty-shared/utils';
 import {
@@ -31,6 +31,7 @@ import { Button } from 'twenty-ui/input';
 import { Tag } from 'twenty-ui/data-display';
 import { MOBILE_VIEWPORT, themeCssVariables } from 'twenty-ui/theme-constants';
 
+import { ParksCxcAccountDetailPanel } from '@/parks-industrial/components/cxc/ParksCxcAccountDetailPanel';
 import { ParksDecisoresPanel } from '@/parks-industrial/components/pipeline/ParksDecisoresPanel';
 import { ParksNewLeadModal } from '@/parks-industrial/components/pipeline/ParksNewLeadModal';
 import {
@@ -47,8 +48,13 @@ import {
   getParksPipelineStageLabel,
 } from '@/parks-industrial/constants/parks-industrial.constants';
 import { getLegalEstatusLabel } from '@/parks-industrial/constants/parks-legal-workflow.constants';
-import { PARKS_CXC_PATH } from '@/parks-industrial/constants/parks-routes.constants';
+import {
+  PARKS_CXC_CARTERA_PATH,
+  PARKS_CXC_PATH,
+} from '@/parks-industrial/constants/parks-routes.constants';
+import { fetchParksCxcAccount } from '@/parks-industrial/services/parks-cxc.client';
 import { type ParksAccount360Response } from '@/parks-industrial/types/parks-commercial.types';
+import { type CxcAccount } from '@/parks-industrial/types/parks-cxc.types';
 import {
   formatParksDate,
   formatParksNumber,
@@ -71,6 +77,22 @@ type Account360Tab =
   | 'legal'
   | 'cxc'
   | 'decisores';
+
+const ACCOUNT_360_TABS: Account360Tab[] = [
+  'resumen',
+  'empresa',
+  'documentos',
+  'hojas',
+  'actividad',
+  'contratos',
+  'oportunidades',
+  'legal',
+  'cxc',
+  'decisores',
+];
+
+const isAccount360Tab = (value: string | null): value is Account360Tab =>
+  value != null && (ACCOUNT_360_TABS as string[]).includes(value);
 
 type ParksAccount360ContentProps = {
   data: ParksAccount360Response;
@@ -398,8 +420,26 @@ export const ParksAccount360Content = ({
   onRefresh,
 }: ParksAccount360ContentProps) => {
   const { openRecordInSidePanel } = useOpenRecordInSidePanel();
-  const [activeTab, setActiveTab] = useState<Account360Tab>('resumen');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const activeTab: Account360Tab = isAccount360Tab(tabParam)
+    ? tabParam
+    : 'resumen';
   const [isNewOpportunityOpen, setIsNewOpportunityOpen] = useState(false);
+  const [cxcAccountDetail, setCxcAccountDetail] = useState<CxcAccount | null>(
+    null,
+  );
+
+  const setActiveTab = (tab: Account360Tab) => {
+    setSearchParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        next.set('tab', tab);
+        return next;
+      },
+      { replace: true },
+    );
+  };
 
   const oportunidades = data.oportunidades ?? [];
   const contratos = data.contratos ?? [];
@@ -408,6 +448,36 @@ export const ParksAccount360Content = ({
   const documentos = data.documentos ?? [];
   const actividades = data.actividades ?? [];
   const cxc = data.cxc;
+  const cxcAccountId =
+    cxc?.accountId ??
+    (inquilinoId.startsWith('cxc-') ? inquilinoId : null);
+
+  // El resumen 360 solo trae indicadores; el expediente completo de cobranza
+  // (Hoja de Acuerdos, contrato, calendario, OC/portal) se carga al abrir el tab
+  useEffect(() => {
+    if (activeTab !== 'cxc' || !cxcAccountId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    fetchParksCxcAccount(cxcAccountId)
+      .then((account) => {
+        if (!cancelled) {
+          setCxcAccountDetail(account);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCxcAccountDetail(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, cxcAccountId]);
+
   const interacciones = data.interacciones ?? [];
   const decisores = data.decisores ?? [];
   const estadoPagos = data.estadoPagos ?? { fuente: 'sin-datos' as const };
@@ -516,9 +586,13 @@ export const ParksAccount360Content = ({
   return (
     <StyledPageStack>
       <StyledHeroBand>
-        <StyledBackLink to={AppPath.ParksPipeline}>
+        <StyledBackLink
+          to={
+            activeTab === 'cxc' ? PARKS_CXC_CARTERA_PATH : AppPath.ParksPipeline
+          }
+        >
           <IconArrowLeft size={14} />
-          {t`Volver al pipeline`}
+          {activeTab === 'cxc' ? t`Volver a cartera CxC` : t`Volver al pipeline`}
         </StyledBackLink>
 
         <StyledHeroMain>
@@ -919,12 +993,20 @@ export const ParksAccount360Content = ({
                         documento.tipoDocumento ??
                         t`Documento`}
                     </StyledCardTitle>
-                    <ParksStatusBadge
-                      label={
-                        documento.entregado ? t`Entregado` : t`Pendiente`
-                      }
-                      color={documento.entregado ? 'green' : 'yellow'}
-                    />
+                    <StyledBadgeRow>
+                      <ParksStatusBadge
+                        label={
+                          documento.entregado ? t`Entregado` : t`Pendiente`
+                        }
+                        color={documento.entregado ? 'green' : 'yellow'}
+                      />
+                      {documento.validadoIa ? (
+                        <ParksStatusBadge
+                          label={t`Validado con IA`}
+                          color="blue"
+                        />
+                      ) : null}
+                    </StyledBadgeRow>
                   </StyledCardHeader>
                   <StyledMetaGrid>
                     <StyledMetaItem>
@@ -1415,7 +1497,15 @@ export const ParksAccount360Content = ({
         </ParksSectionCard>
       ) : null}
 
-      {activeTab === 'cxc' ? (
+      {activeTab === 'cxc' && cxcAccountDetail ? (
+        <ParksCxcAccountDetailPanel
+          account={cxcAccountDetail}
+          onAccountUpdated={setCxcAccountDetail}
+          embedded
+        />
+      ) : null}
+
+      {activeTab === 'cxc' && !cxcAccountDetail ? (
         <ParksSectionCard
           title={t`Cuentas por cobrar`}
           accent="green"

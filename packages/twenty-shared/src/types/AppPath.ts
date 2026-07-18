@@ -46,6 +46,7 @@ export enum AppPath {
   ParksLegalPipeline = '/parks/legal-pipeline',
   ParksLegalDashboard = '/parks/legal-dashboard',
   ParksCxc = '/parks/cxc',
+  ParksCxcCartera = '/parks/cxc/cartera',
   ParksComite = '/parks/comite',
   ParksComiteDetail = '/parks/comite/:comiteId',
   ParksValorAgregado = '/parks/valor-agregado',

@@ -39,7 +39,7 @@ Acoplado a `Parks_Industrial_Asignacion_Inteligente_Cursor.md` (solo agregar):
 - [x] Config umbrales editable (`GET|PATCH /asignacion-inteligente/config`)
 - [x] Selección LO por tier + especialidad + carga + top 3 sugerencias
 - [x] Fallbacks A–G (carga max, sin LO activos → CEM provisional, escalamiento SLA)
-- [x] Einstein mock (recomendación + razón) cuando `einsteinScoringActivo`
+- [x] Scoring IA mock (recomendación + razón) cuando `iaScoringActivo`
 - [x] Auto-clasifica al crear lead (`POST /commercial/leads` additive)
 - [x] UI CEM `/parks/asignacion` — equipo + pendientes + asignar 1 clic
 - [x] Campo nuevo `opportunity.paisOrigen` (metadata)

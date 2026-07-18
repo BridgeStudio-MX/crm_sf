@@ -21,6 +21,7 @@ import {
   type Account360Response,
 } from '../types/commercial.types';
 import { type CxcAccount } from '../types/cxc.types';
+import { type DecisorCliente } from '../types/decisor-cliente.types';
 import {
   type CasoLegalRecord,
   type ExpedienteContratoRecord,
@@ -357,6 +358,7 @@ const loadDocumentosForCasos = async (
         titulo: documento.titulo,
         tipoDocumento: documento.tipoDocumento,
         entregado: documento.entregado === true,
+        validadoIa: documento.entregado === true,
         casoLegalId: casoLegal.id,
         casoReferencia: casoLegal.referencia,
       }));
@@ -394,8 +396,397 @@ const loadActividadesForOportunidades = async (
     .slice(0, 40);
 };
 
+// Las cuentas mock de CxC usan ids con prefijo "cxc-" y no siempre existen
+// como inquilinos en Twenty; el 360 se construye desde el expediente CxC.
+const resolveCxcMockSector = (empresa: string): string => {
+  const key = empresa.toLowerCase();
+
+  if (key.includes('logi') || key.includes('norte') || key.includes('tramex')) {
+    return 'Logística y distribución';
+  }
+
+  if (key.includes('agro')) {
+    return 'Agroindustria / exportación';
+  }
+
+  if (key.includes('gdl') || key.includes('holdover')) {
+    return 'Manufactura ligera';
+  }
+
+  return 'Industrial / warehousing';
+};
+
+const daysIso = (offsetDays: number): string => {
+  const date = new Date();
+  date.setUTCDate(date.getUTCDate() + offsetDays);
+  return date.toISOString();
+};
+
+const buildCxcOnlyAccount360 = (account: CxcAccount): Account360Response => {
+  const cxc = mapCxcResumen(account);
+  const cxcHasRisk =
+    cxc.montoAdeudoTotal > 0 ||
+    cxc.diasEnMora > 0 ||
+    cxc.estatusPagos !== 'Al corriente';
+
+  const hoja = account.hojaAcuerdos;
+  const contrato = account.contrato;
+  const casoLegalId =
+    contrato?.casoLegalId ?? account.casoLegalId ?? `legal-${account.id}`;
+  const oportunidadId = `opp-${account.id}`;
+  const hojaId = `hoja-${account.id}`;
+  const expedienteId = `exp-${account.id}`;
+
+  const rentaMensualUsd =
+    hoja?.moneda === 'USD'
+      ? hoja.rentaMensual
+      : Number(((hoja?.rentaMensual ?? account.rentaMensual) / 17.2).toFixed(2));
+
+  const contratos: Account360Contrato[] = [
+    {
+      id: expedienteId,
+      numeroExpediente:
+        contrato?.referenciaLegal ?? `EXP-${account.id.toUpperCase()}`,
+      fechaApertura: contrato?.fechaInicio ?? account.recibidoDeLegalAt ?? undefined,
+      fechaVencimiento: contrato?.fechaVencimiento ?? undefined,
+      rentaMensualUsd,
+      estatus: account.cicloEstatus === 'Terminado' ? 'Cerrado' : 'Activo',
+      naveIdentificador: account.nave,
+      parqueNombre: account.parque,
+      m2: hoja?.m2Acordados,
+      casoLegalId,
+      esPropiedadFuno: contrato?.esPropiedadFuno ?? false,
+    },
+  ];
+
+  const hojasDeAcuerdos: Account360HojaDeAcuerdos[] = hoja
+    ? [
+        {
+          id: hojaId,
+          referencia: hoja.folio ?? `HA-${account.id}`,
+          tipoContrato: contrato?.tipoDocumento ?? 'Arrendamiento industrial',
+          m2Acordados: hoja.m2Acordados,
+          precioUsdM2: hoja.precioUsdM2,
+          plazoMeses: hoja.plazoMeses,
+          fechaInicio: contrato?.fechaInicio ?? undefined,
+          fechaFirma: hoja.fechaFirma ?? undefined,
+          depositoMeses: hoja.mesesDeposito,
+          periodoGraciaMeses: hoja.mesesGracia,
+          escalacionAnualPct: hoja.escalacionPct ?? undefined,
+          estatus: 'Firmada',
+          firmadaPorCliente: true,
+          firmadaPorCem: true,
+          ejecutivoAsignado: hoja.leasingOfficer ?? undefined,
+          naveIdentificador: account.nave,
+          parqueNombre: account.parque,
+          oportunidadVinculadaId: oportunidadId,
+          rentaMensualEstimadaUsd: rentaMensualUsd,
+        },
+      ]
+    : [];
+
+  const casosLegales: Account360CasoLegal[] = [
+    {
+      id: casoLegalId,
+      referencia: contrato?.referenciaLegal ?? `LEG-${account.id}`,
+      tipoDocumento: contrato?.tipoDocumento ?? 'Arrendamiento industrial',
+      estatus: contrato?.estatusLegal ?? 'En cobranza',
+      semaforo: cxcHasRisk ? 'rojo' : 'verde',
+      abogadoAsignado: contrato?.abogadoAsignado ?? undefined,
+      diasTranscurridos: account.recibidoDeLegalAt
+        ? Math.max(
+            1,
+            Math.round(
+              (Date.now() - new Date(account.recibidoDeLegalAt).getTime()) /
+                86_400_000,
+            ),
+          )
+        : 30,
+      slaDiasHabiles: 15,
+      documentacionCompleta: true,
+      slaPausado: false,
+      naveIdentificador: account.nave,
+      parqueNombre: account.parque,
+      esPropiedadFuno: contrato?.esPropiedadFuno ?? false,
+      fechaHojaAcuerdos: hoja?.fechaFirma ?? undefined,
+      hojaDeAcuerdosId: hoja ? hojaId : undefined,
+    },
+  ];
+
+  const oportunidades: Account360Oportunidad[] = [
+    {
+      id: oportunidadId,
+      name: `${account.empresa} · ${account.nave}`,
+      stage: 'Ganado — Contrato firmado',
+      tipoOperacion: 'Arrendamiento nuevo',
+      m2Requeridos: hoja?.m2Acordados,
+      ubicacionDeseada: account.parque,
+      updatedAt: account.recibidoDeLegalAt ?? account.updatedAt,
+      createdAt: daysIso(-280),
+      naveIdentificador: account.nave,
+      enProceso: false,
+    },
+  ];
+
+  // Señal de expansión en clientes con buen historial o mora (upsell / renovación)
+  if (account.cicloEstatus === 'Activo' || account.cicloEstatus === 'Holdover') {
+    oportunidades.push({
+      id: `${oportunidadId}-renov`,
+      name: `Renovación / expansión · ${account.empresa}`,
+      stage:
+        account.cicloEstatus === 'Holdover'
+          ? 'Negociación'
+          : 'Prospección',
+      tipoOperacion: 'Renovación',
+      m2Requeridos: Math.round((hoja?.m2Acordados ?? 5_000) * 1.2),
+      ubicacionDeseada: account.parque,
+      updatedAt: daysIso(-12),
+      createdAt: daysIso(-45),
+      naveIdentificador: account.nave,
+      enProceso: true,
+    });
+  }
+
+  const documentos: Account360Documento[] = [
+    {
+      id: `doc-${account.id}-rfc`,
+      titulo: 'Constancia de situación fiscal (RFC)',
+      tipoDocumento: 'Identificación fiscal',
+      entregado: true,
+      validadoIa: true,
+      casoLegalId,
+      casoReferencia: contrato?.referenciaLegal,
+    },
+    {
+      id: `doc-${account.id}-acta`,
+      titulo: 'Acta constitutiva',
+      tipoDocumento: 'Corporativo',
+      entregado: true,
+      validadoIa: true,
+      casoLegalId,
+      casoReferencia: contrato?.referenciaLegal,
+    },
+    {
+      id: `doc-${account.id}-poder`,
+      titulo: 'Poder notarial del representante legal',
+      tipoDocumento: 'Legal',
+      entregado: true,
+      validadoIa: true,
+      casoLegalId,
+      casoReferencia: contrato?.referenciaLegal,
+    },
+    {
+      id: `doc-${account.id}-hoja`,
+      titulo: `Hoja de Acuerdos ${hoja?.folio ?? ''}`.trim(),
+      tipoDocumento: 'Hoja de Acuerdos',
+      entregado: Boolean(hoja),
+      validadoIa: Boolean(hoja),
+      casoLegalId,
+      casoReferencia: contrato?.referenciaLegal,
+    },
+    {
+      id: `doc-${account.id}-contrato`,
+      titulo: `Contrato ${contrato?.referenciaLegal ?? 'firmado'}`,
+      tipoDocumento: 'Contrato',
+      entregado: Boolean(contrato),
+      validadoIa: Boolean(contrato),
+      casoLegalId,
+      casoReferencia: contrato?.referenciaLegal,
+    },
+    {
+      id: `doc-${account.id}-caratula`,
+      titulo: 'Carátula bancaria cuenta Fibra Uno',
+      tipoDocumento: 'Bancario',
+      entregado: Boolean(account.cuentaBancaria),
+      validadoIa: Boolean(account.cuentaBancaria),
+      casoLegalId,
+      casoReferencia: contrato?.referenciaLegal,
+    },
+    {
+      id: `doc-${account.id}-oc`,
+      titulo: 'Orden de compra (portal cliente)',
+      tipoDocumento: 'OC / Portal',
+      entregado:
+        account.ordenCompra?.estatus === 'OC Recibida' ||
+        account.ordenCompra?.estatus === 'Cargada en portal' ||
+        account.ordenCompra?.estatus === 'Pagada',
+      validadoIa: false,
+      casoLegalId,
+      casoReferencia: contrato?.referenciaLegal,
+    },
+  ];
+
+  const nowIso = new Date().toISOString();
+  const decisores: DecisorCliente[] = [
+    {
+      id: `dec-${account.id}-1`,
+      inquilinoId: account.id,
+      opportunityId: oportunidadId,
+      nombre: account.contactoPagosNombre,
+      correo: account.contactoPagosEmail,
+      telefono: account.contactoPagosTelefono,
+      rol: 'GERENTE_OPERACIONES',
+      asistioTour: true,
+      createdAt: daysIso(-300),
+      updatedAt: nowIso,
+    },
+    {
+      id: `dec-${account.id}-2`,
+      inquilinoId: account.id,
+      opportunityId: oportunidadId,
+      nombre: 'María Elena Vargas',
+      correo: `dg@${account.empresa
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '')
+        .slice(0, 18)}.mx`,
+      telefono: '+52 81 4000 2200',
+      rol: 'DUENO_EMPRESA',
+      asistioTour: true,
+      createdAt: daysIso(-300),
+      updatedAt: nowIso,
+    },
+    {
+      id: `dec-${account.id}-3`,
+      inquilinoId: account.id,
+      opportunityId: oportunidadId,
+      nombre: 'Ricardo Salinas',
+      correo: `logistica@${account.empresa
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '')
+        .slice(0, 18)}.mx`,
+      telefono: '+52 81 4000 2210',
+      rol: 'DIRECTOR_LOGISTICA',
+      asistioTour: false,
+      createdAt: daysIso(-290),
+      updatedAt: nowIso,
+    },
+  ];
+
+  const actividades: Account360Actividad[] = [
+    {
+      id: `act-${account.id}-1`,
+      type: 'meeting',
+      direction: 'outbound',
+      subject: `Tour ${account.nave} · ${account.parque}`,
+      summary: `Visita de site selection con decisor de operaciones. Espacio ${hoja?.m2Acordados?.toLocaleString('es-MX') ?? '—'} m².`,
+      participant: decisores[0]?.nombre ?? account.contactoPagosNombre,
+      occurredAt: daysIso(-260),
+      source: 'crm',
+      opportunityId: oportunidadId,
+      opportunityName: oportunidades[0]?.name,
+    },
+    {
+      id: `act-${account.id}-2`,
+      type: 'email',
+      direction: 'outbound',
+      subject: 'Envío de Hoja de Acuerdos para firma',
+      summary: `Folio ${hoja?.folio ?? 'HA'} enviado a representante legal y LO ${hoja?.leasingOfficer ?? 'asignado'}.`,
+      participant: hoja?.leasingOfficer ?? 'Leasing Officer',
+      occurredAt: hoja?.fechaFirma ?? daysIso(-220),
+      source: 'gmail',
+      opportunityId: oportunidadId,
+      opportunityName: oportunidades[0]?.name,
+    },
+    {
+      id: `act-${account.id}-3`,
+      type: 'call',
+      direction: 'outbound',
+      subject: 'Seguimiento post-firma de contrato',
+      summary: `Confirmación de handoff a CxC. Ejecutivo ${account.ejecutivoNombre}.`,
+      participant: account.ejecutivoNombre,
+      occurredAt: account.recibidoDeLegalAt ?? daysIso(-200),
+      source: 'crm',
+      opportunityId: oportunidadId,
+      opportunityName: oportunidades[0]?.name,
+    },
+    ...account.actividadesCobranza.slice(0, 4).map((activity, index) => ({
+      id: `act-${account.id}-cxc-${index}`,
+      type: (activity.type === 'llamada'
+        ? 'call'
+        : activity.type === 'email' || activity.type === 'recordatorio_oc'
+          ? 'email'
+          : 'task') as Account360Actividad['type'],
+      direction: 'outbound' as const,
+      subject: activity.label,
+      summary: activity.detail,
+      participant: activity.createdBy,
+      occurredAt: activity.createdAt,
+      source: 'crm' as const,
+      opportunityId: oportunidadId,
+      opportunityName: oportunidades[0]?.name,
+    })),
+  ];
+
+  const documentosEntregados = documentos.filter(
+    (documento) => documento.entregado,
+  ).length;
+  const documentosPendientes = documentos.length - documentosEntregados;
+  const oportunidadesEnProceso = oportunidades.filter(
+    (oportunidad) => oportunidad.enProceso,
+  ).length;
+
+  return {
+    inquilinoId: account.id,
+    inquilino: {
+      id: account.id,
+      empresa: account.empresa,
+      rfc: account.rfc,
+      contactoPrincipal: account.contactoPagosNombre,
+      emailContacto: account.contactoPagosEmail,
+      telefono: account.contactoPagosTelefono,
+      sector: resolveCxcMockSector(account.empresa),
+      estatus: 'Activo',
+      ultimoPagoFecha: account.ultimaFechaPago ?? undefined,
+      pagosAlCorriente: !cxcHasRisk,
+    },
+    decisores,
+    expedientesActivos: contratos.filter(
+      (item) => item.estatus === 'Activo',
+    ).length,
+    contratos,
+    oportunidades,
+    oportunidadesEnProceso,
+    casosLegales,
+    casosLegalesActivos: casosLegales.length,
+    hojasDeAcuerdos,
+    documentos,
+    documentosEntregados,
+    documentosPendientes,
+    actividades,
+    cxc,
+    interacciones: buildInteracciones({
+      oportunidades,
+      casosLegales,
+      hojas: hojasDeAcuerdos,
+      documentos,
+      cxc,
+      opportunityIds: new Set(oportunidades.map((item) => item.id)),
+    }),
+    estadoPagos: {
+      alCorriente: !cxcHasRisk,
+      ultimoPagoFecha: cxc.ultimaFechaPago ?? undefined,
+      fuente: 'cxc' as const,
+      montoAdeudoTotal: cxc.montoAdeudoTotal,
+      diasEnMora: cxc.diasEnMora,
+    },
+    tieneContratosFuno: Boolean(contrato?.esPropiedadFuno),
+    senalesExpansion: expansionSignalsStore.listByInquilinoNombre(
+      account.empresa,
+    ),
+    note: 'Vista 360 con expediente mock derivado de CxC (inquilino Twenty pendiente de vincular)',
+  };
+};
+
 export const commercialAccountService = {
   getAccount360: async (inquilinoId: string): Promise<Account360Response> => {
+    if (inquilinoId.startsWith('cxc-')) {
+      const cxcOnlyAccount = cxcStore.getAccount(inquilinoId);
+
+      if (cxcOnlyAccount) {
+        return buildCxcOnlyAccount360(cxcOnlyAccount);
+      }
+    }
+
     const [
       expedientes,
       inquilino,

@@ -44,6 +44,36 @@ const seedDemoNotifications = (): void => {
       body: 'Las alertas de leads, enriquecimiento IA y tareas automáticas aparecerán aquí.',
       area: 'Parks',
     },
+    {
+      type: 'task',
+      priority: 'high',
+      title: 'Legal → CxC · Tramex Logistics México',
+      body: 'Contrato CTR-TOL-2026-014 firmado. Requiere cuenta Fibra USD + OC Coupa para depósito y 1ra renta. Abrir expediente en pipeline CxC.',
+      area: 'CxC',
+      opportunityName: 'Tramex Logistics México',
+      actionPath: '/parks/inquilinos/cxc-tramex?tab=cxc',
+      actionLabel: 'Abrir portal 360',
+    },
+    {
+      type: 'task',
+      priority: 'high',
+      title: 'Legal → CxC · AgroExport Pacífico',
+      body: 'Contrato CTR-TIJ-2026-007 enviado a cobranza. Pendiente alta Oracle y cuenta Fibra Uno MXN.',
+      area: 'CxC',
+      opportunityName: 'AgroExport Pacífico',
+      actionPath: '/parks/inquilinos/cxc-nuevo?tab=cxc',
+      actionLabel: 'Abrir portal 360',
+    },
+    {
+      type: 'alert',
+      priority: 'high',
+      title: 'OC pendiente · Distribuciones Norte',
+      body: 'Sin OC desde hace 8 días. Factura bloqueada · renta $318,000 MXN. Escalar a Claudia si no responde hoy.',
+      area: 'CxC',
+      opportunityName: 'Distribuciones Norte S.A.',
+      actionPath: '/parks/inquilinos/cxc-norte?tab=cxc',
+      actionLabel: 'Abrir portal 360',
+    },
   ];
 
   for (const item of demoItems) {

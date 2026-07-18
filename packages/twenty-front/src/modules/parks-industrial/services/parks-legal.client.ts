@@ -16,6 +16,7 @@ import {
   type ApplyExtractionResult,
   type ContractDraftRecord,
   type ContractTypeOption,
+  type CotejoIaResult,
   type DocumentExtractionResult,
   type DocumentValidationResult,
   type LegalDashboardResult,
@@ -353,6 +354,31 @@ export const registerParksLegalCotejo = async ({
   }
 
   return (await response.json()) as LegalWorkflowResult;
+};
+
+export const runParksLegalCotejoIa = async ({
+  casoLegalId,
+  versionBase,
+  versionComparada,
+}: {
+  casoLegalId: string;
+  versionBase?: number;
+  versionComparada?: number;
+}): Promise<CotejoIaResult> => {
+  const response = await fetch(
+    `${parksLegalWorkflowUrl(casoLegalId)}/cotejo-ia`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ versionBase, versionComparada }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  return (await response.json()) as CotejoIaResult;
 };
 
 export const createParksLegalVersion = async ({

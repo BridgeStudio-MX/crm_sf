@@ -93,6 +93,10 @@ const StyledOverlay = styled.div`
   z-index: ${RootStackingContextZIndices.RootModalBackDrop};
 `;
 
+const StyledEnrichmentOverlay = styled(StyledOverlay)`
+  background: rgba(15, 23, 20, 0.72);
+`;
+
 const StyledModal = styled.div`
   background: ${themeCssVariables.background.primary};
   border: 1px solid ${themeCssVariables.border.color.medium};
@@ -861,6 +865,19 @@ export const ParksNewLeadModal = ({
 
   return createPortal(
     <>
+      {aiEnrichment ? (
+        <StyledEnrichmentOverlay
+          onClick={(event) => {
+            event.stopPropagation();
+          }}
+        >
+          <ParksLeadAiEnrichmentOverlay
+            companyName={aiEnrichment.companyName}
+            fitScore={aiEnrichment.fitScore}
+            onComplete={handleAiEnrichmentComplete}
+          />
+        </StyledEnrichmentOverlay>
+      ) : (
       <StyledOverlay
         onClick={() => {
           if (!isBusy) {
@@ -868,19 +885,6 @@ export const ParksNewLeadModal = ({
           }
         }}
       >
-        {aiEnrichment ? (
-          <div
-            onClick={(event) => {
-              event.stopPropagation();
-            }}
-          >
-            <ParksLeadAiEnrichmentOverlay
-              companyName={aiEnrichment.companyName}
-              fitScore={aiEnrichment.fitScore}
-              onComplete={handleAiEnrichmentComplete}
-            />
-          </div>
-        ) : (
           <StyledModal
             id={MODAL_CLICK_OUTSIDE_LISTENER_EXCLUDED_ID}
             role="dialog"
@@ -1434,8 +1438,8 @@ export const ParksNewLeadModal = ({
             </StyledFooterActions>
           </StyledFooter>
         </StyledModal>
-        )}
       </StyledOverlay>
+      )}
 
       {isNewBrokerModalOpen ? (
         <ParksNewBrokerModal

@@ -21,55 +21,62 @@ type ParksLeadAiEnrichmentOverlayProps = {
 };
 
 const StyledPanel = styled.div`
-  align-items: center;
-  background: linear-gradient(
-    165deg,
-    rgba(0, 104, 55, 0.06) 0%,
-    ${themeCssVariables.background.primary} 42%,
-    rgba(141, 198, 63, 0.05) 100%
-  );
-  border: 1px solid ${PARKS_BRAND.borderSoft};
+  animation: parks-lead-ai-panel-in 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  background: ${themeCssVariables.background.primary};
+  border: 1px solid ${themeCssVariables.border.color.medium};
   border-radius: ${themeCssVariables.border.radius.xl};
-  box-shadow: ${themeCssVariables.boxShadow.strong};
+  box-shadow:
+    0 24px 48px rgba(15, 23, 20, 0.28),
+    0 0 0 1px rgba(0, 104, 55, 0.08);
   display: flex;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[4]};
-  max-width: 440px;
+  max-width: 460px;
   overflow: hidden;
-  padding: ${themeCssVariables.spacing[6]} ${themeCssVariables.spacing[5]};
   position: relative;
-  text-align: center;
   width: 100%;
-`;
 
-const StyledOrb = styled.div`
-  animation: parks-lead-ai-orb-pulse 2.4s ease-in-out infinite;
-  background: radial-gradient(
-    circle,
-    ${PARKS_BRAND.accentSoft} 0%,
-    ${PARKS_BRAND.primarySoft} 48%,
-    transparent 72%
-  );
-  height: 180px;
-  left: 50%;
-  pointer-events: none;
-  position: absolute;
-  top: -40px;
-  transform: translateX(-50%);
-  width: 180px;
-
-  @keyframes parks-lead-ai-orb-pulse {
-    0%,
-    100% {
-      opacity: 0.55;
-      transform: translateX(-50%) scale(0.92);
+  @keyframes parks-lead-ai-panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.97);
     }
 
-    50% {
+    to {
       opacity: 1;
-      transform: translateX(-50%) scale(1.08);
+      transform: translateY(0) scale(1);
     }
   }
+`;
+
+const StyledHero = styled.div`
+  align-items: center;
+  background: linear-gradient(
+    145deg,
+    #004d29 0%,
+    ${PARKS_BRAND.primary} 48%,
+    #0a7a42 100%
+  );
+  display: flex;
+  flex-direction: column;
+  gap: ${themeCssVariables.spacing[3]};
+  padding: ${themeCssVariables.spacing[5]} ${themeCssVariables.spacing[5]}
+    ${themeCssVariables.spacing[6]};
+  position: relative;
+  text-align: center;
+`;
+
+const StyledHeroAccent = styled.div`
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    ${PARKS_BRAND.accent} 50%,
+    transparent 100%
+  );
+  bottom: 0;
+  height: 3px;
+  left: 0;
+  position: absolute;
+  right: 0;
 `;
 
 const StyledIconRing = styled.div<{ isComplete: boolean }>`
@@ -77,48 +84,44 @@ const StyledIconRing = styled.div<{ isComplete: boolean }>`
   animation: ${({ isComplete }) =>
     isComplete
       ? 'parks-lead-ai-ring-done 0.45s ease forwards'
-      : 'parks-lead-ai-ring-spin 2.8s linear infinite'};
-  background: ${themeCssVariables.background.primary};
+      : 'parks-lead-ai-ring-pulse 2.2s ease-in-out infinite'};
+  background: #ffffff;
   border: 2px solid
-    ${({ isComplete }) =>
-      isComplete ? PARKS_BRAND.primary : PARKS_BRAND.borderSoft};
+    ${({ isComplete }) => (isComplete ? PARKS_BRAND.accent : '#ffffff')};
   border-radius: 50%;
-  box-shadow: 0 0 0 6px ${PARKS_BRAND.primarySoft};
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.18),
+    0 0 0 8px rgba(255, 255, 255, 0.14);
   color: ${PARKS_BRAND.primary};
   display: flex;
-  height: 64px;
+  height: 72px;
   justify-content: center;
-  position: relative;
-  width: 64px;
-  z-index: 1;
+  width: 72px;
 
-  @keyframes parks-lead-ai-ring-spin {
-    0% {
-      box-shadow:
-        0 0 0 6px ${PARKS_BRAND.primarySoft},
-        0 0 0 0 rgba(141, 198, 63, 0.35);
-    }
-
-    70% {
-      box-shadow:
-        0 0 0 6px ${PARKS_BRAND.primarySoft},
-        0 0 0 14px rgba(141, 198, 63, 0);
-    }
-
+  @keyframes parks-lead-ai-ring-pulse {
+    0%,
     100% {
       box-shadow:
-        0 0 0 6px ${PARKS_BRAND.primarySoft},
-        0 0 0 0 rgba(141, 198, 63, 0);
+        0 8px 20px rgba(0, 0, 0, 0.18),
+        0 0 0 8px rgba(255, 255, 255, 0.14);
+      transform: scale(1);
+    }
+
+    50% {
+      box-shadow:
+        0 10px 24px rgba(0, 0, 0, 0.2),
+        0 0 0 14px rgba(141, 198, 63, 0.22);
+      transform: scale(1.04);
     }
   }
 
   @keyframes parks-lead-ai-ring-done {
     0% {
-      transform: scale(0.92);
+      transform: scale(0.9);
     }
 
-    60% {
-      transform: scale(1.08);
+    55% {
+      transform: scale(1.1);
     }
 
     100% {
@@ -127,33 +130,59 @@ const StyledIconRing = styled.div<{ isComplete: boolean }>`
   }
 `;
 
-const StyledTitle = styled.h3`
-  color: ${themeCssVariables.font.color.primary};
-  font-size: ${themeCssVariables.font.size.lg};
+const StyledEyebrow = styled.span`
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: ${themeCssVariables.border.radius.sm};
+  color: #ffffff;
+  font-size: ${themeCssVariables.font.size.xs};
   font-weight: ${themeCssVariables.font.weight.semiBold};
+  letter-spacing: 0.06em;
+  padding: ${themeCssVariables.spacing[1]} ${themeCssVariables.spacing[2]};
+  text-transform: uppercase;
+`;
+
+const StyledTitle = styled.h3`
+  color: #ffffff;
+  font-size: ${themeCssVariables.font.size.xl};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  letter-spacing: -0.02em;
+  line-height: 1.2;
   margin: 0;
-  position: relative;
-  z-index: 1;
 `;
 
 const StyledCompany = styled.p`
-  color: ${PARKS_BRAND.primary};
+  color: ${PARKS_BRAND.accent};
   font-size: ${themeCssVariables.font.size.md};
-  font-weight: ${themeCssVariables.font.weight.medium};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
   margin: 0;
-  position: relative;
-  z-index: 1;
+`;
+
+const StyledBody = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${themeCssVariables.spacing[4]};
+  padding: ${themeCssVariables.spacing[4]} ${themeCssVariables.spacing[5]}
+    ${themeCssVariables.spacing[5]};
+`;
+
+const StyledStatusRow = styled.div`
+  align-items: flex-start;
+  display: flex;
+  gap: ${themeCssVariables.spacing[3]};
+  justify-content: space-between;
 `;
 
 const StyledStatus = styled.p`
   animation: parks-lead-ai-status-fade 0.35s ease;
-  color: ${themeCssVariables.font.color.secondary};
+  color: ${themeCssVariables.font.color.primary};
+  flex: 1;
   font-size: ${themeCssVariables.font.size.sm};
+  font-weight: ${themeCssVariables.font.weight.medium};
   line-height: 1.45;
   margin: 0;
-  min-height: 2.9em;
-  position: relative;
-  z-index: 1;
+  min-height: 2.6em;
+  text-align: left;
 
   @keyframes parks-lead-ai-status-fade {
     from {
@@ -168,14 +197,21 @@ const StyledStatus = styled.p`
   }
 `;
 
+const StyledPercent = styled.span`
+  color: ${PARKS_BRAND.primary};
+  font-size: ${themeCssVariables.font.size.lg};
+  font-variant-numeric: tabular-nums;
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  line-height: 1;
+`;
+
 const StyledProgressTrack = styled.div`
   background: ${themeCssVariables.background.tertiary};
   border-radius: 999px;
-  height: 8px;
+  height: 10px;
   overflow: hidden;
   position: relative;
   width: 100%;
-  z-index: 1;
 `;
 
 const StyledProgressFill = styled.div<{ percentage: number }>`
@@ -186,8 +222,32 @@ const StyledProgressFill = styled.div<{ percentage: number }>`
   );
   border-radius: 999px;
   height: 100%;
+  position: relative;
   transition: width 0.2s linear;
   width: ${({ percentage }) => `${Math.min(Math.max(percentage, 0), 100)}%`};
+
+  &::after {
+    animation: parks-lead-ai-shimmer 1.4s linear infinite;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.45) 50%,
+      transparent 100%
+    );
+    content: '';
+    inset: 0;
+    position: absolute;
+  }
+
+  @keyframes parks-lead-ai-shimmer {
+    from {
+      transform: translateX(-100%);
+    }
+
+    to {
+      transform: translateX(100%);
+    }
+  }
 `;
 
 const StyledSteps = styled.ul`
@@ -197,28 +257,43 @@ const StyledSteps = styled.ul`
   list-style: none;
   margin: 0;
   padding: 0;
-  position: relative;
-  text-align: left;
   width: 100%;
-  z-index: 1;
 `;
 
 const StyledStep = styled.li<{ state: 'pending' | 'active' | 'done' }>`
   align-items: center;
+  background: ${({ state }) =>
+    state === 'active'
+      ? PARKS_BRAND.primarySoft
+      : state === 'done'
+        ? themeCssVariables.background.secondary
+        : themeCssVariables.background.primary};
+  border: 1px solid
+    ${({ state }) =>
+      state === 'active'
+        ? PARKS_BRAND.borderSoft
+        : state === 'done'
+          ? themeCssVariables.border.color.light
+          : themeCssVariables.border.color.light};
+  border-radius: ${themeCssVariables.border.radius.md};
   color: ${({ state }) =>
     state === 'pending'
       ? themeCssVariables.font.color.tertiary
       : state === 'active'
         ? PARKS_BRAND.primary
-        : themeCssVariables.font.color.secondary};
+        : themeCssVariables.font.color.primary};
   display: flex;
   font-size: ${themeCssVariables.font.size.sm};
   font-weight: ${({ state }) =>
     state === 'active'
-      ? themeCssVariables.font.weight.medium
-      : themeCssVariables.font.weight.regular};
+      ? themeCssVariables.font.weight.semiBold
+      : themeCssVariables.font.weight.medium};
   gap: ${themeCssVariables.spacing[2]};
-  transition: color 0.2s ease;
+  padding: ${themeCssVariables.spacing[2]} ${themeCssVariables.spacing[3]};
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 `;
 
 const StyledStepDot = styled.span<{ state: 'pending' | 'active' | 'done' }>`
@@ -227,18 +302,18 @@ const StyledStepDot = styled.span<{ state: 'pending' | 'active' | 'done' }>`
     state === 'done'
       ? PARKS_BRAND.primary
       : state === 'active'
-        ? PARKS_BRAND.accentSoft
+        ? PARKS_BRAND.accent
         : themeCssVariables.background.tertiary};
   border: 1px solid
     ${({ state }) =>
-      state === 'pending' ? themeCssVariables.border.color.light : 'transparent'};
+      state === 'pending' ? themeCssVariables.border.color.medium : 'transparent'};
   border-radius: 50%;
   color: #ffffff;
   display: flex;
   flex-shrink: 0;
-  height: 18px;
+  height: 22px;
   justify-content: center;
-  width: 18px;
+  width: 22px;
 
   &[data-active='true'] {
     animation: parks-lead-ai-dot-pulse 1s ease-in-out infinite;
@@ -247,13 +322,13 @@ const StyledStepDot = styled.span<{ state: 'pending' | 'active' | 'done' }>`
   @keyframes parks-lead-ai-dot-pulse {
     0%,
     100% {
-      opacity: 0.75;
+      box-shadow: 0 0 0 0 rgba(141, 198, 63, 0.45);
       transform: scale(1);
     }
 
     50% {
-      opacity: 1;
-      transform: scale(1.12);
+      box-shadow: 0 0 0 6px rgba(141, 198, 63, 0);
+      transform: scale(1.08);
     }
   }
 `;
@@ -261,7 +336,11 @@ const StyledStepDot = styled.span<{ state: 'pending' | 'active' | 'done' }>`
 const StyledScoreChip = styled.div`
   align-items: center;
   animation: parks-lead-ai-score-in 0.4s ease;
-  background: ${PARKS_BRAND.primarySoft};
+  background: linear-gradient(
+    135deg,
+    ${PARKS_BRAND.primarySoft} 0%,
+    ${PARKS_BRAND.accentSoft} 100%
+  );
   border: 1px solid ${PARKS_BRAND.borderSoft};
   border-radius: ${themeCssVariables.border.radius.md};
   color: ${PARKS_BRAND.primary};
@@ -270,9 +349,7 @@ const StyledScoreChip = styled.div`
   font-weight: ${themeCssVariables.font.weight.semiBold};
   gap: ${themeCssVariables.spacing[2]};
   justify-content: center;
-  padding: ${themeCssVariables.spacing[2]} ${themeCssVariables.spacing[3]};
-  position: relative;
-  z-index: 1;
+  padding: ${themeCssVariables.spacing[3]};
 
   @keyframes parks-lead-ai-score-in {
     from {
@@ -285,6 +362,13 @@ const StyledScoreChip = styled.div`
       transform: translateY(0);
     }
   }
+`;
+
+const StyledScoreValue = styled.span`
+  color: ${PARKS_BRAND.primary};
+  font-size: ${themeCssVariables.font.size.xl};
+  font-variant-numeric: tabular-nums;
+  font-weight: ${themeCssVariables.font.weight.semiBold};
 `;
 
 const getStepState = (
@@ -377,42 +461,57 @@ export const ParksLeadAiEnrichmentOverlay = ({
 
   return (
     <StyledPanel role="status" aria-live="polite" aria-busy={!isComplete}>
-      <StyledOrb aria-hidden />
-      <StyledIconRing isComplete={isComplete}>
-        {isComplete ? <IconCheck size={28} /> : <IconSparkles size={28} />}
-      </StyledIconRing>
-      <StyledTitle>
-        {isComplete
-          ? t`Análisis IA completado`
-          : t`IA nutriendo el prospecto`}
-      </StyledTitle>
-      <StyledCompany>{companyName}</StyledCompany>
-      <StyledStatus key={statusLabel}>{statusLabel}</StyledStatus>
-      <StyledProgressTrack>
-        <StyledProgressFill percentage={progressPercentage} />
-      </StyledProgressTrack>
-      <StyledSteps>
-        {steps.map((step, stepIndex) => {
-          const state = getStepState(stepIndex, activeStepIndex, isComplete);
+      <StyledHero>
+        <StyledIconRing isComplete={isComplete}>
+          {isComplete ? <IconCheck size={30} /> : <IconSparkles size={30} />}
+        </StyledIconRing>
+        <StyledEyebrow>
+          {isComplete ? t`Listo` : t`Análisis IA`}
+        </StyledEyebrow>
+        <StyledTitle>
+          {isComplete
+            ? t`Análisis IA completado`
+            : t`IA nutriendo el prospecto`}
+        </StyledTitle>
+        <StyledCompany>{companyName}</StyledCompany>
+        <StyledHeroAccent aria-hidden />
+      </StyledHero>
 
-          return (
-            <StyledStep key={step.id} state={state}>
-              <StyledStepDot
-                state={state}
-                data-active={state === 'active' ? 'true' : 'false'}
-              >
-                {state === 'done' ? <IconCheck size={11} /> : null}
-              </StyledStepDot>
-              {step.label}
-            </StyledStep>
-          );
-        })}
-      </StyledSteps>
-      {isComplete && typeof fitScore === 'number' ? (
-        <StyledScoreChip>
-          {t`Fit score`} {fitScore}/100
-        </StyledScoreChip>
-      ) : null}
+      <StyledBody>
+        <StyledStatusRow>
+          <StyledStatus key={statusLabel}>{statusLabel}</StyledStatus>
+          <StyledPercent>{progressPercentage}%</StyledPercent>
+        </StyledStatusRow>
+
+        <StyledProgressTrack>
+          <StyledProgressFill percentage={progressPercentage} />
+        </StyledProgressTrack>
+
+        <StyledSteps>
+          {steps.map((step, stepIndex) => {
+            const state = getStepState(stepIndex, activeStepIndex, isComplete);
+
+            return (
+              <StyledStep key={step.id} state={state}>
+                <StyledStepDot
+                  state={state}
+                  data-active={state === 'active' ? 'true' : 'false'}
+                >
+                  {state === 'done' ? <IconCheck size={12} /> : null}
+                </StyledStepDot>
+                {step.label}
+              </StyledStep>
+            );
+          })}
+        </StyledSteps>
+
+        {isComplete && typeof fitScore === 'number' ? (
+          <StyledScoreChip>
+            {t`Fit score`}
+            <StyledScoreValue>{fitScore}/100</StyledScoreValue>
+          </StyledScoreChip>
+        ) : null}
+      </StyledBody>
     </StyledPanel>
   );
 };

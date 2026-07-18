@@ -5,6 +5,7 @@ import { brokerNotificationStore } from './broker-notification.store';
 import { commercialLegalHandoffService } from './commercial-legal-handoff.service';
 import {
   comiteStore,
+  computeComiteIaFlags,
   DEFAULT_COMITE_MEMBERS,
   hydrateDealSnapshot,
 } from './comite.store';
@@ -336,6 +337,7 @@ export const comiteService = {
     const config = comiteStore.getConfig();
     const now = new Date().toISOString();
     const deal = hydrateDealSnapshot(input.deal, config);
+    const flagsIaAtipicas = computeComiteIaFlags(deal, config);
     const miembros = DEFAULT_COMITE_MEMBERS.map((member) => ({
       ...member,
       voto: 'Pendiente' as const,
@@ -344,6 +346,19 @@ export const comiteService = {
       ComiteMiembroSeat,
       ComiteMiembroSeat,
     ];
+
+    const auditoriaInicial = [
+      `${now} Comité abierto — notificación enviada a 3 miembros`,
+    ];
+
+    if (flagsIaAtipicas.length > 0) {
+      const alta = flagsIaAtipicas.filter(
+        (flag) => flag.severidad === 'Alta',
+      ).length;
+      auditoriaInicial.push(
+        `${now} IA detectó ${flagsIaAtipicas.length} condición(es) atípica(s)${alta > 0 ? ` · ${alta} de severidad alta` : ''}`,
+      );
+    }
 
     const created: ComiteAutorizacion = {
       id: `comite-${randomUUID()}`,
@@ -361,9 +376,8 @@ export const comiteService = {
       ...recountVotes(miembros),
       resolucion: 'Pendiente',
       preguntas: [],
-      auditoria: [
-        `${now} Comité abierto — notificación enviada a 3 miembros`,
-      ],
+      flagsIaAtipicas,
+      auditoria: auditoriaInicial,
       createdAt: now,
       updatedAt: now,
     };

@@ -1,24 +1,24 @@
 import { t } from '@lingui/core/macro';
+import { IconLayoutKanban } from 'twenty-ui/icon';
 import { useContext } from 'react';
-import { IconShield } from 'twenty-ui/icon';
 import { ThemeContext } from 'twenty-ui/theme-constants';
 
-import { ParksComiteContent } from '@/parks-industrial/components/comite/ParksComiteContent';
+import { ParksCxcCarteraContent } from '@/parks-industrial/components/cxc/ParksCxcCarteraContent';
 import { ParksPageShell } from '@/parks-industrial/components/layout/ParksPageShell';
 import { getParksIndustrialPageSubtitle } from '@/parks-industrial/constants/parks-tenant.constants';
 
-export const ParksComitePage = () => {
+export const ParksCxcCarteraPage = () => {
   const { theme } = useContext(ThemeContext);
 
   return (
     <ParksPageShell
-      title={t`Comité de Autorización`}
+      title={t`CxC · Cartera`}
       subtitle={getParksIndustrialPageSubtitle(
-        t`Gobernanza comercial · mayoría simple`,
+        t`Pipeline Legal→CxC, prioridad, OC portal, holdovers y depósitos`,
       )}
-      icon={<IconShield size={theme.icon.size.md} />}
+      icon={<IconLayoutKanban size={theme.icon.size.md} />}
     >
-      <ParksComiteContent />
+      <ParksCxcCarteraContent />
     </ParksPageShell>
   );
 };

@@ -90,6 +90,28 @@ export type LegalVersionItem = {
   esVersionFinal?: boolean;
 };
 
+export type CotejoIaCambio = {
+  id: string;
+  seccion: string;
+  tipo: 'modificado' | 'agregado' | 'eliminado';
+  antes?: string;
+  despues?: string;
+  severidad: 'bajo' | 'medio' | 'alto';
+  explicacion: string;
+};
+
+export type CotejoIaResult = {
+  casoLegalId: string;
+  versionBase: number;
+  versionComparada: number;
+  coinciden: boolean;
+  cambios: CotejoIaCambio[];
+  resumen: string;
+  recomendacion: 'aprobar' | 'revisar' | 'rechazar';
+  usadoHtmlDraft: boolean;
+  generadoAt: string;
+};
+
 export type LegalFirmaItem = {
   id: string;
   orden: number;

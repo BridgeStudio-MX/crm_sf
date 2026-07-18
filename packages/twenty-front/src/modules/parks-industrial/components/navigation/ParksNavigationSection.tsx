@@ -84,6 +84,7 @@ export const ParksNavigationSection = ({
     legalPipeline: t`Pipeline legal`,
     legalDashboard: t`Dashboard legal`,
     cxc: t`CxC`,
+    cxcCartera: t`Cartera CxC`,
     comite: t`Comité`,
     valorAgregado: t`Valor agregado`,
     asignacion: t`Asignación`,

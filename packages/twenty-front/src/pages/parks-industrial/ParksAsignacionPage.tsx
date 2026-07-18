@@ -14,7 +14,7 @@ export const ParksAsignacionPage = () => {
     <ParksPageShell
       title={t`Asignación inteligente`}
       subtitle={getParksIndustrialPageSubtitle(
-        t`Score, tiers AAA/Estándar/Junior, sugerencias LO y fallbacks — ningún lead se pierde`,
+        t`Rank de cuenta · nivel LO · sugerencias IA`,
       )}
       icon={<IconTargetArrow size={theme.icon.size.md} />}
     >

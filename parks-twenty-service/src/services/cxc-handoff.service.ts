@@ -21,6 +21,9 @@ export const cxcHandoffService = {
     const rentaMensualUsd =
       (hoja?.precioUsdM2 ?? 0) * (hoja?.m2Acordados ?? 0);
     const depositoEstimadoUsd = rentaMensualUsd * 2;
+    const parqueNombre =
+      (casoLegal.nave as { parque?: { nombre?: string } } | null | undefined)
+        ?.parque?.nombre ?? 'Parks';
 
     const tickets = [
       {
@@ -60,22 +63,35 @@ export const cxcHandoffService = {
       status: 'pending',
     });
 
-    cxcDashboardService.onboardFromLegal({
+    const cxcAccount = cxcDashboardService.onboardFromLegal({
       casoLegalId,
       empresa,
       rfc: casoLegal.inquilino?.rfc ?? undefined,
       nave: naveIdentificador,
+      parque: parqueNombre,
       rentaMensualUsd,
       depositoEstimadoUsd,
+      referenciaLegal: referencia,
+      hojaFolio: hoja?.id ?? undefined,
+      m2Acordados: hoja?.m2Acordados ?? undefined,
+      precioUsdM2: hoja?.precioUsdM2 ?? undefined,
+      plazoMeses: hoja?.plazoMeses ?? undefined,
+      mesesGracia: hoja?.periodoGraciaMeses ?? undefined,
+      mesesDeposito: hoja?.depositoMeses ?? undefined,
+      abogadoAsignado: casoLegal.abogadoAsignado ?? undefined,
+      leasingOfficer: hoja?.ejecutivoAsignado ?? undefined,
+      fechaInicio: hoja?.fechaInicio ?? undefined,
     });
 
     brokerNotificationStore.add({
       type: 'task',
       priority: 'high',
-      title: `Handoff CxC — ${empresa}`,
-      body: `Ticket creado para facturación inicial y calendario de rentas (${naveIdentificador}).`,
+      title: `Legal → CxC · ${empresa}`,
+      body: `Contrato ${referencia} firmado. Nave ${naveIdentificador}. Renta USD ${rentaMensualUsd.toLocaleString('en-US')}. Abrir expediente en cartera CxC.`,
       area: 'CxC',
       opportunityName: empresa,
+      actionPath: `/parks/inquilinos/${cxcAccount.id}?tab=cxc`,
+      actionLabel: 'Abrir portal 360',
     });
 
     return {

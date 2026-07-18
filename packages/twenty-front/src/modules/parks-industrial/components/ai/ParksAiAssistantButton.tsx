@@ -119,7 +119,7 @@ const StyledIconWrap = styled.span<{ $ceoMode: boolean }>`
 
 const StyledLabel = styled.span<{ $ceoMode: boolean }>`
   color: ${({ $ceoMode }) =>
-    $ceoMode ? themeCssVariables.font.color.inverted : '#ffffff'};
+    $ceoMode ? themeCssVariables.font.color.inverted : PARKS_BRAND.primary};
   white-space: nowrap;
 `;
 

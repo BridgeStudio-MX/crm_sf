@@ -114,6 +114,10 @@ export const addParksCxcCobranzaAction = async (
     type: CxcCobranzaActionType;
     detail?: string;
     createdBy?: string;
+    compromisoPagoFecha?: string;
+    compromisoMonto?: number;
+    proximaAccionFecha?: string;
+    proximaAccionNota?: string;
   },
 ): Promise<CxcAccount> => {
   const response = await fetch(parksCxcActionsUrl(accountId), {

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { AppPath } from 'twenty-shared/types';
 import { Link } from 'react-router-dom';
 
+import { ParksRenovacionesAlertasIa } from '@/parks-industrial/components/renovaciones/ParksRenovacionesAlertasIa';
 import { ParksRenovacionesHoldovers } from '@/parks-industrial/components/renovaciones/ParksRenovacionesHoldovers';
 import { ParksRenovacionesKanbanBoard } from '@/parks-industrial/components/renovaciones/ParksRenovacionesKanbanBoard';
 import { ParksRenovacionesQueue } from '@/parks-industrial/components/renovaciones/ParksRenovacionesQueue';
@@ -54,6 +55,7 @@ export const ParksRenovacionesContent = () => {
   return (
     <StyledParksPageStack>
       <ParksRenovacionesSummarySection queue={queue} />
+      <ParksRenovacionesAlertasIa queue={queue} />
       <StyledToolbar>
         <ParksSegmentedControl
           value={activeTab}

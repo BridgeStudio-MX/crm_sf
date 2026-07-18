@@ -21,7 +21,7 @@ export const DEFAULT_ASIGNACION_CONFIG: AsignacionConfig = {
   maxHorasSinAsignarEstandar: 24,
   maxHorasSinContactoTrasAsignacionAaa: 4,
   maxHorasSinContactoTrasAsignacionEstandar: 24,
-  einsteinScoringActivo: true,
+  iaScoringActivo: true,
   activa: true,
   ultimaActualizacion: nowIso(),
   actualizadoPor: 'Sistema',

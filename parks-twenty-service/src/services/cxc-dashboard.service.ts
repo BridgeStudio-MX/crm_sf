@@ -1,4 +1,6 @@
-import { cxcStore } from './cxc.store';
+import { brokerNotificationStore } from './broker-notification.store';
+import { buildCalendarioContrato, cxcStore } from './cxc.store';
+import { ParksNotificationRole } from './notification-audience.util';
 import {
   type CxcAccount,
   type CxcCobranzaActionType,
@@ -8,6 +10,33 @@ import {
   type CxcPaymentSuggestion,
   type CxcRiskLabel,
 } from '../types/cxc.types';
+
+const notifyGerenteCxcEscalation = (params: {
+  account: CxcAccount;
+  reason: 'cobranza' | 'oc';
+  detail: string;
+  createdBy: string;
+}): void => {
+  const title =
+    params.reason === 'oc'
+      ? `OC escalada · ${params.account.empresa}`
+      : `Cobranza escalada · ${params.account.empresa}`;
+
+  brokerNotificationStore.add({
+    type: 'alert',
+    priority: 'high',
+    title,
+    body: `${params.detail} · Por ${params.createdBy}. Nave ${params.account.nave} · ${params.account.parque}.`,
+    area: 'CxC',
+    opportunityName: params.account.empresa,
+    actionPath: `/parks/inquilinos/${params.account.id}?tab=cxc`,
+    actionLabel: 'Abrir portal 360',
+    audienceRoleLabels: [
+      ParksNotificationRole.GerenteCxc,
+      ParksNotificationRole.CxC,
+    ],
+  });
+};
 
 const RISK_ORDER: CxcRiskLabel[] = ['Crítico', 'Alto', 'Medio', 'Bajo'];
 
@@ -51,6 +80,7 @@ const ACTION_LABELS: Record<CxcCobranzaActionType, string> = {
   email: 'Correo de seguimiento',
   whatsapp: 'WhatsApp CxP',
   nota: 'Nota operativa',
+  compromiso_pago: 'Compromiso de pago',
   escalar_claudia: 'Escalado a Claudia',
   recordatorio_oc: 'Recordatorio OC',
   pago_aplicado: 'Pago aplicado',
@@ -420,6 +450,10 @@ export const cxcDashboardService = {
       type: CxcCobranzaActionType;
       detail?: string;
       createdBy?: string;
+      compromisoPagoFecha?: string;
+      compromisoMonto?: number;
+      proximaAccionFecha?: string;
+      proximaAccionNota?: string;
     },
   ): CxcAccount => {
     const account = cxcStore.getAccount(accountId);
@@ -434,6 +468,66 @@ export const cxcDashboardService = {
       input.detail?.trim() ||
       `${label} registrada sobre ${account.empresa}.`;
 
+    const nowIso = new Date().toISOString();
+    const previousSeguimiento = account.seguimientoCobranza;
+    let seguimientoCobranza = previousSeguimiento;
+
+    if (
+      input.type === 'llamada' ||
+      input.type === 'email' ||
+      input.type === 'whatsapp' ||
+      input.type === 'nota' ||
+      input.type === 'compromiso_pago'
+    ) {
+      const hasCompromiso =
+        input.type === 'compromiso_pago' ||
+        Boolean(input.compromisoPagoFecha) ||
+        Boolean(input.compromisoMonto);
+
+      seguimientoCobranza = {
+        estado: input.type === 'compromiso_pago' || hasCompromiso
+          ? 'Compromiso de pago'
+          : 'En seguimiento',
+        compromisoPagoFecha:
+          input.compromisoPagoFecha?.trim() ||
+          previousSeguimiento?.compromisoPagoFecha ||
+          null,
+        compromisoMonto:
+          typeof input.compromisoMonto === 'number' &&
+          Number.isFinite(input.compromisoMonto)
+            ? input.compromisoMonto
+            : (previousSeguimiento?.compromisoMonto ?? null),
+        proximaAccionFecha:
+          input.proximaAccionFecha?.trim() ||
+          previousSeguimiento?.proximaAccionFecha ||
+          null,
+        proximaAccionNota:
+          input.proximaAccionNota?.trim() ||
+          previousSeguimiento?.proximaAccionNota ||
+          null,
+        ultimoContactoAt: nowIso,
+        ultimoContactoTipo: input.type,
+      };
+    }
+
+    if (input.type === 'escalar_claudia') {
+      seguimientoCobranza = {
+        estado: 'Escalado',
+        compromisoPagoFecha: previousSeguimiento?.compromisoPagoFecha ?? null,
+        compromisoMonto: previousSeguimiento?.compromisoMonto ?? null,
+        proximaAccionFecha:
+          input.proximaAccionFecha?.trim() ||
+          previousSeguimiento?.proximaAccionFecha ||
+          null,
+        proximaAccionNota:
+          input.proximaAccionNota?.trim() ||
+          previousSeguimiento?.proximaAccionNota ||
+          'Pendiente revisión de Gerente CxC',
+        ultimoContactoAt: nowIso,
+        ultimoContactoTipo: 'escalar_claudia',
+      };
+    }
+
     const next: CxcAccount = {
       ...account,
       notasCobranza: detail,
@@ -443,6 +537,7 @@ export const cxcDashboardService = {
         detail,
         createdBy,
       }),
+      seguimientoCobranza,
       scoreRiesgo:
         input.type === 'escalar_claudia'
           ? Math.min(99, account.scoreRiesgo + 5)
@@ -453,7 +548,18 @@ export const cxcDashboardService = {
           : account.scoreLabel,
     };
 
-    return cxcStore.upsertAccount(next);
+    const updated = cxcStore.upsertAccount(next);
+
+    if (input.type === 'escalar_claudia') {
+      notifyGerenteCxcEscalation({
+        account: updated,
+        reason: 'cobranza',
+        detail,
+        createdBy,
+      });
+    }
+
+    return updated;
   },
 
   sendOcReminder: (
@@ -502,7 +608,18 @@ export const cxcDashboardService = {
       ),
     };
 
-    return cxcStore.upsertAccount(next);
+    const updated = cxcStore.upsertAccount(next);
+
+    if (escalate) {
+      notifyGerenteCxcEscalation({
+        account: updated,
+        reason: 'oc',
+        detail,
+        createdBy,
+      });
+    }
+
+    return updated;
   },
 
   advanceDepositChecklist: (
@@ -566,6 +683,18 @@ export const cxcDashboardService = {
     contactoPagosNombre?: string;
     contactoPagosEmail?: string;
     contactoPagosTelefono?: string;
+    referenciaLegal?: string;
+    hojaFolio?: string;
+    m2Acordados?: number;
+    precioUsdM2?: number;
+    plazoMeses?: number;
+    mesesGracia?: number;
+    mesesDeposito?: number;
+    requiereOc?: boolean;
+    abogadoAsignado?: string;
+    leasingOfficer?: string;
+    fechaInicio?: string;
+    fechaVencimiento?: string;
   }): CxcAccount => {
     const accountId = `cxc-legal-${input.casoLegalId}`;
     const existing = cxcStore.getAccount(accountId);
@@ -575,6 +704,8 @@ export const cxcDashboardService = {
     }
 
     const now = new Date().toISOString();
+    const requiereOc = input.requiereOc === true;
+    const renta = input.rentaMensualUsd;
     const account: CxcAccount = {
       id: accountId,
       empresa: input.empresa,
@@ -587,23 +718,35 @@ export const cxcDashboardService = {
       estatusPagos: 'Al corriente',
       scoreRiesgo: 25,
       scoreLabel: 'Bajo',
-      scoreFactores: ['Onboarding desde Legal', 'Sin historial de mora'],
-      tipoCliente: 'Sin portal',
+      scoreFactores: [
+        'Onboarding desde Legal',
+        'Sin historial de mora',
+        ...(requiereOc ? ['Cliente requiere OC / portal'] : []),
+      ],
+      tipoCliente: requiereOc ? 'Con portal' : 'Sin portal',
       diaPagoAcordado: 'Día 10',
       moneda: 'USD',
-      rentaMensual: input.rentaMensualUsd,
+      rentaMensual: renta,
       montoAdeudoTotal: 0,
       diasEnMora: 0,
       ultimaFechaPago: null,
       nave: input.nave ?? 'N/A',
       parque: input.parque ?? 'N/A',
       contratosActivos: 1,
-      requiereOc: false,
+      requiereOc,
       cuentaBancaria: null,
       cicloEstatus: 'Gracia',
       jesusContratoDadoAlta: false,
       facturas: [],
-      ordenCompra: null,
+      ordenCompra: requiereOc
+        ? {
+            numeroOc: null,
+            estatus: 'Esperando OC',
+            diasSinOc: 0,
+            intentosRecordatorio: 0,
+            fechaPagoProgramada: null,
+          }
+        : null,
       deposito:
         input.depositoEstimadoUsd > 0
           ? {
@@ -620,8 +763,110 @@ export const cxcDashboardService = {
       holdover: null,
       notasCobranza:
         'Onboarding automático desde Legal — solicitar cuenta Fibra Uno y confirmar alta Oracle.',
-      actividadesCobranza: [],
+      actividadesCobranza: [
+        {
+          id: `act-handoff-${input.casoLegalId}`,
+          type: 'nota',
+          label: 'Handoff Legal → CxC',
+          detail: `Contrato ${input.referenciaLegal ?? input.casoLegalId} firmado. Crear ciclo de facturación y calendario de rentas.`,
+          createdBy: 'Sistema · Legal',
+          createdAt: now,
+        },
+      ],
+      seguimientoCobranza: null,
       casoLegalId: input.casoLegalId,
+      pipelineStage: 'recibido_legal',
+      recibidoDeLegalAt: now,
+      hojaAcuerdos: {
+        folio: input.hojaFolio ?? null,
+        m2Acordados: input.m2Acordados ?? 0,
+        precioUsdM2: input.precioUsdM2 ?? 0,
+        rentaMensual: renta,
+        moneda: 'USD',
+        plazoMeses: input.plazoMeses ?? 60,
+        mesesGracia: input.mesesGracia ?? 2,
+        mesesDeposito: input.mesesDeposito ?? 2,
+        mesesRentaAdelantada: 1,
+        escalacionTipo: 'INPC',
+        escalacionPct: null,
+        fechaFirma: now.slice(0, 10),
+        leasingOfficer: input.leasingOfficer ?? null,
+      },
+      contrato: {
+        referenciaLegal: input.referenciaLegal ?? input.casoLegalId,
+        tipoDocumento: 'Arrendamiento industrial',
+        fechaInicio: input.fechaInicio ?? now.slice(0, 10),
+        fechaVencimiento: input.fechaVencimiento ?? now.slice(0, 10),
+        abogadoAsignado: input.abogadoAsignado ?? null,
+        esPropiedadFuno: true,
+        estatusLegal: 'Firmado — enviado a CxC',
+        casoLegalId: input.casoLegalId,
+      },
+      calendarioPagos: buildCalendarioContrato({
+        diaPago: 'Día 10',
+        renta,
+        fechaInicio: input.fechaInicio ?? now.slice(0, 10),
+        plazoMeses: input.plazoMeses ?? 60,
+        mesesGracia: input.mesesGracia ?? 2,
+        mesesDeposito: input.mesesDeposito ?? 2,
+        mesesRentaAdelantada: 1,
+        rentasPagadas: 0,
+      }),
+      portalPago: requiereOc
+        ? {
+            requiereOc: true,
+            portalUrl: null,
+            portalNombre: 'Portal del cliente (por confirmar)',
+            instrucciones:
+              'Cliente exige OC antes de facturar. Solicitar OC → registrar → Jesús emite → cargar al portal.',
+            pasos: [
+              {
+                id: 'solicitar-oc',
+                label: 'Solicitar orden de compra',
+                done: false,
+                detail: 'Pendiente contacto CxP',
+              },
+              {
+                id: 'recibir-oc',
+                label: 'Recibir y registrar OC',
+                done: false,
+                detail: 'Bloquea factura',
+              },
+              {
+                id: 'emitir',
+                label: 'Emitir factura Oracle',
+                done: false,
+                detail: 'Jesús',
+              },
+              {
+                id: 'cargar-portal',
+                label: 'Subir factura al portal',
+                done: false,
+                detail: 'URL pendiente',
+              },
+            ],
+          }
+        : {
+            requiereOc: false,
+            portalUrl: null,
+            portalNombre: null,
+            instrucciones:
+              'Sin portal: transferencias a cuenta Fibra Uno asignada.',
+            pasos: [
+              {
+                id: 'emitir',
+                label: 'Emitir factura Oracle',
+                done: false,
+                detail: 'Tras alta Oracle',
+              },
+              {
+                id: 'enviar',
+                label: 'Enviar a CxP',
+                done: false,
+                detail: 'PDF + datos bancarios',
+              },
+            ],
+          },
       createdAt: now,
       updatedAt: now,
     };

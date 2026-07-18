@@ -59,7 +59,7 @@ export const ParksRenovacionesSummary = ({
     <StyledHero>
       <StyledHeroTitle>{t`Centro de renovaciones`}</StyledHeroTitle>
       <StyledHeroText>
-        {t`Prioriza contratos por riesgo de vacancia e ingreso. Los casos críticos requieren acción comercial y legal antes del vencimiento.`}
+        {t`Prioriza por riesgo de vacancia. La IA dispara alertas a 12, 6, 3 y 1 mes del vencimiento para Comercial, dirección, CEO y Legal.`}
       </StyledHeroText>
     </StyledHero>
     <StyledGrid>

@@ -18,6 +18,7 @@
     "setup:dashboards": "tsx scripts/setup-dashboards.ts",
     "setup:webhooks": "tsx scripts/setup-webhooks.ts",
     "seed:demo": "tsx scripts/seed-demo.ts",
+    "seed:brokers-mock": "tsx scripts/seed-brokers-mock.ts",
     "seed:scenarios": "tsx scripts/seed-demo-scenarios.ts",
     "seed:cleanup": "tsx scripts/seed-cleanup.ts",
     "reset:single-park": "tsx scripts/reset-to-single-park.ts",

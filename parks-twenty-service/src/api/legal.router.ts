@@ -3,6 +3,7 @@ import fs from 'fs';
 
 import { actaRestitucionService } from '../services/acta-restitucion.service';
 import { contractGeneratorService } from '../services/contract-generator.service';
+import { cotejoInteligenteService } from '../services/cotejo-inteligente.service';
 import { documentExtractionService } from '../services/document-extraction.service';
 import { documentValidationService } from '../services/document-validation.service';
 import { holdoverCondonacionService } from '../services/holdover-condonacion.service';
@@ -581,6 +582,29 @@ legalRouter.post('/workflow/:casoLegalId/cotejo', async (request, response) => {
     response.status(500).json({ error: message });
   }
 });
+
+legalRouter.post(
+  '/workflow/:casoLegalId/cotejo-ia',
+  async (request, response) => {
+    try {
+      const body = request.body as {
+        versionBase?: number;
+        versionComparada?: number;
+      };
+
+      const result = await cotejoInteligenteService.compareVersions({
+        casoLegalId: request.params.casoLegalId,
+        versionBase: body.versionBase,
+        versionComparada: body.versionComparada,
+      });
+
+      response.json(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      response.status(500).json({ error: message });
+    }
+  },
+);
 
 legalRouter.post('/acta-restitucion', async (request, response) => {
   try {

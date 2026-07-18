@@ -1,6 +1,7 @@
 import { t } from '@lingui/core/macro';
 import { AppBasePath, AppPath, SettingsPath } from 'twenty-shared/types';
 
+import { PARKS_BROKERS_PATH } from '@/parks-industrial/constants/parks-routes.constants';
 import {
   PARKS_INDUSTRIAL_TENANT_NAME,
   formatParksIndustrialDocumentTitle,
@@ -73,7 +74,7 @@ const resolveParksPageTitle = (pathname: string): string | null => {
     return t`Comisiones`;
   }
 
-  if (pathname.startsWith(AppPath.ParksBrokers)) {
+  if (pathname.startsWith(PARKS_BROKERS_PATH)) {
     return t`Brokers`;
   }
 

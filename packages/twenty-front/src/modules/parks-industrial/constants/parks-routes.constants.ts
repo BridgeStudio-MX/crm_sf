@@ -38,6 +38,15 @@ export const PARKS_LEGAL_DASHBOARD_PATH = resolveParksPath(
 
 export const PARKS_CXC_PATH = resolveParksPath(AppPath.ParksCxc, '/parks/cxc');
 
+export const PARKS_CXC_CARTERA_PATH = resolveParksPath(
+  AppPath.ParksCxcCartera,
+  '/parks/cxc/cartera',
+);
+
+export const PARKS_NOTIFICACIONES_PATH = resolveParksPath(
+  AppPath.ParksNotificaciones,
+  '/parks/notificaciones',
+);
 export const PARKS_COMITE_PATH = resolveParksPath(
   AppPath.ParksComite,
   '/parks/comite',
@@ -74,6 +83,11 @@ export const PARKS_MIS_PENDIENTES_PATH = resolveParksPath(
 export const PARKS_DASHBOARD_COMERCIAL_PATH = resolveParksPath(
   AppPath.ParksDashboardComercial,
   '/parks/dashboard-comercial',
+);
+
+export const PARKS_BROKERS_PATH = resolveParksPath(
+  AppPath.ParksBrokers,
+  '/parks/brokers',
 );
 
 export const getParksInquilino360Path = (inquilinoId: string): string =>
