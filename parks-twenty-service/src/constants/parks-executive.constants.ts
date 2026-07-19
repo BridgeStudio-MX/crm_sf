@@ -1,0 +1,25 @@
+// Legal SLAs from Power BI Panel Legal (spec §6) — replaces generic 45/60/90.
+export const PARKS_LEGAL_SLA_DAYS = {
+  CONTRATOS_NUEVOS_NAVES_TERMINADAS: 45,
+  CONTRATOS_NUEVOS_NAVES_EN_CONSTRUCCION: 90,
+  RENOVACIONES: 45,
+  DOCUMENTOS_POST_CONTRATO: 30,
+} as const;
+
+export const PARKS_LEGAL_SLA_META_PCT = 80;
+
+export type ParksPortfolioSegment = 'TOTAL' | 'INDUSTRIAL';
+
+// Extensible catalog — FINSA / FIBRA_NEXT out of scope for now (spec §6.1).
+export const PARKS_PORTFOLIO_SEGMENTS: ParksPortfolioSegment[] = [
+  'TOTAL',
+  'INDUSTRIAL',
+];
+
+export const PARKS_OCUPACION_METAS = {
+  M2_TERMINADOS: 98.75,
+  M2_CONSTRUCCION: 50,
+  M2_PROYECTADOS: 25,
+} as const;
+
+export const PARKS_RENOVACION_INCREMENTO_META_PCT = 15;

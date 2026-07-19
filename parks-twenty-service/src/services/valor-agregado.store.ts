@@ -90,16 +90,40 @@ const buildDemoChecklist = (): ChecklistVigenciaResumen[] => [
 
 const buildDemoExpansiones = (): ExpansionOportunidad[] => [
   {
+    id: 'exp-logimex',
+    inquilinoNombre: 'LogiMex',
+    naveActual: 'Nave 1',
+    parqueNombre: 'Parques del Bajío - Silao',
+    mesesOcupado: 26,
+    navesDisponibles: [
+      { identificador: 'Nave 7', m2: 4_500, precioBaseUsd: 0.92 },
+      { identificador: 'Nave XC-01', m2: 12_000, precioBaseUsd: 0.95 },
+    ],
+    taskCreated: true,
+  },
+  {
     id: 'exp-nestle',
     inquilinoNombre: 'Nestlé México',
     naveActual: 'Nave 4',
-    parqueNombre: 'Parks Bajío',
+    parqueNombre: 'Parques del Bajío - Silao',
     mesesOcupado: 22,
     navesDisponibles: [
-      { identificador: 'Nave 7', m2: 4_500, precioBaseUsd: 0.92 },
-      { identificador: 'Nave 9', m2: 6_200, precioBaseUsd: 0.88 },
+      { identificador: 'Nave D-2', m2: 49_890, precioBaseUsd: 0.88 },
+      { identificador: 'Nave BT-GDL-A', m2: 18_500, precioBaseUsd: 0.98 },
     ],
     taskCreated: true,
+  },
+  {
+    id: 'exp-femsa',
+    inquilinoNombre: 'Coca-Cola FEMSA',
+    naveActual: 'Bodega 05AM200',
+    parqueNombre: 'GuadalupePark I',
+    mesesOcupado: 34,
+    navesDisponibles: [
+      { identificador: 'Nave C-3', m2: 44_658, precioBaseUsd: 0.92 },
+      { identificador: 'Nave XL-MTY-1', m2: 62_000, precioBaseUsd: 0.94 },
+    ],
+    taskCreated: false,
   },
 ];
 

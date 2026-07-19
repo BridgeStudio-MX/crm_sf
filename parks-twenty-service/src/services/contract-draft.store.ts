@@ -1,10 +1,27 @@
 import { type ContractDraftRecord } from '../types/legal.types';
 
 const drafts = new Map<string, ContractDraftRecord>();
+const historyByCaso = new Map<string, ContractDraftRecord[]>();
+
+const pushHistory = (record: ContractDraftRecord): void => {
+  const existing = historyByCaso.get(record.casoLegalId) ?? [];
+  const withoutSameVersion = existing.filter(
+    (item) => item.version !== record.version,
+  );
+  historyByCaso.set(record.casoLegalId, [
+    ...withoutSameVersion,
+    { ...record },
+  ]);
+};
 
 export const contractDraftStore = {
   get: (casoLegalId: string): ContractDraftRecord | null =>
     drafts.get(casoLegalId) ?? null,
+
+  listHistory: (casoLegalId: string): ContractDraftRecord[] =>
+    [...(historyByCaso.get(casoLegalId) ?? [])].sort(
+      (left, right) => left.version - right.version,
+    ),
 
   save: (
     draft: Omit<ContractDraftRecord, 'createdAt' | 'updatedAt' | 'version'> & {
@@ -20,6 +37,7 @@ export const contractDraftStore = {
     };
 
     drafts.set(draft.casoLegalId, record);
+    pushHistory(record);
 
     return record;
   },
@@ -42,6 +60,7 @@ export const contractDraftStore = {
     };
 
     drafts.set(casoLegalId, updated);
+    pushHistory(updated);
 
     return updated;
   },

@@ -12,6 +12,7 @@ export type ParksAiScreen =
   | 'approval'
   | 'stacking-plan'
   | 'comisiones'
+  | 'brokers'
   | 'renovaciones'
   | 'reservas'
   | 'notificaciones'

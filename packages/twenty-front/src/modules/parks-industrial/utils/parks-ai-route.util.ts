@@ -45,6 +45,10 @@ export const resolveParksAiScreenFromPath = (
     return 'comisiones';
   }
 
+  if (pathname.includes(AppPath.ParksBrokers)) {
+    return 'brokers';
+  }
+
   if (pathname.includes(AppPath.ParksRenovaciones)) {
     return 'renovaciones';
   }
@@ -73,6 +77,7 @@ export const getParksAiScreenLabel = (screen: ParksAiScreen): string => {
     approval: t`Aprobación legal`,
     'stacking-plan': t`Stacking plan`,
     comisiones: t`Comisiones`,
+    brokers: t`Brokers`,
     renovaciones: t`Renovaciones`,
     reservas: t`Reservas`,
     notificaciones: t`Notificaciones`,

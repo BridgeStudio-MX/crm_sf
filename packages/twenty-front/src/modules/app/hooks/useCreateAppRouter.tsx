@@ -12,8 +12,11 @@ import { MainAppLayoutWithSidePanel } from '@/ui/layout/page/components/MainAppL
 import { AppPath, SettingsPath } from 'twenty-shared/types';
 import { getSettingsPath } from 'twenty-shared/utils';
 import {
+  PARKS_ASIGNACION_PATH,
+  PARKS_BROKERS_PATH,
   PARKS_COMITE_DETAIL_PATH,
   PARKS_COMITE_PATH,
+  PARKS_CXC_CARTERA_PATH,
   PARKS_CXC_PATH,
   PARKS_DASHBOARD_COMERCIAL_PATH,
   PARKS_INQUILINO_360_PATH,
@@ -23,7 +26,6 @@ import {
   PARKS_LO_CAMPO_PATH,
   PARKS_MIS_PENDIENTES_PATH,
   PARKS_VALOR_AGREGADO_PATH,
-  PARKS_ASIGNACION_PATH,
 } from '@/parks-industrial/constants/parks-routes.constants';
 import { ParksProtectedRoute } from '@/parks-industrial/components/navigation/ParksProtectedRoute';
 
@@ -201,6 +203,12 @@ const ParksCxcDashboardPage = lazy(() =>
   })),
 );
 
+const ParksCxcCarteraPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksCxcCarteraPage').then((module) => ({
+    default: module.ParksCxcCarteraPage,
+  })),
+);
+
 const ParksComitePage = lazy(() =>
   import('~/pages/parks-industrial/ParksComitePage').then((module) => ({
     default: module.ParksComitePage,
@@ -242,6 +250,12 @@ const ParksDashboardComercialPage = lazy(() =>
 const ParksComisionesPage = lazy(() =>
   import('~/pages/parks-industrial/ParksComisionesPage').then((module) => ({
     default: module.ParksComisionesPage,
+  })),
+);
+
+const ParksBrokersPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksBrokersPage').then((module) => ({
+    default: module.ParksBrokersPage,
   })),
 );
 
@@ -529,6 +543,14 @@ export const useCreateAppRouter = (
               }
             />
             <Route
+              path={PARKS_CXC_CARTERA_PATH}
+              element={
+                <ParksLazyRoute>
+                  <ParksCxcCarteraPage />
+                </ParksLazyRoute>
+              }
+            />
+            <Route
               path={PARKS_COMITE_PATH}
               element={
                 <ParksLazyRoute>
@@ -573,6 +595,14 @@ export const useCreateAppRouter = (
               element={
                 <ParksLazyRoute>
                   <ParksComisionesPage />
+                </ParksLazyRoute>
+              }
+            />
+            <Route
+              path={PARKS_BROKERS_PATH}
+              element={
+                <ParksLazyRoute>
+                  <ParksBrokersPage />
                 </ParksLazyRoute>
               }
             />

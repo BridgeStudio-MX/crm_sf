@@ -1,5 +1,7 @@
 import { AppPath } from 'twenty-shared/types';
 
+import { getParksInquilino360Path } from '@/parks-industrial/constants/parks-routes.constants';
+
 export const PARKS_NOTIFICATION_ACTION = {
   pipelineDeal: (opportunityId: string, options?: {
     tab?: string;
@@ -20,6 +22,8 @@ export const PARKS_NOTIFICATION_ACTION = {
   contratos: () => AppPath.ParksContratos,
   legalPipeline: () => AppPath.ParksLegalPipeline,
   leadsCem: () => AppPath.ParksLeadsCem,
+  cxcAccount: (accountId: string) =>
+    `${getParksInquilino360Path(accountId)}?tab=cxc`,
 } as const;
 
 export const resolveParksNotificationActionLabel = (actionPath?: string) => {
@@ -45,6 +49,17 @@ export const resolveParksNotificationActionLabel = (actionPath?: string) => {
 
   if (actionPath.includes('/parks/legal-pipeline')) {
     return 'Ver pipeline legal';
+  }
+
+  if (
+    actionPath.includes('/parks/inquilinos/') &&
+    actionPath.includes('tab=cxc')
+  ) {
+    return 'Abrir portal 360';
+  }
+
+  if (actionPath.includes('/parks/cxc/cartera') || actionPath.includes('/parks/cxc')) {
+    return 'Abrir en CxC';
   }
 
   if (actionPath.includes('/parks/leads-cem')) {

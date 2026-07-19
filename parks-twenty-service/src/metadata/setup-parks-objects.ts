@@ -200,5 +200,7 @@ export const setupParksObjects = async (): Promise<void> => {
   registry = await refreshObjectRegistry();
   await ensureRelations(registry);
 
-  console.log('[setup:objects] Done — 13 custom objects configured');
+  console.log(
+    `[setup:objects] Done — ${PARKS_OBJECT_DEFINITIONS.length} custom objects configured`,
+  );
 };

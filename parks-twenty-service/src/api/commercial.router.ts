@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import { commercialAccountService } from '../services/commercial-account.service';
 import { commercialApprovalService } from '../services/commercial-approval.service';
+import { commercialContactService } from '../services/commercial-contact.service';
 import { commercialDecisorService } from '../services/commercial-decisor.service';
 import { commercialHojaService } from '../services/commercial-hoja.service';
 import { commercialLeadService } from '../services/commercial-lead.service';
@@ -10,11 +11,14 @@ import { commercialQuotationService } from '../services/commercial-quotation.ser
 import { commercialTourService } from '../services/commercial-tour.service';
 import { activityTimelineService } from '../services/activity-timeline.service';
 import { brokerNotificationStore } from '../services/broker-notification.store';
+import { brokerService } from '../services/broker.service';
 import { cemInboxService } from '../services/cem-inbox.service';
 import { composerService } from '../services/composer.service';
 import { dealWinService } from '../services/deal-win.service';
 import { demandSearchService } from '../services/demand-search.service';
 import { emailSequenceService } from '../services/email-sequence.service';
+import { empresaBrokerService } from '../services/empresa-broker.service';
+import { expansionSignalsStore } from '../services/expansion-signals.store';
 import { fichaTecnicaService } from '../services/ficha-tecnica.service';
 import { naveMatchingService } from '../services/nave-matching.service';
 import { prospectEnrichmentService } from '../services/prospect-enrichment.service';
@@ -50,6 +54,14 @@ commercialRouter.post('/leads', async (request, response) => {
     if (!body?.empresa || !body?.canalOrigen || !body?.nombreCompleto) {
       response.status(400).json({
         error: 'nombreCompleto, empresa and canalOrigen are required',
+      });
+      return;
+    }
+
+    if (body.brokerId && !body.leasingOfficerAsignado?.trim()) {
+      response.status(400).json({
+        error:
+          'leasingOfficerAsignado is required when brokerId is provided: el LO lleva la negociación interna de todo lead con broker',
       });
       return;
     }
@@ -114,6 +126,34 @@ commercialRouter.post(
         opportunityId: request.params.opportunityId,
         leasingOfficerName: body.leasingOfficerName,
         assignedBy: body.assignedBy,
+      });
+
+      response.json(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      response.status(500).json({ error: message });
+    }
+  },
+);
+
+commercialRouter.post(
+  '/contacts/:opportunityId',
+  async (request, response) => {
+    try {
+      const body = request.body as Parameters<
+        typeof commercialContactService.register
+      >[0];
+
+      if (!body?.tipo?.trim() || !body?.fecha?.trim()) {
+        response.status(400).json({
+          error: 'tipo and fecha are required',
+        });
+        return;
+      }
+
+      const result = await commercialContactService.register({
+        ...body,
+        opportunityId: request.params.opportunityId,
       });
 
       response.json(result);
@@ -325,6 +365,7 @@ commercialRouter.patch(
         tipoContrato?: string;
         esquemaComision?: string;
         ejecutivoAsignado?: string;
+        brokerId?: string | null;
         brokerComisionPct?: number;
         brokerComisionMonto?: number;
       };
@@ -432,6 +473,14 @@ commercialRouter.post(
         return;
       }
 
+      if (body.brokerId && !body.leasingOfficerAsignado?.trim()) {
+        response.status(400).json({
+          error:
+            'leasingOfficerAsignado is required when brokerId is provided: el LO lleva la negociación interna de todo lead con broker',
+        });
+        return;
+      }
+
       const result = await commercialLeadService.createOpportunityForInquilino(
         inquilinoId,
         body,
@@ -459,6 +508,30 @@ commercialRouter.get(
     }
   },
 );
+
+commercialRouter.get('/expansion-signals', (_request, response) => {
+  response.json({
+    signals: expansionSignalsStore.list(),
+    summaries: expansionSignalsStore.listSummaryByEmpresa(),
+    refreshedAt: new Date().toISOString(),
+  });
+});
+
+commercialRouter.post('/expansion-signals/refresh', (_request, response) => {
+  const signals = expansionSignalsStore.refreshMock();
+  brokerNotificationStore.add({
+    type: 'system',
+    priority: 'normal',
+    title: 'IA — señales de expansión actualizadas',
+    body: `${signals.length} señales activas en clientes actuales (LinkedIn / noticias / inventario).`,
+    area: 'Comercial',
+  });
+  response.json({
+    signals,
+    summaries: expansionSignalsStore.listSummaryByEmpresa(),
+    refreshedAt: new Date().toISOString(),
+  });
+});
 
 commercialRouter.get(
   '/decisores/opportunity/:opportunityId',
@@ -582,6 +655,103 @@ commercialRouter.post(
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       response.status(500).json({ error: message });
+    }
+  },
+);
+
+commercialRouter.get('/brokers', async (_request, response) => {
+  try {
+    const brokers = await brokerService.listWithStats();
+
+    response.json({ brokers });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    response.status(500).json({ error: message });
+  }
+});
+
+commercialRouter.post('/brokers', async (request, response) => {
+  try {
+    const body = request.body as Parameters<typeof brokerService.create>[0];
+
+    if (!body?.contacto?.trim()) {
+      response.status(400).json({ error: 'contacto is required' });
+      return;
+    }
+
+    if (!body?.empresaBrokerId && !body?.nuevaEmpresaNombre?.trim()) {
+      response.status(400).json({
+        error: 'empresaBrokerId or nuevaEmpresaNombre is required',
+      });
+      return;
+    }
+
+    const broker = await brokerService.create(body);
+
+    response.status(201).json({ broker });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    response.status(400).json({ error: message });
+  }
+});
+
+commercialRouter.patch('/brokers/:brokerId', async (request, response) => {
+  try {
+    const body = request.body as Parameters<typeof brokerService.update>[1];
+    const broker = await brokerService.update(request.params.brokerId, body);
+
+    response.json({ broker });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    response.status(400).json({ error: message });
+  }
+});
+
+commercialRouter.get('/empresas-broker', async (_request, response) => {
+  try {
+    const empresas = await empresaBrokerService.listWithStats();
+
+    response.json({ empresas });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    response.status(500).json({ error: message });
+  }
+});
+
+commercialRouter.post('/empresas-broker', async (request, response) => {
+  try {
+    const body = request.body as Parameters<typeof empresaBrokerService.create>[0];
+
+    if (!body?.nombre?.trim()) {
+      response.status(400).json({ error: 'nombre is required' });
+      return;
+    }
+
+    const empresa = await empresaBrokerService.create(body);
+
+    response.status(201).json({ empresa });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    response.status(400).json({ error: message });
+  }
+});
+
+commercialRouter.patch(
+  '/empresas-broker/:empresaBrokerId',
+  async (request, response) => {
+    try {
+      const body = request.body as Parameters<
+        typeof empresaBrokerService.update
+      >[1];
+      const empresa = await empresaBrokerService.update(
+        request.params.empresaBrokerId,
+        body,
+      );
+
+      response.json({ empresa });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      response.status(400).json({ error: message });
     }
   },
 );

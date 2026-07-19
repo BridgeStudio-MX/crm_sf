@@ -15,7 +15,10 @@ import {
 import { MOBILE_VIEWPORT, themeCssVariables } from 'twenty-ui/theme-constants';
 
 import { ParksStatusBadge } from '@/parks-industrial/components/ui/ParksStatusBadge';
-import { PARKS_BRAND } from '@/parks-industrial/constants/parks-theme.constants';
+import { ParksBrandLogo } from '@/parks-industrial/components/ui/ParksBrandLogo';
+import {
+  PARKS_COMMAND_CENTER,
+} from '@/parks-industrial/constants/parks-theme.constants';
 import { type ParksCeoCommandMetrics } from '@/parks-industrial/hooks/useParksCeoCommandMetrics';
 import { formatCxcCompactMoney } from '@/parks-industrial/utils/parks-cxc-format.util';
 import {
@@ -28,19 +31,11 @@ type ParksCeoCommandHeroProps = {
 };
 
 const StyledHero = styled.section`
-  background: linear-gradient(
-    135deg,
-    #001a0e 0%,
-    #003d20 28%,
-    ${PARKS_BRAND.primary} 58%,
-    #0d8f52 82%,
-    rgba(141, 198, 63, 0.55) 100%
-  );
+  background: ${PARKS_COMMAND_CENTER.background};
+  border: 1px solid ${PARKS_COMMAND_CENTER.panelBorder};
   border-radius: ${themeCssVariables.border.radius.xl};
-  box-shadow:
-    0 28px 56px rgba(0, 26, 14, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
-  color: ${themeCssVariables.font.color.inverted};
+  box-shadow: ${PARKS_COMMAND_CENTER.boxShadow};
+  color: ${PARKS_COMMAND_CENTER.text};
   overflow: hidden;
   padding: ${themeCssVariables.spacing[5]};
   position: relative;
@@ -51,11 +46,7 @@ const StyledHero = styled.section`
 `;
 
 const StyledOrb = styled.div<{ top: string; right: string; size: string }>`
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.18) 0%,
-    transparent 70%
-  );
+  background: ${PARKS_COMMAND_CENTER.glowOrb};
   border-radius: 50%;
   height: ${({ size }) => size};
   pointer-events: none;
@@ -75,6 +66,10 @@ const StyledTopRow = styled.div`
   z-index: 1;
 `;
 
+const StyledHeroBrand = styled.div`
+  margin-bottom: ${themeCssVariables.spacing[1]};
+`;
+
 const StyledCopy = styled.div`
   display: flex;
   flex: 1;
@@ -84,7 +79,7 @@ const StyledCopy = styled.div`
 `;
 
 const StyledEyebrow = styled.div`
-  color: rgba(255, 255, 255, 0.7);
+  color: ${PARKS_COMMAND_CENTER.textMuted};
   font-size: ${themeCssVariables.font.size.xs};
   font-weight: ${themeCssVariables.font.weight.medium};
   letter-spacing: 0.14em;
@@ -100,7 +95,7 @@ const StyledTitle = styled.h2`
 `;
 
 const StyledSubtitle = styled.p`
-  color: rgba(255, 255, 255, 0.82);
+  color: ${PARKS_COMMAND_CENTER.textSecondary};
   font-size: ${themeCssVariables.font.size.sm};
   line-height: 1.45;
   margin: 0;
@@ -109,8 +104,8 @@ const StyledSubtitle = styled.p`
 
 const StyledHealthCard = styled.div`
   backdrop-filter: blur(10px);
-  background: rgba(0, 0, 0, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: ${PARKS_COMMAND_CENTER.panelBackground};
+  border: 1px solid ${PARKS_COMMAND_CENTER.panelBorder};
   border-radius: ${themeCssVariables.border.radius.md};
   min-width: 148px;
   padding: ${themeCssVariables.spacing[3]};
@@ -125,7 +120,7 @@ const StyledHealthScore = styled.div`
 `;
 
 const StyledHealthLabel = styled.div`
-  color: rgba(255, 255, 255, 0.78);
+  color: ${PARKS_COMMAND_CENTER.textMuted};
   font-size: ${themeCssVariables.font.size.xs};
   margin-top: ${themeCssVariables.spacing[1]};
   text-transform: uppercase;
@@ -151,8 +146,8 @@ const StyledKpiGrid = styled.div`
 
 const StyledKpi = styled.div`
   backdrop-filter: blur(8px);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: ${PARKS_COMMAND_CENTER.panelBackground};
+  border: 1px solid ${PARKS_COMMAND_CENTER.panelBorder};
   border-radius: ${themeCssVariables.border.radius.md};
   display: flex;
   flex-direction: column;
@@ -163,14 +158,14 @@ const StyledKpi = styled.div`
     background 0.2s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.14);
+    background: ${PARKS_COMMAND_CENTER.actionHoverBackground};
     transform: translateY(-2px);
   }
 `;
 
 const StyledKpiLabel = styled.div`
   align-items: center;
-  color: rgba(255, 255, 255, 0.72);
+  color: ${PARKS_COMMAND_CENTER.textMuted};
   display: flex;
   font-size: ${themeCssVariables.font.size.xs};
   gap: 6px;
@@ -184,7 +179,7 @@ const StyledKpiValue = styled.div`
 `;
 
 const StyledKpiHint = styled.div`
-  color: rgba(255, 255, 255, 0.62);
+  color: ${PARKS_COMMAND_CENTER.textMuted};
   font-size: 11px;
 `;
 
@@ -199,10 +194,10 @@ const StyledLinks = styled.div`
 
 const StyledLink = styled(Link)`
   align-items: center;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: ${PARKS_COMMAND_CENTER.actionBackground};
+  border: 1px solid ${PARKS_COMMAND_CENTER.actionBorder};
   border-radius: ${themeCssVariables.border.radius.sm};
-  color: ${themeCssVariables.font.color.inverted};
+  color: ${PARKS_COMMAND_CENTER.text};
   display: inline-flex;
   font-size: ${themeCssVariables.font.size.sm};
   font-weight: ${themeCssVariables.font.weight.medium};
@@ -212,7 +207,7 @@ const StyledLink = styled(Link)`
   transition: background 0.15s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.18);
+    background: ${PARKS_COMMAND_CENTER.actionHoverBackground};
   }
 `;
 
@@ -243,6 +238,9 @@ export const ParksCeoCommandHero = ({ command }: ParksCeoCommandHeroProps) => {
 
       <StyledTopRow>
         <StyledCopy>
+          <StyledHeroBrand>
+            <ParksBrandLogo variant="green" height={32} />
+          </StyledHeroBrand>
           <StyledEyebrow>{t`Vista CEO · Parks Industrial`}</StyledEyebrow>
           <StyledTitle>{t`Command Center`}</StyledTitle>
           <StyledSubtitle>

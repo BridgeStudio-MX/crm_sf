@@ -1,7 +1,10 @@
 import { AppPath } from 'twenty-shared/types';
 
 import {
+  PARKS_ASIGNACION_PATH,
+  PARKS_BROKERS_PATH,
   PARKS_COMITE_PATH,
+  PARKS_CXC_CARTERA_PATH,
   PARKS_CXC_PATH,
   PARKS_DASHBOARD_COMERCIAL_PATH,
   PARKS_LEGAL_DASHBOARD_PATH,
@@ -9,7 +12,6 @@ import {
   PARKS_LO_CAMPO_PATH,
   PARKS_MIS_PENDIENTES_PATH,
   PARKS_VALOR_AGREGADO_PATH,
-  PARKS_ASIGNACION_PATH,
 } from '@/parks-industrial/constants/parks-routes.constants';
 
 export const PARKS_ROLE_LABEL_PREFIX = 'Parks — ' as const;
@@ -48,6 +50,7 @@ export type ParksRouteAccessKey =
   | 'legalPipeline'
   | 'legalDashboard'
   | 'cxc'
+  | 'cxcCartera'
   | 'comite'
   | 'valorAgregado'
   | 'asignacion'
@@ -55,6 +58,7 @@ export type ParksRouteAccessKey =
   | 'renovaciones'
   | 'reservas'
   | 'comisiones'
+  | 'brokers'
   | 'miDesempeno'
   | 'inquilino360'
   | 'mapa';
@@ -181,6 +185,11 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
     ParksRoleLabel.CEO,
     ParksRoleLabel.DirectorComercial,
   ]),
+  cxcCartera: withAdminSistema([
+    ...PARKS_CXC_ROLE_LABELS,
+    ParksRoleLabel.CEO,
+    ParksRoleLabel.DirectorComercial,
+  ]),
   comite: withAdminSistema([
     ParksRoleLabel.DirectorComercial,
     ParksRoleLabel.MiembroComite,
@@ -212,7 +221,17 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
     ParksRoleLabel.AdminLegal,
     ParksRoleLabel.DirectorLegal,
   ]),
-  comisiones: withAdminSistema([ParksRoleLabel.DirectorComercial]),
+  comisiones: withAdminSistema([
+    ParksRoleLabel.DirectorComercial,
+    ParksRoleLabel.CEO,
+    ParksRoleLabel.AdminSistema,
+  ]),
+  // Brokers directory is used by CEM and commercial ops when assigning deals
+  brokers: withAdminSistema([
+    ParksRoleLabel.DirectorComercial,
+    ParksRoleLabel.CEO,
+    ...PARKS_LEASING_OFFICER_ROLE_LABELS,
+  ]),
   miDesempeno: withAdminSistema([...PARKS_LEASING_OFFICER_ROLE_LABELS]),
   inquilino360: withAdminSistema([
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
@@ -220,6 +239,8 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
     ParksRoleLabel.AdminLegal,
     ParksRoleLabel.DirectorLegal,
     ParksRoleLabel.AdminParque,
+    ...PARKS_CXC_ROLE_LABELS,
+    ParksRoleLabel.CEO,
   ]),
   mapa: withAdminSistema([
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
@@ -249,6 +270,7 @@ export const PARKS_NAV_ROUTE_ACCESS: Array<{
   { accessKey: 'legalPipeline', to: PARKS_LEGAL_PIPELINE_PATH },
   { accessKey: 'legalDashboard', to: PARKS_LEGAL_DASHBOARD_PATH },
   { accessKey: 'cxc', to: PARKS_CXC_PATH },
+  { accessKey: 'cxcCartera', to: PARKS_CXC_CARTERA_PATH },
   { accessKey: 'comite', to: PARKS_COMITE_PATH },
   { accessKey: 'valorAgregado', to: PARKS_VALOR_AGREGADO_PATH },
   { accessKey: 'asignacion', to: PARKS_ASIGNACION_PATH },
@@ -256,6 +278,7 @@ export const PARKS_NAV_ROUTE_ACCESS: Array<{
   { accessKey: 'renovaciones', to: AppPath.ParksRenovaciones },
   { accessKey: 'reservas', to: AppPath.ParksReservas },
   { accessKey: 'comisiones', to: AppPath.ParksComisiones },
+  { accessKey: 'brokers', to: PARKS_BROKERS_PATH },
   { accessKey: 'miDesempeno', to: AppPath.ParksMiDesempeno },
   { accessKey: 'mapa', to: AppPath.ParksMapa },
 ];

@@ -7,20 +7,33 @@ import {
   getParksStackingStatusColor,
 } from '@/parks-industrial/utils/parks-format.util';
 
+type ParksStatusBadgeColor =
+  | ParksStackingStatusColor
+  | 'blue'
+  | 'red'
+  | 'green'
+  | 'yellow'
+  | 'gray'
+  | 'orange'
+  | 'sky'
+  | 'turquoise'
+  | 'purple';
+
 type ParksStatusBadgeProps = {
   label: string;
-  color?: ParksStackingStatusColor | 'blue' | 'red' | 'green' | 'yellow' | 'gray';
+  color?: ParksStatusBadgeColor;
 };
 
-const tagColorMap: Record<
-  ParksStackingStatusColor | 'blue' | 'red' | 'green' | 'yellow' | 'gray',
-  ThemeColor
-> = {
+const tagColorMap: Record<ParksStatusBadgeColor, ThemeColor> = {
   green: 'green',
   yellow: 'yellow',
   red: 'red',
   gray: 'gray',
   blue: 'blue',
+  orange: 'orange',
+  sky: 'sky',
+  turquoise: 'turquoise',
+  purple: 'purple',
 };
 
 const StyledDot = styled.span<{ dotColor: string }>`

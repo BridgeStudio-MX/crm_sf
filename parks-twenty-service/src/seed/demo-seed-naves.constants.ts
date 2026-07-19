@@ -1,7 +1,11 @@
 // Naves disponibles en catálogo público Parks Industrial (Jun 2025)
 // https://industrial.parks.com.mx/propiedades
 
-export type DemoNaveEstatus = 'Disponible' | 'Rentada' | 'En negociación';
+export type DemoNaveEstatus =
+  | 'Disponible'
+  | 'Rentada'
+  | 'En negociación'
+  | 'En construcción';
 
 export type DemoNaveDefinition = {
   key: string;
@@ -238,5 +242,96 @@ export const DEMO_NAVE_DEFINITIONS: DemoNaveDefinition[] = [
     estatus: 'Rentada',
     esPropiedadFuno: false,
     precioBaseUsd: 0.89,
+  },
+  // Escenarios demo: tamaños chicos / medianos / grandes / XL + en construcción
+  {
+    key: 'naveBajioXc01',
+    identificador: 'Nave XC-01',
+    parqueKey: 'parqueBajio',
+    m2: 12_000,
+    estatus: 'En construcción',
+    esPropiedadFuno: false,
+    precioBaseUsd: 0.95,
+  },
+  {
+    key: 'naveBajioSmall',
+    identificador: 'Nave S-15',
+    parqueKey: 'parqueBajio',
+    m2: 1_800,
+    estatus: 'Disponible',
+    esPropiedadFuno: false,
+    precioBaseUsd: 0.97,
+  },
+  {
+    key: 'naveGdlBtA',
+    identificador: 'Nave BT-GDL-A',
+    parqueKey: 'parqueGuadalajaraPark',
+    m2: 18_500,
+    estatus: 'En construcción',
+    esPropiedadFuno: false,
+    precioBaseUsd: 0.98,
+  },
+  {
+    key: 'naveGdlMid',
+    identificador: 'Nave GDL-M8',
+    parqueKey: 'parqueGuadalajaraPark',
+    m2: 8_400,
+    estatus: 'Disponible',
+    esPropiedadFuno: false,
+    precioBaseUsd: 0.93,
+  },
+  {
+    key: 'naveElSaltoMid',
+    identificador: 'Nave ES-M12',
+    parqueKey: 'parqueElSaltoParkIII',
+    m2: 12_500,
+    estatus: 'Disponible',
+    esPropiedadFuno: false,
+    precioBaseUsd: 0.86,
+  },
+  {
+    key: 'naveTMexXl',
+    identificador: 'Nave XL-MTY-1',
+    parqueKey: 'parqueTMexPark',
+    m2: 62_000,
+    estatus: 'En construcción',
+    esPropiedadFuno: false,
+    precioBaseUsd: 0.94,
+  },
+  {
+    key: 'naveTMexSmall',
+    identificador: 'Nave MTY-S3',
+    parqueKey: 'parqueTMexPark',
+    m2: 2_200,
+    estatus: 'Disponible',
+    esPropiedadFuno: false,
+    precioBaseUsd: 1.02,
+  },
+  {
+    key: 'naveTolucaBuild',
+    identificador: 'Nave TOL-P1',
+    parqueKey: 'parqueTolucaParksIII',
+    m2: 22_000,
+    estatus: 'En construcción',
+    esPropiedadFuno: false,
+    precioBaseUsd: 0.9,
+  },
+  {
+    key: 'naveTultiAvail',
+    identificador: 'Nave TU-D2',
+    parqueKey: 'parqueTultiParkII',
+    m2: 5_200,
+    estatus: 'Disponible',
+    esPropiedadFuno: false,
+    precioBaseUsd: 0.89,
+  },
+  {
+    key: 'naveConsejoXl',
+    identificador: 'Nave CON-25K',
+    parqueKey: 'parqueElSaltoParkIII',
+    m2: 25_500,
+    estatus: 'Disponible',
+    esPropiedadFuno: false,
+    precioBaseUsd: 0.84,
   },
 ];

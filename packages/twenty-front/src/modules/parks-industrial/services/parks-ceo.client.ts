@@ -45,22 +45,44 @@ const normalizeInbox = (
   };
 };
 
-export const fetchParksCeoExecutiveDashboard =
-  async (): Promise<ParksCeoExecutiveDashboardResult> => {
-    const response = await fetch(PARKS_CEO_DASHBOARD_ENDPOINT);
+export const fetchParksCeoExecutiveDashboard = async (filters?: {
+  year?: number;
+  month?: number;
+  segmento?: 'TOTAL' | 'INDUSTRIAL';
+}): Promise<ParksCeoExecutiveDashboardResult> => {
+  const params = new URLSearchParams();
 
-    if (!response.ok) {
-      throw new Error(await parseErrorMessage(response));
-    }
+  if (filters?.year != null) {
+    params.set('year', String(filters.year));
+  }
 
-    const result =
-      (await response.json()) as ParksCeoExecutiveDashboardResult;
+  if (filters?.month != null) {
+    params.set('month', String(filters.month));
+  }
 
-    return {
-      ...result,
-      inbox: normalizeInbox(result.inbox),
-    };
+  if (filters?.segmento) {
+    params.set('segmento', filters.segmento);
+  }
+
+  const query = params.toString();
+  const response = await fetch(
+    query
+      ? `${PARKS_CEO_DASHBOARD_ENDPOINT}?${query}`
+      : PARKS_CEO_DASHBOARD_ENDPOINT,
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  const result =
+    (await response.json()) as ParksCeoExecutiveDashboardResult;
+
+  return {
+    ...result,
+    inbox: normalizeInbox(result.inbox),
   };
+};
 
 export const fetchParksCeoInbox = async (): Promise<ParksCeoInboxSummary> => {
   const response = await fetch(PARKS_CEO_INBOX_ENDPOINT);

@@ -84,6 +84,7 @@ export const ParksNavigationSection = ({
     legalPipeline: t`Pipeline legal`,
     legalDashboard: t`Dashboard legal`,
     cxc: t`CxC`,
+    cxcCartera: t`Cartera CxC`,
     comite: t`Comité`,
     valorAgregado: t`Valor agregado`,
     asignacion: t`Asignación`,
@@ -91,6 +92,7 @@ export const ParksNavigationSection = ({
     renovaciones: t`Renovaciones`,
     reservas: t`Reservas`,
     comisiones: t`Comisiones`,
+    brokers: t`Brokers`,
     miDesempeno: t`Mi desempeño`,
     mapa: t`Mapa de Inventario`,
   };

@@ -60,4 +60,10 @@ export const ceoInboxStore = {
   resetDemo: (): void => {
     dismissedDemoIds.clear();
   },
+
+  dismissAllDemoItems: (): void => {
+    for (const item of DEMO_INBOX_ITEMS) {
+      dismissedDemoIds.add(item.id);
+    }
+  },
 };

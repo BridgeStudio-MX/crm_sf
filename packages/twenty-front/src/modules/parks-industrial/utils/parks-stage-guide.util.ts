@@ -85,6 +85,7 @@ export const buildParksDealStageGuide = (
   const hasAssignment =
     hasNonEmptyString(deal.asignadoPor) ||
     hasNonEmptyString(deal.leasingOfficerAsignado);
+  const hasFirstContact = deal.primerContactoRealizado === true;
   const hasQualification =
     hasPositiveNumber(deal.m2Requeridos) &&
     hasNonEmptyString(deal.ubicacionDeseada) &&
@@ -160,30 +161,42 @@ export const buildParksDealStageGuide = (
   if (stageId === 'CALIFICADO') {
     const checklist: ParksDealGuideChecklistItem[] = [
       {
+        id: 'contacto',
+        label: t`Primer contacto registrado`,
+        done: hasFirstContact,
+        targetTab: 'actividad',
+      },
+      {
         id: 'naves',
         label: t`Nave(s) seleccionadas para la visita`,
         done: hasNaves,
+        targetTab: 'propuesta',
       },
       {
         id: 'tour',
         label: t`Tour agendado (fecha, hora y asistentes)`,
         done: hasTourScheduled,
+        targetTab: 'propuesta',
       },
     ];
-    const canAdvance = hasNaves && hasTourScheduled;
+    const canAdvance = hasFirstContact && hasNaves && hasTourScheduled;
 
     return {
       stageId,
       stageLabel,
       nextStageId,
       nextStageLabel,
-      title: t`Arma y agenda la visita`,
-      description: t`Elige naves, define quién va y agenda fecha/hora en Propuesta.`,
+      title: t`Contacta y agenda la visita`,
+      description: hasFirstContact
+        ? t`Elige naves, define quién va y agenda fecha/hora en Propuesta.`
+        : t`Primero registra el contacto inicial en Actividad, luego arma la visita en Propuesta.`,
       checklist,
-      recommendedTab: 'propuesta',
+      recommendedTab: hasFirstContact ? 'propuesta' : 'actividad',
       primaryActionLabel: canAdvance
-        ? t`Avanzar a ${nextStageLabel}`
-        : t`Ir a Propuesta`,
+        ? t`Avanzar a ${nextStageLabel ?? ''}`
+        : hasFirstContact
+          ? t`Ir a Propuesta`
+          : t`Ir a Actividad`,
       primaryActionKind: canAdvance ? 'advance-stage' : 'open-tab',
       canAdvance,
       progressLabel: countDone(checklist),

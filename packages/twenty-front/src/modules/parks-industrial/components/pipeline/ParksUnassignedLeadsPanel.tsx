@@ -270,6 +270,11 @@ export const ParksUnassignedLeadsPanel = ({
             <StyledRow key={lead.id}>
               <StyledLeadInfo>
                 <StyledLeadName>{lead.name ?? lead.id}</StyledLeadName>
+                {lead.folio ? (
+                  <StyledLeadMeta>
+                    <strong>{lead.folio}</strong>
+                  </StyledLeadMeta>
+                ) : null}
                 <StyledLeadMetaRow>
                   {canalLabel ? (
                     <StyledCanalBadge>{canalLabel}</StyledCanalBadge>

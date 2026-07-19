@@ -7,6 +7,7 @@ import { envConfig } from '../config/env.config';
 import { OPPORTUNITY_STAGE_EN_PROCESO_LEGAL, OPPORTUNITY_STAGE_HOJA_FIRMADA } from '../constants/parks.constants';
 import { CREATE_HOJA_DE_ACUERDOS } from '../seed/demo-seed.mutations';
 import { type HojaDeAcuerdosRecord } from '../types/parks.types';
+import { resolveApplicableCommissionRate } from '../utils/commission-rate.util';
 import { toSelectValue } from '../utils/select-value.util';
 import { brokerNotificationStore } from './broker-notification.store';
 import { comiteService } from './comite.service';
@@ -47,8 +48,33 @@ export type UpdateHojaDraftInput = {
   tipoContrato?: string;
   esquemaComision?: string;
   ejecutivoAsignado?: string;
+  brokerId?: string | null;
   brokerComisionPct?: number;
   brokerComisionMonto?: number;
+};
+
+const fetchBrokerClasificacion = async (
+  brokerId: string,
+): Promise<string | undefined> => {
+  try {
+    const brokerResponse = await twentyClient.query<{
+      broker: { id: string; clasificacion?: string } | null;
+    }>(
+      `
+      query GetBroker($brokerId: UUID!) {
+        broker(filter: { id: { eq: $brokerId } }) {
+          id
+          clasificacion
+        }
+      }
+    `,
+      { brokerId },
+    );
+
+    return brokerResponse.broker?.clasificacion;
+  } catch {
+    return undefined;
+  }
 };
 
 const resolveEsquemaComision = (brokerClasificacion?: string): string => {
@@ -204,40 +230,68 @@ export const commercialHojaService = {
       );
     }
 
-    let brokerClasificacion: string | undefined;
     const brokerId = opportunity.brokerVinculadoId;
-
-    if (brokerId) {
-      try {
-        const brokerResponse = await twentyClient.query<{
-          broker: { id: string; clasificacion?: string } | null;
-        }>(
-          `
-          query GetBroker($brokerId: UUID!) {
-            broker(filter: { id: { eq: $brokerId } }) {
-              id
-              clasificacion
-            }
-          }
-        `,
-          { brokerId },
-        );
-        brokerClasificacion = brokerResponse.broker?.clasificacion;
-      } catch {
-        brokerClasificacion = undefined;
-      }
-    }
+    const brokerClasificacion = brokerId
+      ? await fetchBrokerClasificacion(brokerId)
+      : undefined;
 
     const esquemaComision = resolveEsquemaComision(brokerClasificacion);
     const m2 = opportunity.m2Ofertados ?? opportunity.m2Requeridos ?? 0;
     const precio = opportunity.precioPorM2Usd ?? 0;
-    const referencia = `HOJA-${(opportunity.name ?? opportunity.id).slice(0, 40)}`;
+    const folio = opportunity.folio ?? `PI-${opportunity.id.slice(0, 8)}`;
+    const referencia = `${folio} · Hoja de Acuerdos`;
+
+    let brokerOverrides:
+      | {
+          comisionPct?: number | null;
+          comisionPctNuevo?: number | null;
+          comisionPctPreventa?: number | null;
+          comisionPctRenovacion?: number | null;
+        }
+      | undefined;
+
+    if (brokerId) {
+      const brokers = await twentyDataService.findAllBrokers();
+      const broker = brokers.find((item) => item.id === brokerId);
+
+      if (broker?.empresaBrokerId) {
+        const empresas = await twentyDataService.findAllEmpresasBroker();
+        const empresa = empresas.find(
+          (item) => item.id === broker.empresaBrokerId,
+        );
+
+        if (empresa) {
+          brokerOverrides = {
+            comisionPct: empresa.comisionPct,
+            comisionPctNuevo: empresa.comisionPctNuevo,
+            comisionPctPreventa: empresa.comisionPctPreventa,
+            comisionPctRenovacion: empresa.comisionPctRenovacion,
+          };
+        }
+      }
+    }
+
+    const nave = opportunity.naveVinculadaId
+      ? await twentyDataService
+          .getNaveById(opportunity.naveVinculadaId)
+          .catch(() => null)
+      : null;
+
+    const rate = resolveApplicableCommissionRate({
+      hasBroker: Boolean(brokerId),
+      brokerClasificacion,
+      esquemaComision,
+      tipoContratoOrOperacion: opportunity.tipoOperacion,
+      naveEstatus: nave?.estatus,
+      brokerOverrides,
+    });
 
     const response = await twentyClient.mutate<{
       createHojaDeAcuerdos: { id: string; referencia: string };
     }>(CREATE_HOJA_DE_ACUERDOS, {
       data: {
         referencia,
+        folio,
         fechaFirma: twentyDataService.todayIsoDate(),
         tipoContrato: toSelectValue(
           opportunity.tipoOperacion ?? 'Arrendamiento nuevo',
@@ -249,10 +303,15 @@ export const commercialHojaService = {
         depositoMeses: opportunity.depositoGarantiaMeses ?? 2,
         escalacionTipo: toSelectValue(opportunity.escalacionAnual ?? 'INPC'),
         esquemaComision: toSelectValue(esquemaComision),
+        brokerComisionPct:
+          rate.origen === 'DIRECTO' ? undefined : rate.pctAplicado,
         firmadaPorCliente: false,
         firmadaPorCem: false,
         estatus: toSelectValue('Borrador'),
-        ejecutivoAsignado: input.ejecutivoAsignado ?? 'LO',
+        ejecutivoAsignado:
+          input.ejecutivoAsignado ??
+          opportunity.leasingOfficerAsignado ??
+          'LO',
         aprobacionRequerida: opportunity.aprobacionRequerida ?? false,
         aprobadoPor: toSelectValue('Pendiente'),
         inquilinoId: opportunity.inquilinoVinculadoId,
@@ -352,8 +411,22 @@ export const commercialHojaService = {
       updateData.tipoContrato = toSelectValue(input.tipoContrato);
     }
 
+    if (input.brokerId !== undefined) {
+      updateData.brokerId = input.brokerId ?? null;
+    }
+
     if (input.esquemaComision !== undefined) {
       updateData.esquemaComision = toSelectValue(input.esquemaComision);
+    } else if (input.brokerId !== undefined) {
+      // Broker changed but caller didn't pin an explicit esquema — re-resolve it
+      // from the new broker's clasificación so the commission scheme stays in sync.
+      const brokerClasificacion = input.brokerId
+        ? await fetchBrokerClasificacion(input.brokerId)
+        : undefined;
+
+      updateData.esquemaComision = toSelectValue(
+        resolveEsquemaComision(brokerClasificacion),
+      );
     }
 
     if (input.ejecutivoAsignado !== undefined) {

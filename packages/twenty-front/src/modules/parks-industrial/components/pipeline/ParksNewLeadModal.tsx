@@ -6,6 +6,7 @@ import { Key } from 'ts-key-enum';
 import {
   IconBuildingSkyscraper,
   IconMap,
+  IconPlus,
   IconTool,
   IconUser,
   IconWorld,
@@ -14,15 +15,21 @@ import {
 import { Button } from 'twenty-ui/input';
 import { MOBILE_VIEWPORT, themeCssVariables } from 'twenty-ui/theme-constants';
 
+import { ParksNewBrokerModal } from '@/parks-industrial/components/brokers/ParksNewBrokerModal';
+import { ParksLeadAiEnrichmentOverlay } from '@/parks-industrial/components/pipeline/ParksLeadAiEnrichmentOverlay';
 import {
   StyledParksInput,
   StyledParksSelect,
 } from '@/parks-industrial/components/ui/parks-form-control.styles';
 import { ParksModalTabs } from '@/parks-industrial/components/ui/ParksModalTabs';
+import { useParksLeasingOfficerOptions } from '@/parks-industrial/hooks/useParksLeasingOfficerOptions';
 import {
   createParksLead,
   createParksOpportunityForInquilino,
+  enrichParksProspect,
+  fetchParksBrokers,
   type CreateParksLeadInput,
+  type ParksBroker,
 } from '@/parks-industrial/services/parks-commercial.client';
 import { MODAL_CLICK_OUTSIDE_LISTENER_EXCLUDED_ID } from '@/ui/layout/modal/constants/ModalClickOutsideListenerExcludedClassName';
 import { RootStackingContextZIndices } from '@/ui/layout/constants/RootStackingContextZIndices';
@@ -44,15 +51,9 @@ const CANAL_OPTIONS = [
   'Otro',
 ] as const;
 
-const GIRO_OPTIONS = [
-  'Manufactura',
-  'Logística',
-  'Distribución',
-  'E-commerce',
-  'Farmacéutica',
-  'Automotriz',
-  'Otro',
-] as const;
+import { PARKS_GIRO_INQUILINO_OPTIONS } from '@/parks-industrial/constants/parks-giro.constants';
+
+const GIRO_OPTIONS = PARKS_GIRO_INQUILINO_OPTIONS;
 
 const UBICACION_OPTIONS = [
   'Guadalajara',
@@ -90,6 +91,10 @@ const StyledOverlay = styled.div`
   padding: ${themeCssVariables.spacing[4]};
   position: fixed;
   z-index: ${RootStackingContextZIndices.RootModalBackDrop};
+`;
+
+const StyledEnrichmentOverlay = styled(StyledOverlay)`
+  background: rgba(15, 23, 20, 0.72);
 `;
 
 const StyledModal = styled.div`
@@ -423,6 +428,37 @@ const StyledFooterActions = styled.div`
   margin-left: auto;
 `;
 
+const StyledFieldWithAction = styled.div`
+  align-items: flex-end;
+  display: flex;
+  gap: ${themeCssVariables.spacing[2]};
+`;
+
+const StyledFieldWithActionInput = styled.div`
+  flex: 1;
+`;
+
+const StyledInlineAddButton = styled.button`
+  align-items: center;
+  background: ${themeCssVariables.background.transparent.blue};
+  border: 1px solid ${themeCssVariables.color.blue};
+  border-radius: ${themeCssVariables.border.radius.sm};
+  color: ${themeCssVariables.color.blue};
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+  font-size: ${themeCssVariables.font.size.xs};
+  font-weight: ${themeCssVariables.font.weight.medium};
+  gap: 4px;
+  height: 32px;
+  padding: 0 ${themeCssVariables.spacing[2]};
+  white-space: nowrap;
+
+  &:hover {
+    background: ${themeCssVariables.background.transparent.medium};
+  }
+`;
+
 const StyledBannerError = styled.div`
   background: ${themeCssVariables.background.transparent.danger};
   border: 1px solid ${themeCssVariables.color.red3};
@@ -433,7 +469,15 @@ const StyledBannerError = styled.div`
 `;
 
 type FormErrors = Partial<
-  Record<'nombreCompleto' | 'empresa' | 'canalOrigen' | 'metrosCuadradosRequeridos', string>
+  Record<
+    | 'nombreCompleto'
+    | 'empresa'
+    | 'canalOrigen'
+    | 'metrosCuadradosRequeridos'
+    | 'leasingOfficerAsignado'
+    | 'recomendadoPor',
+    string
+  >
 >;
 
 const validateForm = (form: CreateParksLeadInput): FormErrors => {
@@ -455,28 +499,41 @@ const validateForm = (form: CreateParksLeadInput): FormErrors => {
     errors.metrosCuadradosRequeridos = t`Los m² deben ser mayores a 0`;
   }
 
+  // Every broker-sourced lead must carry a Leasing Officer: the LO owns the
+  // internal negotiation for that deal from day one.
+  if (form.brokerId && !form.leasingOfficerAsignado?.trim()) {
+    errors.leasingOfficerAsignado = t`Selecciona el Leasing Officer que llevará la negociación`;
+  }
+
+  if (
+    form.canalOrigen === 'Recomendación' &&
+    !form.recomendadoPor?.trim()
+  ) {
+    errors.recomendadoPor = t`Indica quién recomendó este lead`;
+  }
+
   return errors;
 };
 
-type LeadModalTab = 'contacto' | 'canal' | 'requerimientos' | 'operacion';
+type LeadModalTab = 'contacto' | 'requerimientos' | 'operacion' | 'canal';
 
 const LEAD_MODAL_TABS: LeadModalTab[] = [
   'contacto',
-  'canal',
   'requerimientos',
   'operacion',
+  'canal',
 ];
 
 const getLeadTabLabel = (tab: LeadModalTab): string => {
   switch (tab) {
     case 'contacto':
       return t`Contacto`;
-    case 'canal':
-      return t`Canal`;
     case 'requerimientos':
       return t`Requerimientos`;
     case 'operacion':
       return t`Operación`;
+    case 'canal':
+      return t`Canal`;
   }
 };
 
@@ -484,12 +541,12 @@ const getLeadTabDescription = (tab: LeadModalTab): string => {
   switch (tab) {
     case 'contacto':
       return t`Persona y empresa que originan la oportunidad comercial.`;
-    case 'canal':
-      return t`Origen del lead — obligatorio para la cola del CEM.`;
     case 'requerimientos':
       return t`Metros, ubicación y presupuesto para calificación y matching.`;
     case 'operacion':
       return t`Tipo de arrendamiento o build-to-suit con specs técnicas.`;
+    case 'canal':
+      return t`Origen del lead — broker, recomendación u otro canal.`;
   }
 };
 
@@ -497,12 +554,12 @@ const getLeadTabIcon = (tab: LeadModalTab) => {
   switch (tab) {
     case 'contacto':
       return IconUser;
-    case 'canal':
-      return IconWorld;
     case 'requerimientos':
       return IconMap;
     case 'operacion':
       return IconBuildingSkyscraper;
+    case 'canal':
+      return IconWorld;
   }
 };
 
@@ -522,15 +579,31 @@ const getLeadTabErrors = (
     }
   }
 
-  if (tab === 'canal' && !form.canalOrigen) {
-    errors.canalOrigen = t`Selecciona el canal de ingreso`;
-  }
-
   if (
     tab === 'requerimientos' &&
     (!form.metrosCuadradosRequeridos || form.metrosCuadradosRequeridos <= 0)
   ) {
     errors.metrosCuadradosRequeridos = t`Los m² deben ser mayores a 0`;
+  }
+
+  if (tab === 'canal' && !form.canalOrigen) {
+    errors.canalOrigen = t`Selecciona el canal de ingreso`;
+  }
+
+  if (
+    tab === 'canal' &&
+    form.brokerId &&
+    !form.leasingOfficerAsignado?.trim()
+  ) {
+    errors.leasingOfficerAsignado = t`Selecciona el Leasing Officer que llevará la negociación`;
+  }
+
+  if (
+    tab === 'canal' &&
+    form.canalOrigen === 'Recomendación' &&
+    !form.recomendadoPor?.trim()
+  ) {
+    errors.recomendadoPor = t`Indica quién recomendó este lead`;
   }
 
   return errors;
@@ -555,6 +628,7 @@ export type ParksNewLeadModalProps = {
   onCreated: (payload: {
     opportunityId: string;
     inquilinoId: string;
+    folio?: string;
     lead: CreateParksLeadInput;
   }) => void;
   prefillInquilino?: ParksNewLeadPrefillInquilino;
@@ -582,6 +656,39 @@ export const ParksNewLeadModal = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
   const [activeTab, setActiveTab] = useState<LeadModalTab>('contacto');
+  const [brokers, setBrokers] = useState<ParksBroker[]>([]);
+  const [isNewBrokerModalOpen, setIsNewBrokerModalOpen] = useState(false);
+  const [aiEnrichment, setAiEnrichment] = useState<{
+    companyName: string;
+    fitScore: number | null;
+    createdPayload: {
+      opportunityId: string;
+      inquilinoId: string;
+      folio?: string;
+      lead: CreateParksLeadInput;
+    };
+  } | null>(null);
+  const leasingOfficerOptions = useParksLeasingOfficerOptions();
+  const isBusy = isSubmitting || aiEnrichment !== null;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchParksBrokers()
+      .then((result) => {
+        if (!cancelled) {
+          setBrokers(result);
+        }
+      })
+      .catch(() => {
+        // Broker list is optional context for the "Broker" channel — silently
+        // skip if the service is unreachable rather than blocking lead creation.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const { pushFocusItemToFocusStack } = usePushFocusItemToFocusStack();
   const { removeFocusItemFromFocusStackById } =
     useRemoveFocusItemFromFocusStackById();
@@ -604,16 +711,22 @@ export const ParksNewLeadModal = ({
   const isFirstTab = activeTabIndex === 0;
   const isLastTab = activeTabIndex === LEAD_MODAL_TABS.length - 1;
 
-  const updateForm = useCallback(
-    (patch: Partial<CreateParksLeadInput>) => {
-      setForm((previous) => ({ ...previous, ...patch }));
-    },
-    [],
-  );
+  const updateForm = useCallback((patch: Partial<CreateParksLeadInput>) => {
+    setForm((previous) => ({ ...previous, ...patch }));
+  }, []);
 
   const handleClose = useCallback(() => {
     onClose();
   }, [onClose]);
+
+  const handleAiEnrichmentComplete = useCallback(() => {
+    if (!aiEnrichment) {
+      return;
+    }
+
+    onCreated(aiEnrichment.createdPayload);
+    onClose();
+  }, [aiEnrichment, onClose, onCreated]);
 
   useEffect(() => {
     pushFocusItemToFocusStack({
@@ -639,11 +752,11 @@ export const ParksNewLeadModal = ({
     keys: [Key.Escape],
     focusId: PARKS_NEW_LEAD_MODAL_FOCUS_ID,
     callback: () => {
-      if (!isSubmitting) {
+      if (!isBusy) {
         handleClose();
       }
     },
-    dependencies: [handleClose, isSubmitting],
+    dependencies: [handleClose, isBusy],
   });
 
   const handleSubmit = async () => {
@@ -678,6 +791,8 @@ export const ParksNewLeadModal = ({
               presupuestoMensualUsd: form.presupuestoMensualUsd,
               canalOrigen: form.canalOrigen,
               brokerId: form.brokerId,
+              leasingOfficerAsignado: form.leasingOfficerAsignado,
+              recomendadoPor: form.recomendadoPor,
               tipoOperacion: form.tipoOperacion,
               alturaRequerida: form.alturaRequerida,
               andenesRequeridos: form.andenesRequeridos,
@@ -688,8 +803,32 @@ export const ParksNewLeadModal = ({
             },
           )
         : await createParksLead(form);
-      onCreated({ ...result, lead: form });
-      onClose();
+
+      const createdPayload = { ...result, lead: form };
+
+      setAiEnrichment({
+        companyName: form.empresa.trim() || t`Prospecto`,
+        fitScore: null,
+        createdPayload,
+      });
+
+      // Fire enrichment while the UI plays the 5–7s research animation.
+      void enrichParksProspect({
+        opportunityId: result.opportunityId,
+        companyName: form.empresa,
+        industryHint: form.giroEmpresa,
+        m2Requeridos: form.metrosCuadradosRequeridos,
+      })
+        .then((enrichment) => {
+          setAiEnrichment((current) =>
+            current
+              ? { ...current, fitScore: enrichment.fitScore }
+              : current,
+          );
+        })
+        .catch(() => {
+          // Animation still completes; score chip is optional if enrich fails.
+        });
     } catch (error) {
       const rawMessage =
         error instanceof Error ? error.message : t`No se pudo crear el lead`;
@@ -722,419 +861,596 @@ export const ParksNewLeadModal = ({
 
   const footerHint = isFormValid
     ? t`El lead entrará a la cola CEM en Lead recibido`
-    : t`Completa contacto, canal y requerimientos para continuar`;
+    : t`Completa contacto, requerimientos y canal para continuar`;
 
   return createPortal(
-    <StyledOverlay
-      onClick={() => {
-        if (!isSubmitting) {
-          handleClose();
-        }
-      }}
-    >
-      <StyledModal
-        id={MODAL_CLICK_OUTSIDE_LISTENER_EXCLUDED_ID}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="parks-new-lead-title"
-        onClick={(event) => {
-          event.stopPropagation();
+    <>
+      {aiEnrichment ? (
+        <StyledEnrichmentOverlay
+          onClick={(event) => {
+            event.stopPropagation();
+          }}
+        >
+          <ParksLeadAiEnrichmentOverlay
+            companyName={aiEnrichment.companyName}
+            fitScore={aiEnrichment.fitScore}
+            onComplete={handleAiEnrichmentComplete}
+          />
+        </StyledEnrichmentOverlay>
+      ) : (
+      <StyledOverlay
+        onClick={() => {
+          if (!isBusy) {
+            handleClose();
+          }
         }}
       >
-        <StyledHeader>
-          <StyledHeaderTop>
-            <StyledHeaderText>
-              <StyledTitle id="parks-new-lead-title">
-                {prefillInquilino
-                  ? t`Nueva oportunidad para cliente existente`
-                  : t`Nuevo prospecto comercial`}
-              </StyledTitle>
-              <StyledSubtitle>
-                {prefillInquilino
-                  ? t`Crea una oportunidad adicional vinculada a la misma cuenta sin perder el historial.`
-                  : t`Captura el lead con los datos mínimos para calificación. Entrará a la cola del CEM para asignación al LO.`}
-              </StyledSubtitle>
-            </StyledHeaderText>
-            <StyledCloseButton
-              type="button"
-              aria-label={t`Cerrar`}
-              disabled={isSubmitting}
-              onClick={handleClose}
-            >
-              <IconX size={16} />
-            </StyledCloseButton>
-          </StyledHeaderTop>
-        </StyledHeader>
-
-        <StyledBody>
-          <ParksModalTabs
-            tabs={leadTabs}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            ariaLabel={t`Pasos del nuevo prospecto`}
+          <StyledModal
+            id={MODAL_CLICK_OUTSIDE_LISTENER_EXCLUDED_ID}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="parks-new-lead-title"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
           >
-            {activeTab === 'contacto' ? (
-              <StyledSection>
-            <StyledSectionCard>
-            <StyledFieldGrid>
-              <StyledField>
-                <StyledFieldLabel htmlFor="lead-nombre">
-                  {t`Nombre completo`}
-                  <StyledRequired>*</StyledRequired>
-                </StyledFieldLabel>
-                <StyledInput
-                  id="lead-nombre"
-                  autoFocus
-                  placeholder={t`Ej. María López`}
-                  value={form.nombreCompleto}
-                  onChange={(event) =>
-                    updateForm({ nombreCompleto: event.target.value })
-                  }
-                />
-                {showValidation && formErrors.nombreCompleto && (
-                  <StyledFieldError>{formErrors.nombreCompleto}</StyledFieldError>
-                )}
-              </StyledField>
-              <StyledField>
-                <StyledFieldLabel htmlFor="lead-empresa">
-                  {t`Empresa`}
-                  <StyledRequired>*</StyledRequired>
-                </StyledFieldLabel>
-                <StyledInput
-                  id="lead-empresa"
-                  placeholder={t`Ej. LogiMex S.A.`}
-                  value={form.empresa}
-                  disabled={!!prefillInquilino}
-                  onChange={(event) =>
-                    updateForm({ empresa: event.target.value })
-                  }
-                />
-                {showValidation && formErrors.empresa && (
-                  <StyledFieldError>{formErrors.empresa}</StyledFieldError>
-                )}
-              </StyledField>
-              <StyledField>
-                <StyledFieldLabel htmlFor="lead-correo">
-                  {t`Correo`}
-                </StyledFieldLabel>
-                <StyledInput
-                  id="lead-correo"
-                  type="email"
-                  placeholder={t`contacto@empresa.com`}
-                  value={form.correo ?? ''}
-                  onChange={(event) => updateForm({ correo: event.target.value })}
-                />
-              </StyledField>
-              <StyledField>
-                <StyledFieldLabel htmlFor="lead-telefono">
-                  {t`Teléfono`}
-                </StyledFieldLabel>
-                <StyledInput
-                  id="lead-telefono"
-                  type="tel"
-                  placeholder={t`+52 81 0000 0000`}
-                  value={form.telefono ?? ''}
-                  onChange={(event) =>
-                    updateForm({ telefono: event.target.value })
-                  }
-                />
-              </StyledField>
-            </StyledFieldGrid>
-            </StyledSectionCard>
-              </StyledSection>
-            ) : null}
-
-            {activeTab === 'canal' ? (
-              <StyledSection>
-            <StyledSectionCard>
-            <StyledChipRow role="group" aria-label={t`Canal de ingreso`}>
-              {CANAL_OPTIONS.map((canal) => (
-                <StyledChip
-                  key={canal}
-                  type="button"
-                  isSelected={form.canalOrigen === canal}
-                  onClick={() => updateForm({ canalOrigen: canal })}
-                >
-                  {canal}
-                </StyledChip>
-              ))}
-            </StyledChipRow>
-            {showValidation && formErrors.canalOrigen && (
-              <StyledFieldError>{formErrors.canalOrigen}</StyledFieldError>
-            )}
-            </StyledSectionCard>
-              </StyledSection>
-            ) : null}
-
-            {activeTab === 'requerimientos' ? (
-              <StyledSection>
-            <StyledSectionCard>
-            <StyledFieldGrid>
-              <StyledFieldFull>
-                <StyledFieldLabel htmlFor="lead-m2">
-                  {t`Metros cuadrados requeridos`}
-                  <StyledRequired>*</StyledRequired>
-                </StyledFieldLabel>
-                <StyledInput
-                  id="lead-m2"
-                  type="number"
-                  min={1}
-                  value={form.metrosCuadradosRequeridos}
-                  onChange={(event) =>
-                    updateForm({
-                      metrosCuadradosRequeridos: Number(event.target.value),
-                    })
-                  }
-                />
-                <StyledChipRow>
-                  {M2_PRESETS.map((preset) => (
-                    <StyledPresetChip
-                      key={preset}
-                      type="button"
-                      isSelected={form.metrosCuadradosRequeridos === preset}
-                      onClick={() =>
-                        updateForm({ metrosCuadradosRequeridos: preset })
-                      }
-                    >
-                      {preset.toLocaleString('es-MX')} m²
-                    </StyledPresetChip>
-                  ))}
-                </StyledChipRow>
-                {showValidation && formErrors.metrosCuadradosRequeridos && (
-                  <StyledFieldError>
-                    {formErrors.metrosCuadradosRequeridos}
-                  </StyledFieldError>
-                )}
-              </StyledFieldFull>
-              <StyledField>
-                <StyledFieldLabel htmlFor="lead-ubicacion">
-                  {t`Ubicación deseada`}
-                </StyledFieldLabel>
-                <StyledSelect
-                  id="lead-ubicacion"
-                  value={form.ubicacionDeseada}
-                  onChange={(event) =>
-                    updateForm({ ubicacionDeseada: event.target.value })
-                  }
-                >
-                  {UBICACION_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </StyledSelect>
-              </StyledField>
-              <StyledField>
-                <StyledFieldLabel htmlFor="lead-giro">{t`Giro`}</StyledFieldLabel>
-                <StyledSelect
-                  id="lead-giro"
-                  value={form.giroEmpresa}
-                  onChange={(event) =>
-                    updateForm({ giroEmpresa: event.target.value })
-                  }
-                >
-                  {GIRO_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </StyledSelect>
-              </StyledField>
-              <StyledField>
-                <StyledFieldLabel htmlFor="lead-plazo">
-                  {t`Plazo de contrato (meses)`}
-                </StyledFieldLabel>
-                <StyledInput
-                  id="lead-plazo"
-                  type="number"
-                  min={1}
-                  value={form.plazoContratoMeses}
-                  onChange={(event) =>
-                    updateForm({ plazoContratoMeses: Number(event.target.value) })
-                  }
-                />
-                <StyledChipRow>
-                  {PLAZO_PRESETS.map((preset) => (
-                    <StyledPresetChip
-                      key={preset}
-                      type="button"
-                      isSelected={form.plazoContratoMeses === preset}
-                      onClick={() => updateForm({ plazoContratoMeses: preset })}
-                    >
-                      {preset} {t`meses`}
-                    </StyledPresetChip>
-                  ))}
-                </StyledChipRow>
-              </StyledField>
-              <StyledField>
-                <StyledFieldLabel htmlFor="lead-presupuesto">
-                  {t`Presupuesto mensual (USD)`}
-                </StyledFieldLabel>
-                <StyledInput
-                  id="lead-presupuesto"
-                  type="number"
-                  min={0}
-                  step={100}
-                  value={form.presupuestoMensualUsd}
-                  onChange={(event) =>
-                    updateForm({
-                      presupuestoMensualUsd: Number(event.target.value),
-                    })
-                  }
-                />
-                <StyledFieldHint>
-                  {t`Referencia para calificación comercial`}
-                </StyledFieldHint>
-              </StyledField>
-            </StyledFieldGrid>
-            </StyledSectionCard>
-              </StyledSection>
-            ) : null}
-
-            {activeTab === 'operacion' ? (
-              <StyledSection>
-            <StyledSectionCard>
-            <StyledOperationGrid>
-              <StyledOperationCard
+          <StyledHeader>
+            <StyledHeaderTop>
+              <StyledHeaderText>
+                <StyledTitle id="parks-new-lead-title">
+                  {prefillInquilino
+                    ? t`Nueva oportunidad para cliente existente`
+                    : t`Nuevo prospecto comercial`}
+                </StyledTitle>
+                <StyledSubtitle>
+                  {prefillInquilino
+                    ? t`Crea una oportunidad adicional vinculada a la misma cuenta sin perder el historial.`
+                    : t`Captura el lead con los datos mínimos para calificación. Entrará a la cola del CEM para asignación al LO.`}
+                </StyledSubtitle>
+              </StyledHeaderText>
+              <StyledCloseButton
                 type="button"
-                isSelected={form.tipoOperacion === 'Arrendamiento nuevo'}
-                onClick={() =>
-                  updateForm({ tipoOperacion: 'Arrendamiento nuevo' })
-                }
+                aria-label={t`Cerrar`}
+                disabled={isBusy}
+                onClick={handleClose}
               >
-                <StyledOperationTitle>{t`Nave disponible`}</StyledOperationTitle>
-                <StyledOperationHint>
-                  {t`Arrendamiento de nave existente en parque industrial`}
-                </StyledOperationHint>
-              </StyledOperationCard>
-              <StyledOperationCard
-                type="button"
-                isSelected={form.tipoOperacion === 'Build-to-suit'}
-                onClick={() => updateForm({ tipoOperacion: 'Build-to-suit' })}
-              >
-                <StyledOperationTitle>{t`Build-to-suit`}</StyledOperationTitle>
-                <StyledOperationHint>
-                  {t`Construcción a la medida con specs técnicas`}
-                </StyledOperationHint>
-              </StyledOperationCard>
-            </StyledOperationGrid>
+                <IconX size={16} />
+              </StyledCloseButton>
+            </StyledHeaderTop>
+          </StyledHeader>
 
-            {form.tipoOperacion === 'Build-to-suit' && (
-              <StyledBtsPanel>
-                <StyledSectionHeader>
-                  <StyledSectionIcon>
-                    <IconTool size={16} />
-                  </StyledSectionIcon>
-                  <StyledSectionTitle>
-                    {t`Especificaciones BTS`}
-                  </StyledSectionTitle>
-                </StyledSectionHeader>
-                <StyledFieldGrid>
-                  <StyledField>
-                    <StyledFieldLabel htmlFor="lead-altura">
-                      {t`Altura requerida (m)`}
-                    </StyledFieldLabel>
-                    <StyledInput
-                      id="lead-altura"
-                      type="number"
-                      min={0}
-                      placeholder="12"
-                      value={form.alturaRequerida ?? ''}
-                      onChange={(event) =>
-                        updateForm({
-                          alturaRequerida: Number(event.target.value) || undefined,
-                        })
-                      }
-                    />
-                  </StyledField>
-                  <StyledField>
-                    <StyledFieldLabel htmlFor="lead-andenes">
-                      {t`Andenes requeridos`}
-                    </StyledFieldLabel>
-                    <StyledInput
-                      id="lead-andenes"
-                      type="number"
-                      min={0}
-                      placeholder="4"
-                      value={form.andenesRequeridos ?? ''}
-                      onChange={(event) =>
-                        updateForm({
-                          andenesRequeridos:
-                            Number(event.target.value) || undefined,
-                        })
-                      }
-                    />
-                  </StyledField>
-                  <StyledFieldFull>
-                    <StyledFieldLabel htmlFor="lead-specs">
-                      {t`Especificaciones técnicas`}
-                    </StyledFieldLabel>
-                    <StyledTextarea
-                      id="lead-specs"
-                      placeholder={t`Ej. piso de concreto reforzado, rampa niveladora, oficinas en mezzanine…`}
-                      value={form.especificacionesTecnicas ?? ''}
-                      onChange={(event) =>
-                        updateForm({
-                          especificacionesTecnicas: event.target.value,
-                        })
-                      }
-                    />
-                  </StyledFieldFull>
-                </StyledFieldGrid>
-              </StyledBtsPanel>
-            )}
-            </StyledSectionCard>
-              </StyledSection>
-            ) : null}
+          <StyledBody>
+            <ParksModalTabs
+              tabs={leadTabs}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              ariaLabel={t`Pasos del nuevo prospecto`}
+            >
+              {activeTab === 'contacto' ? (
+                <StyledSection>
+                  <StyledSectionCard>
+                    <StyledFieldGrid>
+                      <StyledField>
+                        <StyledFieldLabel htmlFor="lead-nombre">
+                          {t`Nombre completo`}
+                          <StyledRequired>*</StyledRequired>
+                        </StyledFieldLabel>
+                        <StyledInput
+                          id="lead-nombre"
+                          autoFocus
+                          placeholder={t`Ej. María López`}
+                          value={form.nombreCompleto}
+                          onChange={(event) =>
+                            updateForm({ nombreCompleto: event.target.value })
+                          }
+                        />
+                        {showValidation && formErrors.nombreCompleto && (
+                          <StyledFieldError>
+                            {formErrors.nombreCompleto}
+                          </StyledFieldError>
+                        )}
+                      </StyledField>
+                      <StyledField>
+                        <StyledFieldLabel htmlFor="lead-empresa">
+                          {t`Empresa`}
+                          <StyledRequired>*</StyledRequired>
+                        </StyledFieldLabel>
+                        <StyledInput
+                          id="lead-empresa"
+                          placeholder={t`Ej. LogiMex S.A.`}
+                          value={form.empresa}
+                          disabled={!!prefillInquilino}
+                          onChange={(event) =>
+                            updateForm({ empresa: event.target.value })
+                          }
+                        />
+                        {showValidation && formErrors.empresa && (
+                          <StyledFieldError>
+                            {formErrors.empresa}
+                          </StyledFieldError>
+                        )}
+                      </StyledField>
+                      <StyledField>
+                        <StyledFieldLabel htmlFor="lead-correo">
+                          {t`Correo`}
+                        </StyledFieldLabel>
+                        <StyledInput
+                          id="lead-correo"
+                          type="email"
+                          placeholder={t`contacto@empresa.com`}
+                          value={form.correo ?? ''}
+                          onChange={(event) =>
+                            updateForm({ correo: event.target.value })
+                          }
+                        />
+                      </StyledField>
+                      <StyledField>
+                        <StyledFieldLabel htmlFor="lead-telefono">
+                          {t`Teléfono`}
+                        </StyledFieldLabel>
+                        <StyledInput
+                          id="lead-telefono"
+                          type="tel"
+                          placeholder={t`+52 81 0000 0000`}
+                          value={form.telefono ?? ''}
+                          onChange={(event) =>
+                            updateForm({ telefono: event.target.value })
+                          }
+                        />
+                      </StyledField>
+                    </StyledFieldGrid>
+                  </StyledSectionCard>
+                </StyledSection>
+              ) : null}
 
-            {errorMessage && <StyledBannerError>{errorMessage}</StyledBannerError>}
-          </ParksModalTabs>
-        </StyledBody>
+              {activeTab === 'canal' ? (
+                <StyledSection>
+                  <StyledSectionCard>
+                    <StyledChipRow
+                      role="group"
+                      aria-label={t`Canal de ingreso`}
+                    >
+                      {CANAL_OPTIONS.map((canal) => (
+                        <StyledChip
+                          key={canal}
+                          type="button"
+                          isSelected={form.canalOrigen === canal}
+                          onClick={() =>
+                            updateForm({
+                              canalOrigen: canal,
+                              ...(canal !== 'Broker'
+                                ? {
+                                    brokerId: undefined,
+                                    leasingOfficerAsignado: undefined,
+                                  }
+                                : {}),
+                              ...(canal !== 'Recomendación'
+                                ? { recomendadoPor: undefined }
+                                : {}),
+                            })
+                          }
+                        >
+                          {canal}
+                        </StyledChip>
+                      ))}
+                    </StyledChipRow>
+                    {showValidation && formErrors.canalOrigen && (
+                      <StyledFieldError>
+                        {formErrors.canalOrigen}
+                      </StyledFieldError>
+                    )}
+                    {form.canalOrigen === 'Recomendación' ? (
+                      <StyledField>
+                        <StyledFieldLabel htmlFor="lead-recomendado-por">
+                          {t`¿Quién recomendó?`}
+                          <StyledRequired>*</StyledRequired>
+                        </StyledFieldLabel>
+                        <StyledInput
+                          id="lead-recomendado-por"
+                          value={form.recomendadoPor ?? ''}
+                          placeholder={t`Ej. Juan Pérez — cliente actual / broker / contacto`}
+                          onChange={(event) =>
+                            updateForm({
+                              recomendadoPor: event.target.value,
+                            })
+                          }
+                        />
+                        <StyledFieldHint>
+                          {t`Nombre de la persona o empresa que refirió este prospecto.`}
+                        </StyledFieldHint>
+                        {showValidation && formErrors.recomendadoPor && (
+                          <StyledFieldError>
+                            {formErrors.recomendadoPor}
+                          </StyledFieldError>
+                        )}
+                      </StyledField>
+                    ) : null}
+                    {form.canalOrigen === 'Broker' ? (
+                      <>
+                        <StyledField>
+                          <StyledFieldLabel htmlFor="lead-broker">
+                            {t`Broker`}
+                          </StyledFieldLabel>
+                          <StyledFieldWithAction>
+                            <StyledFieldWithActionInput>
+                              <StyledSelect
+                                id="lead-broker"
+                                value={form.brokerId ?? ''}
+                                onChange={(event) =>
+                                  updateForm({
+                                    brokerId: event.target.value || undefined,
+                                  })
+                                }
+                              >
+                                <option value="">{t`Selecciona un broker...`}</option>
+                                {brokers.map((broker) => (
+                                  <option key={broker.id} value={broker.id}>
+                                    {broker.contacto ?? broker.empresa}
+                                    {' · '}
+                                    {broker.empresaBroker?.nombre ??
+                                      broker.empresa}
+                                    {broker.clasificacion === 'TOP_10'
+                                      ? ' · Top 10'
+                                      : ''}
+                                  </option>
+                                ))}
+                              </StyledSelect>
+                            </StyledFieldWithActionInput>
+                            <StyledInlineAddButton
+                              type="button"
+                              onClick={() => setIsNewBrokerModalOpen(true)}
+                            >
+                              <IconPlus size={14} />
+                              {t`Nuevo broker`}
+                            </StyledInlineAddButton>
+                          </StyledFieldWithAction>
+                          <StyledFieldHint>
+                            {t`Necesario para calcular la comisión del broker en la Hoja de Acuerdos`}
+                          </StyledFieldHint>
+                        </StyledField>
 
-        <StyledFooter>
-          <StyledFooterHint>{footerHint}</StyledFooterHint>
-          <StyledFooterActions>
-            <Button
-              title={t`Cancelar`}
-              onClick={handleClose}
-              variant="secondary"
-              disabled={isSubmitting}
-            />
-            {!isFirstTab ? (
+                        {form.brokerId ? (
+                          <StyledField>
+                            <StyledFieldLabel htmlFor="lead-leasing-officer">
+                              {t`Leasing Officer asignado`}
+                              <StyledRequired>*</StyledRequired>
+                            </StyledFieldLabel>
+                            <StyledSelect
+                              id="lead-leasing-officer"
+                              value={form.leasingOfficerAsignado ?? ''}
+                              onChange={(event) =>
+                                updateForm({
+                                  leasingOfficerAsignado:
+                                    event.target.value || undefined,
+                                })
+                              }
+                            >
+                              <option value="">{t`Selecciona un LO...`}</option>
+                              {leasingOfficerOptions.map((leasingOfficer) => (
+                                <option
+                                  key={leasingOfficer}
+                                  value={leasingOfficer}
+                                >
+                                  {leasingOfficer}
+                                </option>
+                              ))}
+                            </StyledSelect>
+                            <StyledFieldHint>
+                              {t`Obligatorio: todo lead con broker lleva un LO que conduce la negociación interna.`}
+                            </StyledFieldHint>
+                            {showValidation &&
+                              formErrors.leasingOfficerAsignado && (
+                                <StyledFieldError>
+                                  {formErrors.leasingOfficerAsignado}
+                                </StyledFieldError>
+                              )}
+                          </StyledField>
+                        ) : null}
+                      </>
+                    ) : null}
+                  </StyledSectionCard>
+                </StyledSection>
+              ) : null}
+
+              {activeTab === 'requerimientos' ? (
+                <StyledSection>
+                  <StyledSectionCard>
+                    <StyledFieldGrid>
+                      <StyledFieldFull>
+                        <StyledFieldLabel htmlFor="lead-m2">
+                          {t`Metros cuadrados requeridos`}
+                          <StyledRequired>*</StyledRequired>
+                        </StyledFieldLabel>
+                        <StyledInput
+                          id="lead-m2"
+                          type="number"
+                          min={1}
+                          value={form.metrosCuadradosRequeridos}
+                          onChange={(event) =>
+                            updateForm({
+                              metrosCuadradosRequeridos: Number(
+                                event.target.value,
+                              ),
+                            })
+                          }
+                        />
+                        <StyledChipRow>
+                          {M2_PRESETS.map((preset) => (
+                            <StyledPresetChip
+                              key={preset}
+                              type="button"
+                              isSelected={
+                                form.metrosCuadradosRequeridos === preset
+                              }
+                              onClick={() =>
+                                updateForm({
+                                  metrosCuadradosRequeridos: preset,
+                                })
+                              }
+                            >
+                              {preset.toLocaleString('es-MX')} m²
+                            </StyledPresetChip>
+                          ))}
+                        </StyledChipRow>
+                        {showValidation &&
+                          formErrors.metrosCuadradosRequeridos && (
+                            <StyledFieldError>
+                              {formErrors.metrosCuadradosRequeridos}
+                            </StyledFieldError>
+                          )}
+                      </StyledFieldFull>
+                      <StyledField>
+                        <StyledFieldLabel htmlFor="lead-ubicacion">
+                          {t`Ubicación deseada`}
+                        </StyledFieldLabel>
+                        <StyledSelect
+                          id="lead-ubicacion"
+                          value={form.ubicacionDeseada}
+                          onChange={(event) =>
+                            updateForm({ ubicacionDeseada: event.target.value })
+                          }
+                        >
+                          {UBICACION_OPTIONS.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </StyledSelect>
+                      </StyledField>
+                      <StyledField>
+                        <StyledFieldLabel htmlFor="lead-giro">{t`Giro`}</StyledFieldLabel>
+                        <StyledSelect
+                          id="lead-giro"
+                          value={form.giroEmpresa}
+                          onChange={(event) =>
+                            updateForm({ giroEmpresa: event.target.value })
+                          }
+                        >
+                          {GIRO_OPTIONS.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </StyledSelect>
+                      </StyledField>
+                      <StyledField>
+                        <StyledFieldLabel htmlFor="lead-plazo">
+                          {t`Plazo de contrato (meses)`}
+                        </StyledFieldLabel>
+                        <StyledInput
+                          id="lead-plazo"
+                          type="number"
+                          min={1}
+                          value={form.plazoContratoMeses}
+                          onChange={(event) =>
+                            updateForm({
+                              plazoContratoMeses: Number(event.target.value),
+                            })
+                          }
+                        />
+                        <StyledChipRow>
+                          {PLAZO_PRESETS.map((preset) => (
+                            <StyledPresetChip
+                              key={preset}
+                              type="button"
+                              isSelected={form.plazoContratoMeses === preset}
+                              onClick={() =>
+                                updateForm({ plazoContratoMeses: preset })
+                              }
+                            >
+                              {preset} {t`meses`}
+                            </StyledPresetChip>
+                          ))}
+                        </StyledChipRow>
+                      </StyledField>
+                      <StyledField>
+                        <StyledFieldLabel htmlFor="lead-presupuesto">
+                          {t`Presupuesto mensual (USD)`}
+                        </StyledFieldLabel>
+                        <StyledInput
+                          id="lead-presupuesto"
+                          type="number"
+                          min={0}
+                          step={100}
+                          value={form.presupuestoMensualUsd}
+                          onChange={(event) =>
+                            updateForm({
+                              presupuestoMensualUsd: Number(event.target.value),
+                            })
+                          }
+                        />
+                        <StyledFieldHint>
+                          {t`Referencia para calificación comercial`}
+                        </StyledFieldHint>
+                      </StyledField>
+                    </StyledFieldGrid>
+                  </StyledSectionCard>
+                </StyledSection>
+              ) : null}
+
+              {activeTab === 'operacion' ? (
+                <StyledSection>
+                  <StyledSectionCard>
+                    <StyledOperationGrid>
+                      <StyledOperationCard
+                        type="button"
+                        isSelected={
+                          form.tipoOperacion === 'Arrendamiento nuevo'
+                        }
+                        onClick={() =>
+                          updateForm({ tipoOperacion: 'Arrendamiento nuevo' })
+                        }
+                      >
+                        <StyledOperationTitle>{t`Nave disponible`}</StyledOperationTitle>
+                        <StyledOperationHint>
+                          {t`Arrendamiento de nave existente en parque industrial`}
+                        </StyledOperationHint>
+                      </StyledOperationCard>
+                      <StyledOperationCard
+                        type="button"
+                        isSelected={form.tipoOperacion === 'Build-to-suit'}
+                        onClick={() =>
+                          updateForm({ tipoOperacion: 'Build-to-suit' })
+                        }
+                      >
+                        <StyledOperationTitle>{t`Build-to-suit`}</StyledOperationTitle>
+                        <StyledOperationHint>
+                          {t`Construcción a la medida con specs técnicas`}
+                        </StyledOperationHint>
+                      </StyledOperationCard>
+                    </StyledOperationGrid>
+
+                    {form.tipoOperacion === 'Build-to-suit' && (
+                      <StyledBtsPanel>
+                        <StyledSectionHeader>
+                          <StyledSectionIcon>
+                            <IconTool size={16} />
+                          </StyledSectionIcon>
+                          <StyledSectionTitle>
+                            {t`Especificaciones BTS`}
+                          </StyledSectionTitle>
+                        </StyledSectionHeader>
+                        <StyledFieldGrid>
+                          <StyledField>
+                            <StyledFieldLabel htmlFor="lead-altura">
+                              {t`Altura requerida (m)`}
+                            </StyledFieldLabel>
+                            <StyledInput
+                              id="lead-altura"
+                              type="number"
+                              min={0}
+                              placeholder="12"
+                              value={form.alturaRequerida ?? ''}
+                              onChange={(event) =>
+                                updateForm({
+                                  alturaRequerida:
+                                    Number(event.target.value) || undefined,
+                                })
+                              }
+                            />
+                          </StyledField>
+                          <StyledField>
+                            <StyledFieldLabel htmlFor="lead-andenes">
+                              {t`Andenes requeridos`}
+                            </StyledFieldLabel>
+                            <StyledInput
+                              id="lead-andenes"
+                              type="number"
+                              min={0}
+                              placeholder="4"
+                              value={form.andenesRequeridos ?? ''}
+                              onChange={(event) =>
+                                updateForm({
+                                  andenesRequeridos:
+                                    Number(event.target.value) || undefined,
+                                })
+                              }
+                            />
+                          </StyledField>
+                          <StyledFieldFull>
+                            <StyledFieldLabel htmlFor="lead-specs">
+                              {t`Especificaciones técnicas`}
+                            </StyledFieldLabel>
+                            <StyledTextarea
+                              id="lead-specs"
+                              placeholder={t`Ej. piso de concreto reforzado, rampa niveladora, oficinas en mezzanine…`}
+                              value={form.especificacionesTecnicas ?? ''}
+                              onChange={(event) =>
+                                updateForm({
+                                  especificacionesTecnicas: event.target.value,
+                                })
+                              }
+                            />
+                          </StyledFieldFull>
+                        </StyledFieldGrid>
+                      </StyledBtsPanel>
+                    )}
+                  </StyledSectionCard>
+                </StyledSection>
+              ) : null}
+
+              {errorMessage && (
+                <StyledBannerError>{errorMessage}</StyledBannerError>
+              )}
+            </ParksModalTabs>
+          </StyledBody>
+
+          <StyledFooter>
+            <StyledFooterHint>{footerHint}</StyledFooterHint>
+            <StyledFooterActions>
               <Button
-                title={t`Anterior`}
-                onClick={handlePreviousTab}
+                title={t`Cancelar`}
+                onClick={handleClose}
                 variant="secondary"
-                disabled={isSubmitting}
+                disabled={isBusy}
               />
-            ) : null}
-            {!isLastTab ? (
-              <Button
-                title={t`Siguiente`}
-                onClick={handleNextTab}
-                variant="primary"
-                disabled={isSubmitting}
-              />
-            ) : (
-              <Button
-                title={
-                  isSubmitting
-                    ? t`Creando oportunidad…`
-                    : prefillInquilino
-                      ? t`Crear oportunidad`
-                      : t`Crear lead`
-                }
-                onClick={() => {
-                  void handleSubmit();
-                }}
-                variant="primary"
-                disabled={isSubmitting}
-              />
-            )}
-          </StyledFooterActions>
-        </StyledFooter>
-      </StyledModal>
-    </StyledOverlay>,
+              {!isFirstTab ? (
+                <Button
+                  title={t`Anterior`}
+                  onClick={handlePreviousTab}
+                  variant="secondary"
+                  disabled={isBusy}
+                />
+              ) : null}
+              {!isLastTab ? (
+                <Button
+                  title={t`Siguiente`}
+                  onClick={handleNextTab}
+                  variant="primary"
+                  disabled={isBusy}
+                />
+              ) : (
+                <Button
+                  title={
+                    isSubmitting
+                      ? t`Creando oportunidad…`
+                      : prefillInquilino
+                        ? t`Crear oportunidad`
+                        : t`Crear lead`
+                  }
+                  onClick={() => {
+                    void handleSubmit();
+                  }}
+                  variant="primary"
+                  disabled={isBusy}
+                />
+              )}
+            </StyledFooterActions>
+          </StyledFooter>
+        </StyledModal>
+      </StyledOverlay>
+      )}
+
+      {isNewBrokerModalOpen ? (
+        <ParksNewBrokerModal
+          onClose={() => setIsNewBrokerModalOpen(false)}
+          onCreated={(broker) => {
+            setBrokers((current) => [broker, ...current]);
+            updateForm({ brokerId: broker.id });
+          }}
+        />
+      ) : null}
+    </>,
     document.body,
   );
 };

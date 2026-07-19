@@ -64,6 +64,7 @@ export type ParksStackingPlanNave = ParksNaveRecord & {
 
 export type ParksOpportunityRecord = ObjectRecord & {
   name?: string;
+  folio?: string;
   stage?: string;
   etapaRenovacion?: string;
   m2Requeridos?: number;
@@ -76,6 +77,7 @@ export type ParksOpportunityRecord = ObjectRecord & {
   motivoSinNave?: string;
   aprobacionRequerida?: boolean;
   estatusAprobacion?: string;
+  comentarioAprobacion?: string;
   canalOrigen?: string;
   createdAt?: string;
   tipoOperacion?: string;
@@ -83,14 +85,44 @@ export type ParksOpportunityRecord = ObjectRecord & {
   leasingOfficerAsignado?: string;
   tourNavesMostradas?: string;
   tourFecha?: string;
+  tourHora?: string;
   tourAsistentes?: string;
   tourFeedback?: string;
   tourProximosPasos?: string;
   cotizacionEnviadaEn?: string;
+  monedaCotizacion?: string;
+  costosAledanosJson?: string;
+  cotizacionHistorialJson?: string;
+  primerContactoTipo?: string;
+  primerContactoFecha?: string;
+  primerContactoHora?: string;
+  primerContactoNotas?: string;
+  primerContactoRealizado?: boolean;
+  brokerVinculadoId?: string;
+  brokerVinculado?: ObjectRecord & {
+    id?: string;
+    empresa?: string;
+    contacto?: string;
+    empresaBroker?: {
+      id?: string;
+      nombre?: string;
+      comisionPct?: number;
+      comisionPctNuevo?: number;
+      comisionPctPreventa?: number;
+      comisionPctRenovacion?: number;
+      clasificacion?: string;
+    };
+  };
+  rentaMensualCalculada?: number;
+  esquemaComision?: string;
   updatedAt?: string;
   amount?: { amountMicros?: number; currencyCode?: string };
   naveVinculadaId?: string;
-  naveVinculada?: ObjectRecord & { identificador?: string; id?: string };
+  naveVinculada?: ObjectRecord & {
+    identificador?: string;
+    id?: string;
+    estatus?: string;
+  };
   inquilinoVinculado?: ObjectRecord & { empresa?: string; id?: string };
   owner?: ObjectRecord & {
     name?: { firstName?: string; lastName?: string };
@@ -112,6 +144,7 @@ export type ParksHoldoverRecord = ObjectRecord & {
 
 export type ParksCasoLegalRecord = ObjectRecord & {
   referencia?: string;
+  folio?: string;
   notasCatalina?: string;
   semaforo?: string;
   estatus?: string;
@@ -139,13 +172,31 @@ export type ParksCasoLegalRecord = ObjectRecord & {
 
 export type ParksComisionRecord = ObjectRecord & {
   tipo?: string;
+  tipoPago?: string;
   beneficiario?: string;
+  folio?: string;
+  clienteNombre?: string;
+  leasingOfficer?: string;
+  origenDeal?: string;
+  tipoContratoComision?: string;
+  estatusNaveComision?: string;
+  brokerTierSnapshot?: string;
+  rentaTotalContrato?: number;
+  pctAplicado?: number;
   montoUsd?: number;
   baseCalculo?: string;
   estatus?: string;
-  casoLegal?: ObjectRecord & { referencia?: string };
+  aprobadoPor?: string;
+  fechaAprobacion?: string;
+  ajusteMonto?: number;
+  motivoAjuste?: string;
+  fechaCierre?: string;
+  fechaPago?: string;
+  opportunityId?: string;
+  casoLegal?: ObjectRecord & { referencia?: string; folio?: string };
   hojaDeAcuerdos?: ObjectRecord & {
     referencia?: string;
+    folio?: string;
     nave?: ObjectRecord & { identificador?: string };
   };
 };

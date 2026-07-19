@@ -36,7 +36,8 @@ const StyledTabList = styled.div`
   gap: ${themeCssVariables.spacing[3]};
   overflow-x: auto;
   padding: 0 ${themeCssVariables.spacing[4]};
-  scrollbar-width: none;
+  scroll-padding-inline-end: ${themeCssVariables.spacing[4]};
+  scrollbar-width: thin;
 
   &::-webkit-scrollbar {
     display: none;

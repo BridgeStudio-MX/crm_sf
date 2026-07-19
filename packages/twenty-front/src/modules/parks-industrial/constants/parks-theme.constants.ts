@@ -9,6 +9,25 @@ export const PARKS_BRAND = {
   borderSoft: 'rgba(0, 104, 55, 0.22)',
 } as const;
 
+// Shared visual tokens for command-center heroes across CEO, comercial, legal, CxC, etc.
+export const PARKS_COMMAND_CENTER = {
+  background:
+    'linear-gradient(165deg, #050505 0%, #0f0f0f 48%, #080808 100%)',
+  boxShadow:
+    '0 24px 48px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
+  glowOrb:
+    'radial-gradient(circle, rgba(0, 104, 55, 0.28) 0%, transparent 68%)',
+  text: '#ffffff',
+  textMuted: 'rgba(255, 255, 255, 0.72)',
+  textSecondary: 'rgba(255, 255, 255, 0.86)',
+  panelBackground: 'rgba(255, 255, 255, 0.06)',
+  panelBorder: 'rgba(255, 255, 255, 0.12)',
+  actionBackground: 'rgba(255, 255, 255, 0.08)',
+  actionBorder: 'rgba(255, 255, 255, 0.16)',
+  actionHoverBackground: 'rgba(255, 255, 255, 0.14)',
+  statHint: PARKS_BRAND.accent,
+} as const;
+
 export type ParksVisualAccent =
   | 'blue'
   | 'green'

@@ -15,7 +15,7 @@ export const ParksRenovacionesPage = () => {
     <ParksPageShell
       title={t`Renovaciones`}
       subtitle={getParksIndustrialPageSubtitle(
-        t`Cola de vencimientos, riesgo de vacancia y holdovers activos`,
+        t`Alertas IA a 12/6/3/1 mes · riesgo de vacancia · holdovers`,
       )}
       icon={<IconRefresh size={theme.icon.size.md} />}
     >

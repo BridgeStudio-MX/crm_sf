@@ -1,5 +1,6 @@
 import { styled } from '@linaria/react';
 import { t } from '@lingui/core/macro';
+import { IconCalendarEvent, IconPhone } from 'twenty-ui/icon';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
 import { ParksEmptyState } from '@/parks-industrial/components/ui/ParksEmptyState';
@@ -7,6 +8,10 @@ import { getParksPipelineStageLabel } from '@/parks-industrial/constants/parks-i
 import { PARKS_BRAND } from '@/parks-industrial/constants/parks-theme.constants';
 import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRecords';
 import { getParksAssignedLeasingOfficerName } from '@/parks-industrial/utils/parks-format.util';
+import {
+  buildParksLoAgendaItems,
+  type ParksLoAgendaItem,
+} from '@/parks-industrial/utils/parks-lo-agenda.util';
 
 type ParksLoCampoHoyTabProps = {
   deals: ParksOpportunityRecord[];
@@ -73,15 +78,82 @@ const StyledDealMeta = styled.span`
   font-size: ${themeCssVariables.font.size.sm};
 `;
 
+const StyledAgendaSection = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: ${themeCssVariables.spacing[2]};
+`;
+
+const StyledAgendaTitle = styled.h3`
+  color: ${themeCssVariables.font.color.primary};
+  font-size: ${themeCssVariables.font.size.sm};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  margin: 0;
+`;
+
+const StyledAgendaList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${themeCssVariables.spacing[2]};
+`;
+
+const StyledAgendaButton = styled.button`
+  align-items: flex-start;
+  background: ${themeCssVariables.background.secondary};
+  border: 1px solid ${PARKS_BRAND.borderSoft};
+  border-radius: ${themeCssVariables.border.radius.md};
+  color: ${themeCssVariables.font.color.primary};
+  cursor: pointer;
+  display: flex;
+  gap: ${themeCssVariables.spacing[2]};
+  padding: 12px;
+  text-align: left;
+  width: 100%;
+`;
+
+const StyledAgendaIcon = styled.span`
+  color: ${PARKS_BRAND.primary};
+  flex-shrink: 0;
+  margin-top: 2px;
+`;
+
+const StyledAgendaText = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+`;
+
+const StyledAgendaDealName = styled.span`
+  font-size: ${themeCssVariables.font.size.sm};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+`;
+
+const StyledAgendaMeta = styled.span`
+  color: ${themeCssVariables.font.color.tertiary};
+  font-size: ${themeCssVariables.font.size.xs};
+`;
+
+const renderAgendaIcon = (item: ParksLoAgendaItem) =>
+  item.kind === 'contacto' ? (
+    <IconPhone size={16} />
+  ) : (
+    <IconCalendarEvent size={16} />
+  );
+
 export const ParksLoCampoHoyTab = ({
   deals,
   tourReadyCount,
   handledCount,
   inVisitCount,
   onSelectDeal,
-}: ParksLoCampoHoyTabProps) => (
-  <>
-    <StyledSummaryGrid>
+}: ParksLoCampoHoyTabProps) => {
+  const agendaItems = buildParksLoAgendaItems(deals);
+
+  return (
+    <>
+      <StyledSummaryGrid>
       <StyledSummaryCard>
         <StyledSummaryValue>{deals.length}</StyledSummaryValue>
         <StyledSummaryLabel>{t`Deals activos`}</StyledSummaryLabel>
@@ -99,6 +171,30 @@ export const ParksLoCampoHoyTab = ({
         <StyledSummaryLabel>{t`En visita`}</StyledSummaryLabel>
       </StyledSummaryCard>
     </StyledSummaryGrid>
+
+    {agendaItems.length > 0 ? (
+      <StyledAgendaSection>
+        <StyledAgendaTitle>{t`Tu agenda`}</StyledAgendaTitle>
+        <StyledAgendaList>
+          {agendaItems.map((item) => (
+            <StyledAgendaButton
+              key={item.id}
+              type="button"
+              onClick={() => onSelectDeal(item.dealId)}
+            >
+              <StyledAgendaIcon>{renderAgendaIcon(item)}</StyledAgendaIcon>
+              <StyledAgendaText>
+                <StyledAgendaDealName>{item.dealName}</StyledAgendaDealName>
+                <StyledAgendaMeta>
+                  {item.label} · {item.fecha}
+                  {item.hora ? ` ${item.hora}` : ''}
+                </StyledAgendaMeta>
+              </StyledAgendaText>
+            </StyledAgendaButton>
+          ))}
+        </StyledAgendaList>
+      </StyledAgendaSection>
+    ) : null}
 
     {deals.length === 0 ? (
       <ParksEmptyState
@@ -125,5 +221,6 @@ export const ParksLoCampoHoyTab = ({
         ))}
       </StyledDealList>
     )}
-  </>
-);
+    </>
+  );
+};

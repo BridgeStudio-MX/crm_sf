@@ -26,6 +26,15 @@ export type ComiteSemaforoPrecio = 'Verde' | 'Amarillo' | 'Rojo';
 
 export type ComiteBrokerClasificacion = 'Top 10' | 'No top 10' | 'Sin broker';
 
+export type ComiteIaFlagSeveridad = 'Alta' | 'Media' | 'Baja';
+
+export type ComiteIaFlag = {
+  id: string;
+  titulo: string;
+  detalle: string;
+  severidad: ComiteIaFlagSeveridad;
+};
+
 export type ComiteMiembroSeat = {
   memberId: string;
   seatIndex: 1 | 2 | 3;
@@ -102,6 +111,7 @@ export type ComiteAutorizacion = {
   resumenRazonesRechazo?: string;
   preguntas: ComitePregunta[];
   casoLegalId?: string;
+  flagsIaAtipicas: ComiteIaFlag[];
   auditoria: string[];
   createdAt: string;
   updatedAt: string;

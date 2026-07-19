@@ -14,7 +14,7 @@ export const ParksComitePage = () => {
     <ParksPageShell
       title={t`Comité de Autorización`}
       subtitle={getParksIndustrialPageSubtitle(
-        t`3 miembros · mayoría simple · gate entre Hoja firmada y Legal`,
+        t`Gobernanza comercial · mayoría simple`,
       )}
       icon={<IconShield size={theme.icon.size.md} />}
     >

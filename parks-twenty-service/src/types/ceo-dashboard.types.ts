@@ -175,6 +175,73 @@ export type CeoInboxSummary = {
   items: CeoInboxItem[];
 };
 
+export type CeoPortfolioSegment = 'TOTAL' | 'INDUSTRIAL';
+
+export type CeoOcupacionGauge = {
+  key: 'terminados' | 'construccion' | 'proyectados';
+  label: string;
+  ocupacionPct: number;
+  metaPct: number;
+  m2Totales: number;
+  m2Rentados: number;
+  m2Disponibles: number;
+  m2Anterior: number;
+  variacionPct: number;
+};
+
+export type CeoLegalSlaBlock = {
+  key: string;
+  label: string;
+  cumplimientoPct: number;
+  metaPct: number;
+  diasPromedioCierre: number;
+  metaDiasCierre: number;
+  abiertos: number;
+  fueraDeTiempo: number;
+};
+
+export type CeoLitigioBucket = {
+  categoria: string;
+  enProceso: number;
+  porcentaje: number;
+};
+
+export type CeoPerformanceAreaScore = {
+  area: string;
+  ponderacionPct: number;
+  scorePct: number;
+};
+
+export type CeoExecutiveIndicators = {
+  filters: {
+    year: number;
+    month: number;
+    segmento: CeoPortfolioSegment;
+  };
+  performanceConsolidadoPct: number;
+  performanceAreas: CeoPerformanceAreaScore[];
+  performanceFormulaNote: string;
+  ocupacion: CeoOcupacionGauge[];
+  ocupacionMetaTerminados: number;
+  litigios: CeoLitigioBucket[];
+  contratosNoRenovados: number;
+  m2NoRenovados: number;
+  pctNoRenovados: number;
+  renovacionIncrementoPct: number;
+  renovacionIncrementoMetaPct: number;
+  renovacionesFirmadasAntesVencerPct: number;
+  renovacionesFirmadasMetaPct: number;
+  hojasAcuerdoNuevos: number;
+  hojasAcuerdoRenovacion: number;
+  varContratosNuevosPct: number;
+  varM2RentadosPct: number;
+  varValorM2MxnPct: number;
+  varValorM2UsdPct: number;
+  varAnosPromedioRentaPct: number;
+  legalSla: CeoLegalSlaBlock[];
+  ultimaActualizacionLabel: string;
+};
+
 export type CeoExecutiveDashboardResult = {
   generatedAt: string;
   asOfDate: string;
@@ -183,6 +250,7 @@ export type CeoExecutiveDashboardResult = {
   board: CeoBoardSection;
   inbox: CeoInboxSummary;
   snapshots: CeoMonthlySnapshot[];
+  indicators: CeoExecutiveIndicators;
   kpisCatalog: Array<{
     id: string;
     name: string;

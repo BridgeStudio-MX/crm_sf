@@ -5,7 +5,7 @@ export type LeadTier =
   | 'Estándar'
   | 'Junior';
 
-export type ScoreFinalUsado = 'Reglas' | 'Einstein';
+export type ScoreFinalUsado = 'Reglas' | 'IA';
 
 export type AsignacionConfig = {
   umbralM2Aaa: number;
@@ -16,7 +16,7 @@ export type AsignacionConfig = {
   maxHorasSinAsignarEstandar: number;
   maxHorasSinContactoTrasAsignacionAaa: number;
   maxHorasSinContactoTrasAsignacionEstandar: number;
-  einsteinScoringActivo: boolean;
+  iaScoringActivo: boolean;
   activa: boolean;
   ultimaActualizacion: string;
   actualizadoPor: string;
@@ -54,8 +54,8 @@ export type ClasificacionLead = {
   puntajeTotal: number;
   tierCalculado: LeadTier;
   explicacionTier: string;
-  einsteinScore?: number | null;
-  einsteinRazonTop?: string | null;
+  iaScore?: number | null;
+  iaRazonTop?: string | null;
   scoreFinalUsado: ScoreFinalUsado;
   loSugerido1?: string | null;
   loSugerido2?: string | null;

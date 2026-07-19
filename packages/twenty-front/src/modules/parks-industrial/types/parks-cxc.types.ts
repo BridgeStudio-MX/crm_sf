@@ -9,6 +9,70 @@ export type CxcPaymentStatus =
 
 export type CxcClientType = 'Sin portal' | 'Con portal' | 'Portal múltiple';
 
+export type CxcPipelineStageId =
+  | 'recibido_legal'
+  | 'alta_oracle'
+  | 'setup_cobranza'
+  | 'facturacion_portal'
+  | 'cobranza_activa'
+  | 'holdover'
+  | 'salida';
+
+export type CxcHojaAcuerdosResumen = {
+  folio: string | null;
+  m2Acordados: number;
+  precioUsdM2: number;
+  rentaMensual: number;
+  moneda: 'MXN' | 'USD';
+  plazoMeses: number;
+  mesesGracia: number;
+  mesesDeposito: number;
+  mesesRentaAdelantada: number;
+  escalacionTipo: 'INPC' | 'Porcentaje fijo' | null;
+  escalacionPct: number | null;
+  fechaFirma: string | null;
+  leasingOfficer: string | null;
+};
+
+export type CxcContratoResumen = {
+  referenciaLegal: string;
+  tipoDocumento: string;
+  fechaInicio: string;
+  fechaVencimiento: string;
+  abogadoAsignado: string | null;
+  esPropiedadFuno: boolean;
+  estatusLegal: string;
+  casoLegalId: string | null;
+};
+
+export type CxcCalendarioPagoItem = {
+  fecha: string;
+  concepto: string;
+  monto: number;
+  estatus: 'Programada' | 'Facturada' | 'Pagada' | 'Vencida';
+};
+
+export type CxcCalendarioPago = {
+  proximaFechaPago: string | null;
+  diaPagoAcordado: string;
+  items: CxcCalendarioPagoItem[];
+};
+
+export type CxcPortalPaso = {
+  id: string;
+  label: string;
+  done: boolean;
+  detail: string;
+};
+
+export type CxcPortalPagoProceso = {
+  requiereOc: boolean;
+  portalUrl: string | null;
+  portalNombre: string | null;
+  instrucciones: string;
+  pasos: CxcPortalPaso[];
+};
+
 export type CxcInvoiceStatus =
   | 'Emitida'
   | 'OC_pendiente'
@@ -79,10 +143,28 @@ export type CxcCobranzaActionType =
   | 'email'
   | 'whatsapp'
   | 'nota'
+  | 'compromiso_pago'
   | 'escalar_claudia'
   | 'recordatorio_oc'
   | 'pago_aplicado'
   | 'oc_registrada';
+
+export type CxcSeguimientoEstado =
+  | 'Sin seguimiento'
+  | 'En seguimiento'
+  | 'Compromiso de pago'
+  | 'Pendiente verificación'
+  | 'Escalado';
+
+export type CxcSeguimientoCobranza = {
+  estado: CxcSeguimientoEstado;
+  compromisoPagoFecha: string | null;
+  compromisoMonto: number | null;
+  proximaAccionFecha: string | null;
+  proximaAccionNota: string | null;
+  ultimoContactoAt: string | null;
+  ultimoContactoTipo: CxcCobranzaActionType | null;
+};
 
 export type CxcCobranzaActivity = {
   id: string;
@@ -127,7 +209,14 @@ export type CxcAccount = {
   holdover: CxcHoldoverSummary | null;
   notasCobranza: string;
   actividadesCobranza?: CxcCobranzaActivity[];
+  seguimientoCobranza?: CxcSeguimientoCobranza | null;
   casoLegalId: string | null;
+  pipelineStage?: CxcPipelineStageId;
+  recibidoDeLegalAt?: string | null;
+  hojaAcuerdos?: CxcHojaAcuerdosResumen | null;
+  contrato?: CxcContratoResumen | null;
+  calendarioPagos?: CxcCalendarioPago | null;
+  portalPago?: CxcPortalPagoProceso | null;
   createdAt: string;
   updatedAt: string;
 };

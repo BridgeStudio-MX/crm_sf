@@ -7,7 +7,7 @@ import {
   PARKS_LOGO_ON_DARK,
 } from '@/parks-industrial/constants/parks-industrial-image.constants';
 
-export type ParksBrandLogoVariant = 'color' | 'onDark' | 'auto';
+export type ParksBrandLogoVariant = 'color' | 'onDark' | 'green' | 'auto';
 
 type ParksBrandLogoProps = {
   variant?: ParksBrandLogoVariant;
@@ -30,13 +30,18 @@ export const ParksBrandLogo = ({
   alt = 'Parks Industrial',
 }: ParksBrandLogoProps) => {
   const { theme } = useContext(ThemeContext);
-  const useOnDark =
-    variant === 'onDark' ||
-    (variant === 'auto' && theme.name === 'dark');
+  const logoSrc =
+    variant === 'green' || variant === 'color'
+      ? PARKS_LOGO_COLOR
+      : variant === 'onDark'
+        ? PARKS_LOGO_ON_DARK
+        : theme.name === 'dark'
+          ? PARKS_LOGO_ON_DARK
+          : PARKS_LOGO_COLOR;
 
   return (
     <StyledLogo
-      src={useOnDark ? PARKS_LOGO_ON_DARK : PARKS_LOGO_COLOR}
+      src={logoSrc}
       alt={alt}
       heightPx={height}
       height={height}

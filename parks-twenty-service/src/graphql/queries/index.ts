@@ -239,6 +239,7 @@ export const GET_HOJA_DE_ACUERDOS_BY_ID = `
     hojaDeAcuerdos(filter: { id: { eq: $hojaDeAcuerdosId } }) {
       id
       referencia
+      folio
       tipoContrato
       m2Acordados
       precioUsdM2
@@ -264,6 +265,7 @@ export const GET_HOJA_DE_ACUERDOS_BY_ID = `
         id
         identificador
         esPropiedadFuno
+        estatus
       }
       inquilino {
         id
@@ -273,6 +275,8 @@ export const GET_HOJA_DE_ACUERDOS_BY_ID = `
         id
         empresa
         contacto
+        clasificacion
+        empresaBrokerId
       }
     }
   }
@@ -513,6 +517,7 @@ export const GET_COMISIONES_BY_HOJA = `
           beneficiario
           montoUsd
           estatus
+          brokerId
         }
       }
     }
@@ -542,14 +547,37 @@ export const GET_ALL_COMISIONES = `
         node {
           id
           tipo
+          tipoPago
           beneficiario
+          folio
+          clienteNombre
+          leasingOfficer
+          origenDeal
+          tipoContratoComision
+          estatusNaveComision
+          brokerTierSnapshot
+          rentaTotalContrato
+          pctAplicado
           montoUsd
           estatus
           baseCalculo
+          aprobadoPor
+          fechaAprobacion
+          ajusteMonto
+          motivoAjuste
+          fechaCierre
+          fechaPago
+          opportunityId
           hojaDeAcuerdosId
           casoLegalId
+          brokerId
+          broker {
+            id
+            empresa
+          }
           hojaDeAcuerdos {
             referencia
+            folio
             m2Acordados
             precioUsdM2
             nave {
@@ -558,7 +586,67 @@ export const GET_ALL_COMISIONES = `
           }
           casoLegal {
             referencia
+            folio
           }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_ALL_BROKERS = `
+  query GetAllBrokers {
+    brokers(first: 200, orderBy: [{ empresa: AscNullsLast }]) {
+      edges {
+        node {
+          id
+          empresa
+          contacto
+          email
+          telefono
+          firma
+          clasificacion
+          activo
+          operacionesCnt
+          ultimaActividadFecha
+          zonasOperacion
+          empresaBrokerId
+          empresaBroker {
+            id
+            nombre
+            comisionPct
+            comisionPctNuevo
+            comisionPctPreventa
+            comisionPctRenovacion
+            clasificacion
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_ALL_EMPRESAS_BROKER = `
+  query GetAllEmpresasBroker {
+    empresasBroker(first: 200, orderBy: [{ nombre: AscNullsLast }]) {
+      edges {
+        node {
+          id
+          nombre
+          contactoPrincipal
+          email
+          telefono
+          comisionPct
+          comisionPctNuevo
+          comisionPctPreventa
+          comisionPctRenovacion
+          clasificacion
+          clasificacionHistorialJson
+          sectores
+          zonasOperacion
+          documentacionUrl
+          notas
+          activo
         }
       }
     }
@@ -675,6 +763,7 @@ export const GET_OPPORTUNITY_BY_ID = `
       id
       name
       stage
+      folio
       etapaRenovacion
       tipoOperacion
       m2Requeridos
@@ -687,6 +776,8 @@ export const GET_OPPORTUNITY_BY_ID = `
       escalacionAnual
       aprobacionRequerida
       estatusAprobacion
+      leasingOfficerAsignado
+      esquemaComision
       inquilinoVinculadoId
       naveVinculadaId
       brokerVinculadoId

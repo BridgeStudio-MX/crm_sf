@@ -41,6 +41,7 @@ export const CREATE_COMISION = `
       tipo
       beneficiario
       montoUsd
+      brokerId
     }
   }
 `;
@@ -53,6 +54,86 @@ export const UPDATE_COMISION = `
       beneficiario
       montoUsd
       estatus
+      brokerId
+    }
+  }
+`;
+
+export const CREATE_BROKER = `
+  mutation CreateBroker($data: BrokerCreateInput!) {
+    createBroker(data: $data) {
+      id
+      empresa
+      contacto
+      email
+      telefono
+      firma
+      clasificacion
+      activo
+      operacionesCnt
+      ultimaActividadFecha
+      zonasOperacion
+      empresaBrokerId
+    }
+  }
+`;
+
+export const UPDATE_BROKER = `
+  mutation UpdateBroker($brokerId: UUID!, $data: BrokerUpdateInput!) {
+    updateBroker(id: $brokerId, data: $data) {
+      id
+      empresa
+      contacto
+      email
+      telefono
+      firma
+      clasificacion
+      activo
+      operacionesCnt
+      ultimaActividadFecha
+      zonasOperacion
+      empresaBrokerId
+    }
+  }
+`;
+
+export const CREATE_EMPRESA_BROKER = `
+  mutation CreateEmpresaBroker($data: EmpresaBrokerCreateInput!) {
+    createEmpresaBroker(data: $data) {
+      id
+      nombre
+      contactoPrincipal
+      email
+      telefono
+      comisionPct
+      clasificacion
+      sectores
+      zonasOperacion
+      documentacionUrl
+      notas
+      activo
+    }
+  }
+`;
+
+export const UPDATE_EMPRESA_BROKER = `
+  mutation UpdateEmpresaBroker(
+    $empresaBrokerId: UUID!
+    $data: EmpresaBrokerUpdateInput!
+  ) {
+    updateEmpresaBroker(id: $empresaBrokerId, data: $data) {
+      id
+      nombre
+      contactoPrincipal
+      email
+      telefono
+      comisionPct
+      clasificacion
+      sectores
+      zonasOperacion
+      documentacionUrl
+      notas
+      activo
     }
   }
 `;

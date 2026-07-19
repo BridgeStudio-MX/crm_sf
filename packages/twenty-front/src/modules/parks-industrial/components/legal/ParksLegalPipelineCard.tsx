@@ -141,8 +141,13 @@ export const ParksLegalPipelineCard = ({
     >
       <StyledCardHeader>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <StyledReferencia>{casoLegal.referencia}</StyledReferencia>
+          <StyledReferencia>
+            {casoLegal.folio ?? casoLegal.referencia}
+          </StyledReferencia>
           <StyledMeta>
+            {casoLegal.folio && casoLegal.referencia !== casoLegal.folio
+              ? `${casoLegal.referencia} · `
+              : ''}
             {casoLegal.inquilino?.empresa ?? '—'} ·{' '}
             {casoLegal.nave?.identificador ?? '—'}
           </StyledMeta>

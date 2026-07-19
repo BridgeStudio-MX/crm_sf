@@ -5,7 +5,7 @@ import { isDefined } from 'twenty-shared/utils';
 import { IconArrowRight, type IconComponent } from 'twenty-ui/icon';
 import { MOBILE_VIEWPORT, themeCssVariables } from 'twenty-ui/theme-constants';
 
-import { PARKS_BRAND } from '@/parks-industrial/constants/parks-theme.constants';
+import { PARKS_COMMAND_CENTER } from '@/parks-industrial/constants/parks-theme.constants';
 import { ParksBrandLogo } from '@/parks-industrial/components/ui/ParksBrandLogo';
 
 export type ParksPageHeroAction = {
@@ -29,22 +29,15 @@ type ParksPageHeroProps = {
   sideContent?: ReactNode;
 };
 
-const heroTextMuted = `color-mix(in srgb, ${themeCssVariables.font.color.inverted} 72%, transparent)`;
-const heroTextSecondary = `color-mix(in srgb, ${themeCssVariables.font.color.inverted} 86%, transparent)`;
+const heroTextMuted = PARKS_COMMAND_CENTER.textMuted;
+const heroTextSecondary = PARKS_COMMAND_CENTER.textSecondary;
 
 const StyledHero = styled.section`
-  background: linear-gradient(
-    128deg,
-    ${themeCssVariables.color.green12} 0%,
-    ${PARKS_BRAND.primary} 38%,
-    ${themeCssVariables.color.green11} 72%,
-    ${PARKS_BRAND.accentSoft} 100%
-  );
+  background: ${PARKS_COMMAND_CENTER.background};
+  border: 1px solid ${PARKS_COMMAND_CENTER.panelBorder};
   border-radius: ${themeCssVariables.border.radius.xl};
-  box-shadow:
-    0 24px 48px ${themeCssVariables.color.green3},
-    inset 0 1px 0 ${themeCssVariables.background.transparent.primary};
-  color: ${themeCssVariables.font.color.inverted};
+  box-shadow: ${PARKS_COMMAND_CENTER.boxShadow};
+  color: ${PARKS_COMMAND_CENTER.text};
   overflow: hidden;
   padding: ${themeCssVariables.spacing[5]};
   position: relative;
@@ -55,11 +48,7 @@ const StyledHero = styled.section`
 `;
 
 const StyledGlowOrb = styled.div<{ top: string; left: string; size: string }>`
-  background: radial-gradient(
-    circle,
-    ${PARKS_BRAND.accentSoft} 0%,
-    transparent 68%
-  );
+  background: ${PARKS_COMMAND_CENTER.glowOrb};
   border-radius: 50%;
   height: ${({ size }) => size};
   left: ${({ left }) => left};
@@ -126,10 +115,10 @@ const StyledHeroActions = styled.div`
 const StyledHeroAction = styled(Link)`
   align-items: center;
   backdrop-filter: blur(8px);
-  background: ${themeCssVariables.background.transparent.light};
-  border: 1px solid ${themeCssVariables.background.transparent.medium};
+  background: ${PARKS_COMMAND_CENTER.actionBackground};
+  border: 1px solid ${PARKS_COMMAND_CENTER.actionBorder};
   border-radius: ${themeCssVariables.border.radius.pill};
-  color: ${themeCssVariables.font.color.inverted};
+  color: ${PARKS_COMMAND_CENTER.text};
   display: inline-flex;
   font-size: ${themeCssVariables.font.size.sm};
   font-weight: ${themeCssVariables.font.weight.medium};
@@ -141,15 +130,15 @@ const StyledHeroAction = styled(Link)`
     transform 0.15s ease;
 
   &:hover {
-    background: ${themeCssVariables.background.transparent.primary};
+    background: ${PARKS_COMMAND_CENTER.actionHoverBackground};
     transform: translateY(-1px);
   }
 `;
 
 const StyledSidePanel = styled.div`
   backdrop-filter: blur(12px);
-  background: ${themeCssVariables.background.transparent.light};
-  border: 1px solid ${themeCssVariables.background.transparent.medium};
+  background: ${PARKS_COMMAND_CENTER.panelBackground};
+  border: 1px solid ${PARKS_COMMAND_CENTER.panelBorder};
   border-radius: ${themeCssVariables.border.radius.md};
   padding: ${themeCssVariables.spacing[3]};
 `;
@@ -169,8 +158,8 @@ const StyledStatsRow = styled.div`
 
 const StyledStatCard = styled.div`
   backdrop-filter: blur(10px);
-  background: ${themeCssVariables.background.transparent.light};
-  border: 1px solid ${themeCssVariables.background.transparent.medium};
+  background: ${PARKS_COMMAND_CENTER.panelBackground};
+  border: 1px solid ${PARKS_COMMAND_CENTER.panelBorder};
   border-radius: ${themeCssVariables.border.radius.md};
   padding: ${themeCssVariables.spacing[3]};
 `;
@@ -188,7 +177,7 @@ const StyledStatValue = styled.div`
 `;
 
 const StyledStatHint = styled.div`
-  color: ${PARKS_BRAND.accent};
+  color: ${PARKS_COMMAND_CENTER.statHint};
   font-size: ${themeCssVariables.font.size.xs};
   margin-top: 4px;
 `;
@@ -208,7 +197,7 @@ export const ParksPageHero = ({
     <StyledHeroGrid hasSide={isDefined(sideContent)}>
       <StyledHeroCopy>
         <StyledHeroBrand>
-          <ParksBrandLogo variant="onDark" height={32} />
+          <ParksBrandLogo variant="green" height={32} />
         </StyledHeroBrand>
         <StyledEyebrow>{eyebrow}</StyledEyebrow>
         <StyledHeroTitle>{title}</StyledHeroTitle>

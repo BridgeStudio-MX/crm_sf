@@ -88,7 +88,7 @@ export const ParksProspectEnrichmentPanel = ({
 
   return (
     <ParksToolSection
-      title={t`Enriquecimiento IA`}
+      title={t`Análisis inteligente de prospecto`}
       icon={IconSparkles}
       variant="purple"
       embedded={embedded}

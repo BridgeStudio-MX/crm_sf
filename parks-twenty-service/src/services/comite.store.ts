@@ -3,6 +3,7 @@ import {
   type ComiteAutorizacion,
   type ComiteConfig,
   type ComiteDealSnapshot,
+  type ComiteIaFlag,
   type ComiteMiembroSeat,
   type ComitePregunta,
   type ComiteSemaforoPrecio,
@@ -129,6 +130,124 @@ export const hydrateDealSnapshot = (
   };
 };
 
+// Motor de reglas que la IA usa para marcar condiciones fuera de la banda
+// histórica del portafolio. Puramente derivado del snapshot del deal + config,
+// para que se recalcule siempre que cambie el umbral.
+const GRACIA_MESES_ESTANDAR = 2;
+const DEPOSITO_MESES_ESTANDAR = 2;
+const GUANTE_ALTO_USD = 250_000;
+const INCREMENTO_FIJO_MINIMO_PCT = 4;
+const PLAZO_MESES_ATIPICO = 120;
+
+const toUsdApprox = (amount: number, moneda: 'MXN' | 'USD'): number =>
+  moneda === 'MXN' ? amount / 17 : amount;
+
+export const computeComiteIaFlags = (
+  deal: ComiteDealSnapshot,
+  config: ComiteConfig = DEFAULT_COMITE_CONFIG,
+): ComiteIaFlag[] => {
+  const flags: ComiteIaFlag[] = [];
+
+  if (deal.descuentoPorcentaje > config.semaforoAmarilloMaxPct) {
+    flags.push({
+      id: 'descuento-fuera-banda',
+      titulo: 'Descuento fuera de banda',
+      detalle: `Descuento de ${deal.descuentoPorcentaje}% supera el umbral autorizado de ${config.semaforoAmarilloMaxPct}%.`,
+      severidad: 'Alta',
+    });
+  } else if (deal.descuentoPorcentaje > config.semaforoVerdeMaxPct) {
+    flags.push({
+      id: 'descuento-en-alerta',
+      titulo: 'Descuento en zona amarilla',
+      detalle: `Descuento de ${deal.descuentoPorcentaje}% está por encima de la banda verde (${config.semaforoVerdeMaxPct}%).`,
+      severidad: 'Media',
+    });
+  }
+
+  if (deal.periodoGraciaMeses > GRACIA_MESES_ESTANDAR) {
+    flags.push({
+      id: 'gracia-extendida',
+      titulo: 'Período de gracia extendido',
+      detalle: `${deal.periodoGraciaMeses} meses de gracia contra ${GRACIA_MESES_ESTANDAR} del estándar del portafolio.`,
+      severidad: deal.periodoGraciaMeses > 3 ? 'Alta' : 'Media',
+    });
+  }
+
+  if (deal.guantePactado > 0) {
+    const guanteUsd = toUsdApprox(deal.guantePactado, deal.moneda);
+    flags.push({
+      id: 'guante-pactado',
+      titulo: 'Guante pactado',
+      detalle: `Incentivo de ${deal.guantePactado.toLocaleString('es-MX')} ${deal.moneda} comprometido en el deal.`,
+      severidad: guanteUsd > GUANTE_ALTO_USD ? 'Alta' : 'Media',
+    });
+  }
+
+  if (deal.depositosGarantiaMeses < DEPOSITO_MESES_ESTANDAR) {
+    flags.push({
+      id: 'deposito-bajo',
+      titulo: 'Depósito en garantía por debajo del estándar',
+      detalle: `${deal.depositosGarantiaMeses} mes(es) de depósito contra ${DEPOSITO_MESES_ESTANDAR} del estándar.`,
+      severidad: 'Media',
+    });
+  }
+
+  if (deal.clienteAdeudosActivos) {
+    flags.push({
+      id: 'cliente-adeudos',
+      titulo: 'Cliente con adeudos activos',
+      detalle: 'El inquilino registra adeudos vigentes en cartera CxC.',
+      severidad: 'Alta',
+    });
+  }
+
+  if (
+    typeof deal.rentaContratoAnterior === 'number' &&
+    deal.rentaContratoAnterior > 0 &&
+    deal.rentaMensual < deal.rentaContratoAnterior
+  ) {
+    flags.push({
+      id: 'renta-a-la-baja',
+      titulo: 'Renta a la baja vs. contrato anterior',
+      detalle: `Renta mensual de ${deal.rentaMensual.toLocaleString('es-MX')} ${deal.moneda} es menor a la del contrato previo (${deal.rentaContratoAnterior.toLocaleString('es-MX')}).`,
+      severidad: 'Alta',
+    });
+  }
+
+  if (deal.rentasAdelantadasMeses === 0) {
+    flags.push({
+      id: 'sin-rentas-adelantadas',
+      titulo: 'Sin rentas adelantadas',
+      detalle: 'El deal no contempla rentas adelantadas.',
+      severidad: 'Baja',
+    });
+  }
+
+  if (
+    deal.incrementoTipo === 'Porcentaje fijo' &&
+    deal.incrementoValor > 0 &&
+    deal.incrementoValor < INCREMENTO_FIJO_MINIMO_PCT
+  ) {
+    flags.push({
+      id: 'incremento-bajo',
+      titulo: 'Incremento anual bajo',
+      detalle: `Incremento fijo de ${deal.incrementoValor}% por debajo del mínimo de referencia (${INCREMENTO_FIJO_MINIMO_PCT}%).`,
+      severidad: 'Media',
+    });
+  }
+
+  if (deal.plazoMeses >= PLAZO_MESES_ATIPICO) {
+    flags.push({
+      id: 'plazo-largo',
+      titulo: 'Plazo forzoso atípico',
+      detalle: `Plazo de ${deal.plazoMeses} meses fuera del rango habitual del portafolio.`,
+      severidad: 'Baja',
+    });
+  }
+
+  return flags;
+};
+
 const buildPendingMembers = (): [
   ComiteMiembroSeat,
   ComiteMiembroSeat,
@@ -250,7 +369,7 @@ export const buildDemoComites = (): ComiteAutorizacion[] => {
       'No tengo suficiente información sobre los requerimientos técnicos del build-to-suit',
   };
 
-  return [
+  const rawComites: Array<Omit<ComiteAutorizacion, 'flagsIaAtipicas'>> = [
     {
       id: 'comite-demo-femsa',
       referencia: 'COM-2026-0047',
@@ -401,6 +520,11 @@ export const buildDemoComites = (): ComiteAutorizacion[] => {
       updatedAt: hoursAgo(8),
     },
   ];
+
+  return rawComites.map((comite) => ({
+    ...comite,
+    flagsIaAtipicas: computeComiteIaFlags(comite.deal, config),
+  }));
 };
 
 const comitesById = new Map<string, ComiteAutorizacion>();
@@ -469,6 +593,7 @@ export const comiteStore = {
     comiteStore.ensureSeed();
     const saved = {
       ...comite,
+      flagsIaAtipicas: computeComiteIaFlags(comite.deal, configState),
       updatedAt: new Date().toISOString(),
     };
     comitesById.set(saved.id, saved);
@@ -478,5 +603,12 @@ export const comiteStore = {
     }
 
     return saved;
+  },
+
+  clearAll: (): void => {
+    comitesById.clear();
+    hojaToComiteId.clear();
+    seeded = true;
+    sequence = 50;
   },
 };

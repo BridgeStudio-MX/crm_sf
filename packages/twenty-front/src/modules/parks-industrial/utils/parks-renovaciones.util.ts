@@ -56,6 +56,55 @@ export type ParksRenovacionesSummary = {
   montoHoldoverMensualUsd: number;
 };
 
+export type ParksRenovacionAlertBucket = {
+  monthsBefore: 12 | 6 | 3 | 1;
+  count: number;
+  audienceHint: string;
+};
+
+// Buckets mirror backend RENOVACION_ALERT_THRESHOLDS_MONTHS [12, 6, 3, 1]
+export const buildParksRenovacionAlertBuckets = (
+  queue: ParksRenovacionQueueItem[],
+): ParksRenovacionAlertBucket[] => {
+  const countInWindow = (
+    minDaysExclusive: number,
+    maxDaysInclusive: number,
+  ): number =>
+    queue.filter((item) => {
+      if (item.diasRestantes === null) {
+        return false;
+      }
+
+      return (
+        item.diasRestantes > minDaysExclusive &&
+        item.diasRestantes <= maxDaysInclusive
+      );
+    }).length;
+
+  return [
+    {
+      monthsBefore: 12,
+      count: countInWindow(180, 365),
+      audienceHint: t`Comercial`,
+    },
+    {
+      monthsBefore: 6,
+      count: countInWindow(90, 180),
+      audienceHint: t`Comercial + Dir. Comercial`,
+    },
+    {
+      monthsBefore: 3,
+      count: countInWindow(30, 90),
+      audienceHint: t`+ CEO`,
+    },
+    {
+      monthsBefore: 1,
+      count: countInWindow(0, 30),
+      audienceHint: t`+ Legal · crítico`,
+    },
+  ];
+};
+
 const RISK_BAND_ORDER: Record<ParksRenovacionRiskBand, number> = {
   critical: 0,
   attention: 1,

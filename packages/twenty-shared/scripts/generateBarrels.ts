@@ -501,3 +501,5 @@ const main = () => {
   moduleIndexFiles.forEach(createTypeScriptFile);
 };
 main();
+// @prettier/sync leaves a worker thread open that keeps the event loop alive
+process.exit(0);

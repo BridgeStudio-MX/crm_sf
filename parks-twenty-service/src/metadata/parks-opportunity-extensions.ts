@@ -7,6 +7,12 @@ import {
 export const OPPORTUNITY_OBJECT_NAME = 'opportunity';
 
 export const OPPORTUNITY_FIELD_DEFINITIONS: FieldDefinition[] = [
+  // Folio/ticket único que viaja comercial → legal → ops → comisiones
+  {
+    name: 'folio',
+    label: 'Folio',
+    type: 'TEXT',
+  },
   {
     name: 'tipoOperacion',
     label: 'Tipo operación',
@@ -82,18 +88,49 @@ export const OPPORTUNITY_FIELD_DEFINITIONS: FieldDefinition[] = [
     label: 'País de origen',
     type: 'TEXT',
   },
+  {
+    name: 'recomendadoPor',
+    label: 'Recomendado por',
+    type: 'TEXT',
+  },
   { name: 'plazoContratoMeses', label: 'Plazo contrato (meses)', type: 'NUMBER' },
   {
     name: 'presupuestoMensualUsd',
     label: 'Presupuesto mensual USD',
     type: 'NUMBER',
   },
+  // Primer contacto — el LO agenda/registra la primera llamada, videollamada
+  // o reunión antes de poder avanzar a agendar la visita a nave.
+  {
+    name: 'primerContactoTipo',
+    label: 'Primer contacto — tipo',
+    type: 'SELECT',
+    options: buildSelectOptions([
+      'Llamada',
+      'Videollamada',
+      'Reunión presencial',
+    ]),
+  },
+  { name: 'primerContactoFecha', label: 'Primer contacto — fecha', type: 'DATE' },
+  { name: 'primerContactoHora', label: 'Primer contacto — hora', type: 'TEXT' },
+  {
+    name: 'primerContactoRealizado',
+    label: 'Primer contacto — realizado',
+    type: 'BOOLEAN',
+  },
+  { name: 'primerContactoNotas', label: 'Primer contacto — notas', type: 'TEXT' },
   { name: 'tourFecha', label: 'Tour — fecha', type: 'DATE' },
+  { name: 'tourHora', label: 'Tour — hora', type: 'TEXT' },
   { name: 'tourParque', label: 'Tour — parque', type: 'TEXT' },
   { name: 'tourNavesMostradas', label: 'Tour — naves mostradas', type: 'TEXT' },
   { name: 'tourAsistentes', label: 'Tour — asistentes', type: 'TEXT' },
   { name: 'tourFeedback', label: 'Tour — feedback', type: 'TEXT' },
   { name: 'tourProximosPasos', label: 'Tour — próximos pasos', type: 'TEXT' },
+  {
+    name: 'fichaEnviadaPorCorreo',
+    label: 'Ficha enviada por correo',
+    type: 'BOOLEAN',
+  },
   { name: 'precioPorM2Usd', label: 'Precio por m² USD', type: 'NUMBER' },
   { name: 'm2Ofertados', label: 'm² ofertados', type: 'NUMBER' },
   {
@@ -120,6 +157,22 @@ export const OPPORTUNITY_FIELD_DEFINITIONS: FieldDefinition[] = [
     type: 'NUMBER',
   },
   { name: 'cotizacionEnviadaEn', label: 'Cotización enviada en', type: 'DATE' },
+  {
+    name: 'monedaCotizacion',
+    label: 'Moneda cotización',
+    type: 'SELECT',
+    options: buildSelectOptions(['MXN', 'USD']),
+  },
+  {
+    name: 'costosAledanosJson',
+    label: 'Costos aledaños (JSON)',
+    type: 'TEXT',
+  },
+  {
+    name: 'cotizacionHistorialJson',
+    label: 'Historial cotizaciones (JSON)',
+    type: 'TEXT',
+  },
   {
     name: 'motivoPerdida',
     label: 'Motivo pérdida',

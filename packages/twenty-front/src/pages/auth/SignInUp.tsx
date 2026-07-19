@@ -20,6 +20,8 @@ import { WorkspaceSelectionFooter } from '@/auth/sign-in-up/components/Workspace
 import { SignInUpSSOIdentityProviderSelection } from '@/auth/sign-in-up/components/internal/SignInUpSSOIdentityProviderSelection';
 import { SignInUpWorkspaceCreationForm } from '@/auth/sign-in-up/components/internal/SignInUpWorkspaceCreationForm';
 import { SignInUpWorkspaceScopeFormEffect } from '@/auth/sign-in-up/components/internal/SignInUpWorkspaceScopeFormEffect';
+import { ParksBrandLogo } from '@/parks-industrial/components/ui/ParksBrandLogo';
+import { PARKS_INDUSTRIAL_TENANT_NAME } from '@/parks-industrial/constants/parks-tenant.constants';
 import { isMultiWorkspaceEnabledState } from '@/client-config/states/isMultiWorkspaceEnabledState';
 import { useGetPublicWorkspaceDataByDomain } from '@/domain-manager/hooks/useGetPublicWorkspaceDataByDomain';
 import { useIsCurrentLocationOnAWorkspace } from '@/domain-manager/hooks/useIsCurrentLocationOnAWorkspace';
@@ -49,6 +51,29 @@ const StyledLoaderContainer = styled.div`
   width: 100%;
 `;
 
+const StyledParksLogoButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  margin: ${themeCssVariables.spacing[4]} 0;
+  padding: 0;
+  width: 100%;
+`;
+
+const isParksIndustrialWorkspace = (
+  workspacePublicData: PublicWorkspaceData | null,
+): boolean => {
+  const displayName = workspacePublicData?.displayName?.trim().toLowerCase();
+
+  return (
+    displayName === PARKS_INDUSTRIAL_TENANT_NAME.toLowerCase() ||
+    displayName === 'parks' ||
+    (displayName?.includes('parks') ?? false)
+  );
+};
+
 const StandardContent = ({
   workspacePublicData,
   signInUpForm,
@@ -62,14 +87,26 @@ const StandardContent = ({
   title: string;
   onClickOnLogo: () => void;
 }) => {
+  const showParksLogo = isParksIndustrialWorkspace(workspacePublicData);
+
   return (
     <ModalContent isVerticallyCentered isHorizontallyCentered>
       <AnimatedEaseIn>
-        <Logo
-          secondaryLogo={workspacePublicData?.logo}
-          placeholder={workspacePublicData?.displayName}
-          onClick={onClickOnLogo}
-        />
+        {showParksLogo ? (
+          <StyledParksLogoButton
+            type="button"
+            onClick={onClickOnLogo}
+            aria-label={PARKS_INDUSTRIAL_TENANT_NAME}
+          >
+            <ParksBrandLogo variant="onDark" height={40} />
+          </StyledParksLogoButton>
+        ) : (
+          <Logo
+            secondaryLogo={workspacePublicData?.logo}
+            placeholder={workspacePublicData?.displayName}
+            onClick={onClickOnLogo}
+          />
+        )}
       </AnimatedEaseIn>
       <Title animate>{title}</Title>
       {signInUpForm}

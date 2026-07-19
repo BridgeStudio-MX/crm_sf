@@ -14,7 +14,7 @@ export const ParksCxcDashboardPage = () => {
     <ParksPageShell
       title={t`CxC · Cobranza`}
       subtitle={getParksIndustrialPageSubtitle(
-        t`Cartera, riesgo de pago, OC portal, holdovers y forecast`,
+        t`KPIs, forecast y anomalías · Cartera CxC para el trabajo diario`,
       )}
       icon={<IconReportMoney size={theme.icon.size.md} />}
     >

@@ -38,6 +38,7 @@ import {
 import { getParksInquilino360Path } from '@/parks-industrial/constants/parks-routes.constants';
 import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRecords';
 import { ParksActivityTimelinePanel } from '@/parks-industrial/components/pipeline/ParksActivityTimelinePanel';
+import { ParksFirstContactPanel } from '@/parks-industrial/components/pipeline/ParksFirstContactPanel';
 import { ParksAssignLeasingOfficerPanel } from '@/parks-industrial/components/pipeline/ParksAssignLeasingOfficerPanel';
 import { ParksCommercialProposalSection } from '@/parks-industrial/components/pipeline/ParksCommercialProposalSection';
 import { ParksCommercialWorkflowPanel } from '@/parks-industrial/components/pipeline/ParksCommercialWorkflowPanel';
@@ -151,6 +152,18 @@ const StyledKpiStrip = styled.div`
   @media (max-width: ${MOBILE_VIEWPORT}px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+`;
+
+const StyledDealBody = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+`;
+
+const StyledGuideWrapper = styled.div`
+  flex-shrink: 0;
 `;
 
 const StyledTabStack = styled.div`
@@ -296,10 +309,6 @@ export const ParksPipelineDealDetail = ({
   const ownerName = getParksOwnerName(deal);
   const companyName =
     deal.inquilinoVinculado?.empresa ?? deal.name ?? t`Nuevo prospecto`;
-  const showEnrichment =
-    !deal.stage ||
-    deal.stage === 'LEAD_RECIBIDO' ||
-    deal.stage === 'PROSPECTO_NUEVO';
   const [selectedTourDecisorIds, setSelectedTourDecisorIds] = useState<
     string[]
   >([]);
@@ -323,29 +332,25 @@ export const ParksPipelineDealDetail = ({
         icon: IconLayoutDashboard,
         description: t`Contexto operativo del deal, nave vinculada y responsable comercial.`,
       },
-    ];
-
-    if (showEnrichment) {
-      tabs.push({
-        id: 'prospecto',
-        label: t`Prospecto`,
-        icon: IconSparkles,
-        description: t`Enriquecimiento IA y secuencia de correos para calificar al prospecto.`,
-      });
-    }
-
-    tabs.push(
+      // Kept visible across every stage (not just Lead recibido) so the AI
+      // read on this prospect can always be revisited, not just at intake.
       {
-        id: 'propuesta',
-        label: t`Propuesta`,
-        icon: IconFileText,
-        description: t`Elegir naves y agendar la visita.`,
+        id: 'prospecto',
+        label: t`Análisis IA`,
+        icon: IconSparkles,
+        description: t`Análisis inteligente de prospecto: enriquecimiento IA y secuencia de correos para calificar al lead. Disponible en cualquier etapa.`,
       },
       {
         id: 'actividad',
         label: t`Actividad`,
         icon: IconMail,
-        description: t`Timeline unificado de emails, llamadas y tareas (Gmail + CRM).`,
+        description: t`Registra el primer contacto (llamada, videollamada o reunión) y consulta el timeline unificado de emails, llamadas y tareas (Gmail + CRM).`,
+      },
+      {
+        id: 'propuesta',
+        label: t`Propuesta`,
+        icon: IconFileText,
+        description: t`Elegir naves y agendar la visita.`,
       },
       {
         id: 'decisores',
@@ -377,10 +382,10 @@ export const ParksPipelineDealDetail = ({
         icon: IconCalendarEvent,
         description: t`Hoja de Acuerdos (LOI), firmas y cierre comercial.`,
       },
-    );
+    ];
 
     return tabs;
-  }, [showEnrichment]);
+  }, []);
 
   useEffect(() => {
     setSelectedTourDecisorIds([]);
@@ -452,6 +457,14 @@ export const ParksPipelineDealDetail = ({
               {deal.name}
             </StyledPanelTitle>
             <StyledCompanyRow>
+              {deal.folio ? (
+                <Tag
+                  color="gray"
+                  text={deal.folio}
+                  variant="solid"
+                  weight="medium"
+                />
+              ) : null}
               <Tag
                 color={stageColor}
                 text={getParksPipelineStageLabel(deal.stage)}
@@ -519,19 +532,24 @@ export const ParksPipelineDealDetail = ({
         />
       </div>
 
-      <ParksDealStageGuidePanel
-        guide={stageGuide}
-        onOpenTab={(tab: ParksDealGuideTab, scrollTarget?: string) => {
-          setActiveTab(tab as DealDetailTab);
+      <StyledDealBody>
+        <StyledGuideWrapper>
+          <ParksDealStageGuidePanel
+            guide={stageGuide}
+            onOpenTab={(tab: ParksDealGuideTab, scrollTarget?: string) => {
+              setActiveTab(tab as DealDetailTab);
 
-          if (scrollTarget) {
-            setPendingScrollTarget(scrollTarget);
-          }
-        }}
-        onAdvanceStage={(nextStageId) => onMoveToStage?.(deal.id, nextStageId)}
-      />
+              if (scrollTarget) {
+                setPendingScrollTarget(scrollTarget);
+              }
+            }}
+            onAdvanceStage={(nextStageId) =>
+              onMoveToStage?.(deal.id, nextStageId)
+            }
+          />
+        </StyledGuideWrapper>
 
-      <ParksModalTabs
+        <ParksModalTabs
         tabs={dealTabs}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -595,7 +613,7 @@ export const ParksPipelineDealDetail = ({
           </StyledTabStack>
         ) : null}
 
-        {activeTab === 'prospecto' && showEnrichment ? (
+        {activeTab === 'prospecto' ? (
           <StyledTabStack>
             <ParksProspectEnrichmentPanel
               opportunityId={deal.id}
@@ -626,7 +644,15 @@ export const ParksPipelineDealDetail = ({
         ) : null}
 
         {activeTab === 'actividad' ? (
-          <ParksActivityTimelinePanel opportunityId={deal.id} embedded />
+          <StyledTabStack>
+            <ParksFirstContactPanel
+              opportunityId={deal.id}
+              companyName={companyName}
+              deal={deal}
+              onContactRegistered={(update) => onDealUpdated?.(deal.id, update)}
+            />
+            <ParksActivityTimelinePanel opportunityId={deal.id} embedded />
+          </StyledTabStack>
         ) : null}
 
         {activeTab === 'decisores' ? (
@@ -684,6 +710,7 @@ export const ParksPipelineDealDetail = ({
           />
         ) : null}
       </ParksModalTabs>
+      </StyledDealBody>
 
       <ParksActionBar
         hint={

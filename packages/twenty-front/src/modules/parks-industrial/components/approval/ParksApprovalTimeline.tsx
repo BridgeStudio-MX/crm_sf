@@ -17,6 +17,7 @@ import { ParksAiQuickActions } from '@/parks-industrial/components/ai/ParksAiQui
 import { ParksDocumentValidationPanel } from '@/parks-industrial/components/legal/ParksDocumentValidationPanel';
 import { ParksLegalActaRestitucionPanel } from '@/parks-industrial/components/legal/ParksLegalActaRestitucionPanel';
 import { ParksLegalChecklistPanel } from '@/parks-industrial/components/legal/ParksLegalChecklistPanel';
+import { ParksLegalCotejoIaPanel } from '@/parks-industrial/components/legal/ParksLegalCotejoIaPanel';
 import { ParksLegalFirmasPanel } from '@/parks-industrial/components/legal/ParksLegalFirmasPanel';
 import { ParksLegalLawyerPanel } from '@/parks-industrial/components/legal/ParksLegalLawyerPanel';
 import { ParksLegalLoiPanel } from '@/parks-industrial/components/legal/ParksLegalLoiPanel';
@@ -248,6 +249,10 @@ export const ParksApprovalTimeline = ({
             casoLegalId={casoLegal.id}
             onUpdated={handleWorkflowUpdated}
           />
+          <ParksLegalCotejoIaPanel
+            key={`cotejo-ia-elab-${refreshKey}`}
+            casoLegalId={casoLegal.id}
+          />
           <ParksContractEditorPanel casoLegalId={casoLegal.id} />
         </StyledPanelsStack>
       );
@@ -256,6 +261,10 @@ export const ParksApprovalTimeline = ({
     if (activeTab === 'firma' && canEditLegalWorkflow) {
       return (
         <StyledPanelsStack>
+          <ParksLegalCotejoIaPanel
+            key={`cotejo-ia-${refreshKey}`}
+            casoLegalId={casoLegal.id}
+          />
           <ParksLegalFirmasPanel
             key={`firmas-${refreshKey}`}
             casoLegalId={casoLegal.id}

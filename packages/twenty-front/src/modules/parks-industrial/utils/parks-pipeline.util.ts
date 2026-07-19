@@ -4,16 +4,19 @@ import { type CreateParksLeadInput } from '@/parks-industrial/services/parks-com
 export type ParksLeadCreatedPayload = {
   opportunityId: string;
   inquilinoId: string;
+  folio?: string;
   lead: CreateParksLeadInput;
 };
 
 export const buildOptimisticOpportunityRecord = ({
   opportunityId,
   inquilinoId,
+  folio,
   lead,
 }: ParksLeadCreatedPayload): ParksOpportunityRecord => ({
   id: opportunityId,
   name: `${lead.empresa.trim()} — ${lead.ubicacionDeseada} — ${lead.metrosCuadradosRequeridos} m²`,
+  folio,
   stage: 'LEAD_RECIBIDO',
   m2Requeridos: lead.metrosCuadradosRequeridos,
   ubicacionDeseada: lead.ubicacionDeseada,

@@ -8,6 +8,8 @@ export const ParksNotificationRole = {
   AbogadoAsignado: `${PARKS_ROLE_LABEL_PREFIX}Abogado asignado`,
   EjecutivoComercial: `${PARKS_ROLE_LABEL_PREFIX}Ejecutivo Comercial`,
   CxC: `${PARKS_ROLE_LABEL_PREFIX}CxC`,
+  GerenteCxc: `${PARKS_ROLE_LABEL_PREFIX}Gerente CxC`,
+  EjecutivoCxc: `${PARKS_ROLE_LABEL_PREFIX}Ejecutivo CxC`,
   DirectorComercial: `${PARKS_ROLE_LABEL_PREFIX}Director Comercial`,
 } as const;
 
@@ -29,6 +31,8 @@ export const PARKS_NOTIFICATION_CEM_ROLES = [
 
 export const PARKS_NOTIFICATION_CXC_ROLES = [
   ParksNotificationRole.CxC,
+  ParksNotificationRole.GerenteCxc,
+  ParksNotificationRole.EjecutivoCxc,
   ParksNotificationRole.DirectorComercial,
 ] as const;
 

@@ -326,12 +326,36 @@ export const getParksComisionStatusLabel = (estatus?: string | null): string =>
 
 export const getParksComisionStatusColor = (
   estatus?: string | null,
-): 'green' | 'yellow' | 'gray' => {
-  if (estatus === 'APROBADA') {
+): 'green' | 'yellow' | 'blue' | 'red' | 'gray' => {
+  if (!estatus) {
+    return 'yellow';
+  }
+
+  const normalized = estatus.toUpperCase();
+
+  if (normalized.includes('PAGADA') || normalized.includes('PAGADO')) {
     return 'green';
   }
 
-  if (estatus === 'PENDIENTE') {
+  if (
+    normalized.includes('APROBADA') ||
+    normalized.includes('PENDIENTE DE PAGO') ||
+    normalized.includes('PENDIENTE_DE_PAGO')
+  ) {
+    return 'blue';
+  }
+
+  if (
+    normalized.includes('RECHAZADA') ||
+    normalized.includes('DISPUTA')
+  ) {
+    return 'red';
+  }
+
+  if (
+    normalized.includes('PENDIENTE') ||
+    normalized.includes('CALCULADA')
+  ) {
     return 'yellow';
   }
 

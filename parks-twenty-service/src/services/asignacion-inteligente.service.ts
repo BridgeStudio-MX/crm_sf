@@ -216,7 +216,7 @@ const resolveTierFromScore = (
   return 'Junior';
 };
 
-const mockEinstein = (
+const mockIaRecommendation = (
   input: LeadScoreInput,
   puntajeReglas: number,
 ): { score: number; razon: string; loRecomendado: string } => {
@@ -393,9 +393,11 @@ export const asignacionInteligenteService = {
       factorInternacional.puntos +
       factorHistorial.puntos;
 
-    const einstein = mockEinstein(input, puntajeReglas);
-    const useEinstein = config.einsteinScoringActivo;
-    const puntajeTotal = useEinstein ? einstein.score : puntajeReglas;
+    const iaRecommendation = mockIaRecommendation(input, puntajeReglas);
+    const useIaScoring = config.iaScoringActivo;
+    const puntajeTotal = useIaScoring
+      ? iaRecommendation.score
+      : puntajeReglas;
     const tierCalculado = resolveTierFromScore(
       puntajeTotal,
       input.m2Requeridos,
@@ -447,14 +449,14 @@ export const asignacionInteligenteService = {
       loSugerido2 = candidates[1]?.nombre ?? null;
       loSugerido3 = candidates[2]?.nombre ?? null;
 
-      if (useEinstein && einstein.loRecomendado) {
-        const einsteinLo = candidates.find(
-          (lo) => lo.nombre === einstein.loRecomendado,
+      if (useIaScoring && iaRecommendation.loRecomendado) {
+        const iaSuggestedLo = candidates.find(
+          (lo) => lo.nombre === iaRecommendation.loRecomendado,
         );
 
-        if (einsteinLo) {
+        if (iaSuggestedLo) {
           loSugerido2 = loSugerido1;
-          loSugerido1 = einsteinLo.nombre;
+          loSugerido1 = iaSuggestedLo.nombre;
         }
       }
 
@@ -463,8 +465,11 @@ export const asignacionInteligenteService = {
         ? `LO ${tierToLoNivel(tierCalculado)} especialista en ${input.giroEmpresa}. Carga: ${preferred.cargaActual}/${preferred.cargaMaximaLeads}. Tasa histórica: ${preferred.tasaConversionHistorica}%`
         : `LO ${tierToLoNivel(tierCalculado)} con menor carga activa. Carga: ${preferred.cargaActual}/${preferred.cargaMaximaLeads}. Tasa histórica: ${preferred.tasaConversionHistorica}%`;
 
-      if (useEinstein && loSugerido1 === einstein.loRecomendado) {
-        razonSugerencia1 = `Einstein recomienda: ${loSugerido1}. "${einstein.razon}" Carga: ${preferred.cargaActual}/${preferred.cargaMaximaLeads}.`;
+      if (
+        useIaScoring &&
+        loSugerido1 === iaRecommendation.loRecomendado
+      ) {
+        razonSugerencia1 = `IA recomienda: ${loSugerido1}. "${iaRecommendation.razon}" Carga: ${preferred.cargaActual}/${preferred.cargaMaximaLeads}.`;
       }
 
       if (alertaCarga) {
@@ -547,9 +552,9 @@ export const asignacionInteligenteService = {
       puntajeTotal,
       tierCalculado,
       explicacionTier: '',
-      einsteinScore: useEinstein ? einstein.score : null,
-      einsteinRazonTop: useEinstein ? einstein.razon : null,
-      scoreFinalUsado: useEinstein ? 'Einstein' : 'Reglas',
+      iaScore: useIaScoring ? iaRecommendation.score : null,
+      iaRazonTop: useIaScoring ? iaRecommendation.razon : null,
+      scoreFinalUsado: useIaScoring ? 'IA' : 'Reglas',
       loSugerido1,
       loSugerido2,
       loSugerido3,
@@ -707,7 +712,7 @@ export const asignacionInteligenteService = {
   seedDemoScenarios: (): ClasificacionLead[] => {
     asignacionInteligenteStore.resetDemo();
 
-    // Scenario C prep: overload AAA temporarily for BMW case after normal ones
+    // Mix of AAA / Estándar / Junior before overloading AAA seats
     const samsung = asignacionInteligenteService.clasificarLead({
       opportunityId: 'demo-lead-samsung',
       empresa: 'Samsung Electronics México',
@@ -729,6 +734,28 @@ export const asignacionInteligenteService = {
       paisOrigen: 'Taiwan',
     });
 
+    const lg = asignacionInteligenteService.clasificarLead({
+      opportunityId: 'demo-lead-lg',
+      empresa: 'LG Electronics Guadalajara',
+      m2Requeridos: 12_500,
+      presupuestoMensualUsd: 980_000,
+      canalOrigen: 'Broker',
+      brokerClasificacion: 'Top 10',
+      giroEmpresa: 'Manufactura electrónica',
+      paisOrigen: 'Corea del Sur',
+      historialClienteParks: true,
+    });
+
+    const catPharma = asignacionInteligenteService.clasificarLead({
+      opportunityId: 'demo-lead-catalent',
+      empresa: 'Catalent Pharma Solutions',
+      m2Requeridos: 11_000,
+      presupuestoMensualUsd: 920_000,
+      canalOrigen: 'CEM',
+      giroEmpresa: 'Farmacéutica',
+      paisOrigen: 'Estados Unidos',
+    });
+
     const logimex = asignacionInteligenteService.clasificarLead({
       opportunityId: 'demo-lead-logimex',
       empresa: 'LogiMex S.A. de C.V.',
@@ -739,7 +766,80 @@ export const asignacionInteligenteService = {
       paisOrigen: 'México',
     });
 
-    // Force carga máxima on AAA LOs for Situación C/B demo
+    const meli = asignacionInteligenteService.clasificarLead({
+      opportunityId: 'demo-lead-meli',
+      empresa: 'Mercado Libre Fulfillment MX',
+      m2Requeridos: 7_200,
+      presupuestoMensualUsd: 610_000,
+      canalOrigen: 'Broker',
+      brokerClasificacion: 'Top 10',
+      giroEmpresa: 'E-commerce fulfillment',
+      paisOrigen: 'México',
+    });
+
+    const dhl = asignacionInteligenteService.clasificarLead({
+      opportunityId: 'demo-lead-dhl',
+      empresa: 'DHL Supply Chain Bajío',
+      m2Requeridos: 4_800,
+      presupuestoMensualUsd: 390_000,
+      canalOrigen: 'Recomendación',
+      giroEmpresa: 'Logística',
+      paisOrigen: 'Alemania',
+    });
+
+    const nestle = asignacionInteligenteService.clasificarLead({
+      opportunityId: 'demo-lead-nestle',
+      empresa: 'Nestlé Distribución Norte',
+      m2Requeridos: 3_600,
+      presupuestoMensualUsd: 310_000,
+      canalOrigen: 'Página web',
+      giroEmpresa: 'Distribución',
+      paisOrigen: 'Suiza',
+      historialClienteParks: true,
+    });
+
+    const callCenter = asignacionInteligenteService.clasificarLead({
+      opportunityId: 'demo-lead-callcenter',
+      empresa: 'Contacto Plus Call Center',
+      m2Requeridos: 1_200,
+      presupuestoMensualUsd: 45_000,
+      canalOrigen: 'Página web',
+      giroEmpresa: 'Call center',
+      paisOrigen: 'México',
+    });
+
+    const coldStart = asignacionInteligenteService.clasificarLead({
+      opportunityId: 'demo-lead-coldstart',
+      empresa: 'FreshCold Startups MX',
+      m2Requeridos: 800,
+      presupuestoMensualUsd: 28_000,
+      canalOrigen: 'Redes sociales',
+      giroEmpresa: 'Almacenamiento en frío',
+      paisOrigen: 'México',
+    });
+
+    const adsLead = asignacionInteligenteService.clasificarLead({
+      opportunityId: 'demo-lead-ads-pack',
+      empresa: 'PackFast Empaques',
+      m2Requeridos: 1_500,
+      presupuestoMensualUsd: 55_000,
+      canalOrigen: 'Google Ads',
+      giroEmpresa: 'Manufactura ligera',
+      paisOrigen: 'México',
+    });
+
+    const solarCo = asignacionInteligenteService.clasificarLead({
+      opportunityId: 'demo-lead-solarco',
+      empresa: 'SolarCo Componentes',
+      m2Requeridos: 9_500,
+      presupuestoMensualUsd: 780_000,
+      canalOrigen: 'Broker',
+      brokerClasificacion: 'No top 10',
+      giroEmpresa: 'Energía renovable',
+      paisOrigen: 'China',
+    });
+
+    // Force carga máxima on AAA LOs for Situación C/B demo (BMW + extra AAA)
     for (const lo of asignacionInteligenteStore.listLos()) {
       if (lo.nivelLo === 'AAA — Senior') {
         asignacionInteligenteStore.setLoCarga(lo.id, lo.cargaMaximaLeads);
@@ -756,14 +856,80 @@ export const asignacionInteligenteService = {
       paisOrigen: 'Alemania',
     });
 
-    // Age Samsung classification for escalation demo (optional overlay)
+    const tesla = asignacionInteligenteService.clasificarLead({
+      opportunityId: 'demo-lead-tesla',
+      empresa: 'Tesla Energy Storage MX',
+      m2Requeridos: 14_000,
+      presupuestoMensualUsd: 1_350_000,
+      canalOrigen: 'Broker',
+      brokerClasificacion: 'Top 10',
+      giroEmpresa: 'Semiconductores',
+      paisOrigen: 'Estados Unidos',
+    });
+
+    // Push Estándar LO near capacity for carga alerts on mid-tier leads
+    const bruyel = asignacionInteligenteStore
+      .listLos()
+      .find((lo) => lo.id === 'lo-bruyel');
+    if (bruyel) {
+      asignacionInteligenteStore.setLoCarga(
+        bruyel.id,
+        Math.max(bruyel.cargaActual, bruyel.cargaMaximaLeads - 1),
+      );
+    }
+
+    const autoParts = asignacionInteligenteService.clasificarLead({
+      opportunityId: 'demo-lead-autoparts',
+      empresa: 'AutoParts Bajío Logística',
+      m2Requeridos: 4_200,
+      presupuestoMensualUsd: 340_000,
+      canalOrigen: 'Página web',
+      giroEmpresa: 'Logística y distribución',
+      paisOrigen: 'México',
+    });
+
+    // Age some classifications for SLA urgency in the UI
     const agedSamsung: ClasificacionLead = {
       ...samsung,
       fechaClasificacion: asignacionInteligenteStore.hoursAgoIso(2.5),
     };
     asignacionInteligenteStore.upsertClasificacion(agedSamsung);
 
-    return [agedSamsung, foxconn, logimex, bmw];
+    const agedLogimex: ClasificacionLead = {
+      ...logimex,
+      fechaClasificacion: asignacionInteligenteStore.hoursAgoIso(20),
+    };
+    asignacionInteligenteStore.upsertClasificacion(agedLogimex);
+
+    const agedCallCenter: ClasificacionLead = {
+      ...callCenter,
+      fechaClasificacion: asignacionInteligenteStore.hoursAgoIso(18),
+    };
+    asignacionInteligenteStore.upsertClasificacion(agedCallCenter);
+
+    const agedMeli: ClasificacionLead = {
+      ...meli,
+      fechaClasificacion: asignacionInteligenteStore.hoursAgoIso(6),
+    };
+    asignacionInteligenteStore.upsertClasificacion(agedMeli);
+
+    return [
+      agedSamsung,
+      foxconn,
+      lg,
+      catPharma,
+      agedLogimex,
+      agedMeli,
+      dhl,
+      nestle,
+      agedCallCenter,
+      coldStart,
+      adsLead,
+      solarCo,
+      bmw,
+      tesla,
+      autoParts,
+    ];
   },
 
   runEscalationScan: async (): Promise<{ escalated: number }> => {

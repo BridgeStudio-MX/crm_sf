@@ -13,6 +13,7 @@ import {
   PARKS_COMMERCIAL_DEAL_WIN_PREVIEW_ENDPOINT,
   PARKS_COMMERCIAL_BULK_FOLLOW_UP_ENDPOINT,
   PARKS_COMMERCIAL_MAP_OUTREACH_ENDPOINT,
+  PARKS_COMMERCIAL_EXPANSION_SIGNALS_ENDPOINT,
   PARKS_SERVICE_URL,
 } from '@/parks-industrial/constants/parks-commercial.constants';
 import {
@@ -28,6 +29,7 @@ import {
   type FichaTecnicaLink,
   type FichaTecnicaSentVia,
   type MapOutreachResult,
+  type ParksExpansionSignalsResponse,
   type NaveMatchResult,
   type ProspectEnrichmentResult,
   type ProspectScoresResponse,
@@ -36,9 +38,7 @@ import {
   type DecisorClienteRol,
   type ParksAccount360Response,
 } from '@/parks-industrial/types/parks-commercial.types';
-import {
-  type ParksCemInboxSummary,
-} from '@/parks-industrial/types/parks-cem-inbox.types';
+import { type ParksCemInboxSummary } from '@/parks-industrial/types/parks-cem-inbox.types';
 
 const normalizeParksAccount360Response = (
   body: Partial<ParksAccount360Response> & { inquilinoId: string },
@@ -72,6 +72,7 @@ const normalizeParksAccount360Response = (
     interacciones: body.interacciones ?? [],
     estadoPagos: body.estadoPagos ?? { fuente: 'sin-datos' },
     tieneContratosFuno: body.tieneContratosFuno ?? false,
+    senalesExpansion: body.senalesExpansion ?? [],
     note: body.note,
   };
 };
@@ -129,6 +130,11 @@ export type CreateParksLeadInput = {
   presupuestoMensualUsd: number;
   canalOrigen: string;
   brokerId?: string;
+  // Required whenever brokerId is set: the LO handles the internal
+  // negotiation for every lead that comes through a broker.
+  leasingOfficerAsignado?: string;
+  // Required when canalOrigen is Recomendación.
+  recomendadoPor?: string;
   tipoOperacion?: string;
   alturaRequerida?: number;
   andenesRequeridos?: number;
@@ -140,6 +146,7 @@ export type CreateParksLeadInput = {
 export type UnassignedLead = {
   id: string;
   name?: string;
+  folio?: string;
   stage?: string;
   m2Requeridos?: number;
   canalOrigen?: string;
@@ -150,7 +157,7 @@ export type UnassignedLead = {
 
 export const createParksLead = async (
   input: CreateParksLeadInput,
-): Promise<{ opportunityId: string; inquilinoId: string }> => {
+): Promise<{ opportunityId: string; inquilinoId: string; folio?: string }> => {
   const response = await fetch(`${PARKS_SERVICE_URL}/commercial/leads`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -164,10 +171,13 @@ export const createParksLead = async (
   return (await response.json()) as {
     opportunityId: string;
     inquilinoId: string;
+    folio?: string;
   };
 };
 
-export const fetchParksUnassignedLeads = async (): Promise<UnassignedLead[]> => {
+export const fetchParksUnassignedLeads = async (): Promise<
+  UnassignedLead[]
+> => {
   const response = await fetch(
     `${PARKS_SERVICE_URL}/commercial/leads/unassigned`,
   );
@@ -204,9 +214,35 @@ export const assignParksLead = async ({
   }
 };
 
+export const registerParksFirstContact = async (input: {
+  opportunityId: string;
+  tipo: string;
+  fecha: string;
+  hora?: string;
+  notas?: string;
+  realizado?: boolean;
+  companyName?: string;
+}): Promise<{ opportunityId: string }> => {
+  const response = await fetch(
+    `${PARKS_SERVICE_URL}/commercial/contacts/${input.opportunityId}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  return (await response.json()) as { opportunityId: string };
+};
+
 export const registerParksTour = async (input: {
   opportunityId: string;
   tourFecha: string;
+  tourHora?: string;
   tourParque?: string;
   tourNavesMostradas?: string;
   tourAsistentes?: string;
@@ -247,6 +283,23 @@ export const previewParksQuotation = async (input: {
   return (await response.json()) as { rentaMensualCalculada: number };
 };
 
+export type ParksQuotationAdjacentCost = {
+  concepto: string;
+  monto: number;
+  tipo: 'unica_vez' | 'recurrente';
+};
+
+export type ParksQuotationHistoryEntry = {
+  enviadaEn: string;
+  m2Ofertados: number;
+  precioPorM2: number;
+  moneda: 'MXN' | 'USD';
+  rentaMensualCalculada: number;
+  plazoContratoMeses?: number;
+  costosAledanos?: ParksQuotationAdjacentCost[];
+  naveIdentificador?: string;
+};
+
 export const sendParksQuotation = async (
   opportunityId: string,
   input: {
@@ -257,10 +310,15 @@ export const sendParksQuotation = async (
     depositoGarantiaMeses?: number;
     companyName?: string;
     naveVinculadaId?: string;
+    naveIdentificador?: string;
+    moneda?: 'MXN' | 'USD';
+    costosAledanos?: ParksQuotationAdjacentCost[];
   },
 ): Promise<{
   rentaMensualCalculada: number;
   followUpDue: string;
+  requiresConsejoApproval?: boolean;
+  consejoReasons?: string[];
 }> => {
   const response = await fetch(
     `${PARKS_SERVICE_URL}/commercial/quotations/${opportunityId}/send`,
@@ -278,6 +336,8 @@ export const sendParksQuotation = async (
   return (await response.json()) as {
     rentaMensualCalculada: number;
     followUpDue: string;
+    requiresConsejoApproval?: boolean;
+    consejoReasons?: string[];
   };
 };
 
@@ -386,6 +446,8 @@ export type ParksHojaDeAcuerdosDraft = {
   estatus?: string;
   firmadaPorCliente?: boolean;
   firmadaPorCem?: boolean;
+  brokerId?: string;
+  broker?: { id?: string; empresa?: string };
   brokerComisionPct?: number;
   brokerComisionMonto?: number;
   ejecutivoAsignado?: string;
@@ -405,8 +467,201 @@ export type ParksHojaDeAcuerdosUpdateInput = {
   tipoContrato?: string;
   esquemaComision?: string;
   ejecutivoAsignado?: string;
+  brokerId?: string | null;
   brokerComisionPct?: number;
   brokerComisionMonto?: number;
+};
+
+export type ParksBroker = {
+  id: string;
+  empresa?: string;
+  contacto?: string;
+  email?: string;
+  telefono?: string;
+  firma?: string;
+  clasificacion?: string;
+  activo?: boolean;
+  operacionesCnt?: number;
+  ultimaActividadFecha?: string;
+  zonasOperacion?: string;
+  empresaBrokerId?: string;
+  empresaBroker?: {
+    id?: string;
+    nombre?: string;
+    comisionPct?: number;
+    comisionPctNuevo?: number;
+    comisionPctPreventa?: number;
+    comisionPctRenovacion?: number;
+    clasificacion?: string;
+  };
+  totalComisionesUsd?: number;
+  comisionesPendientesUsd?: number;
+  comisionesAprobadasUsd?: number;
+  comisionesPagadasUsd?: number;
+  dealsCount?: number;
+};
+
+export type ParksBrokerInput = {
+  contacto: string;
+  empresaBrokerId?: string;
+  // When set (instead of empresaBrokerId), the API creates a brand new
+  // empresa de brokers on the fly and links this broker to it.
+  nuevaEmpresaNombre?: string;
+  email?: string;
+  telefono?: string;
+  firma?: string;
+  activo?: boolean;
+};
+
+export type ParksEmpresaBroker = {
+  id: string;
+  nombre?: string;
+  contactoPrincipal?: string;
+  email?: string;
+  telefono?: string;
+  comisionPct?: number;
+  comisionPctNuevo?: number;
+  comisionPctPreventa?: number;
+  comisionPctRenovacion?: number;
+  clasificacion?: string;
+  clasificacionHistorialJson?: string;
+  sectores?: string;
+  zonasOperacion?: string;
+  documentacionUrl?: string;
+  notas?: string;
+  activo?: boolean;
+  brokersCount?: number;
+  totalComisionesUsd?: number;
+  comisionesPendientesUsd?: number;
+  dealsCount?: number;
+};
+
+export type ParksEmpresaBrokerInput = {
+  nombre: string;
+  contactoPrincipal?: string;
+  email?: string;
+  telefono?: string;
+  comisionPct?: number;
+  comisionPctNuevo?: number;
+  comisionPctPreventa?: number;
+  comisionPctRenovacion?: number;
+  clasificacion?: string;
+  sectores?: string;
+  zonasOperacion?: string;
+  documentacionUrl?: string;
+  notas?: string;
+  activo?: boolean;
+};
+
+export const fetchParksBrokers = async (): Promise<ParksBroker[]> => {
+  const response = await fetch(`${PARKS_SERVICE_URL}/commercial/brokers`);
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  const body = (await response.json()) as { brokers: ParksBroker[] };
+
+  return body.brokers;
+};
+
+export const createParksBroker = async (
+  input: ParksBrokerInput,
+): Promise<ParksBroker> => {
+  const response = await fetch(`${PARKS_SERVICE_URL}/commercial/brokers`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  const body = (await response.json()) as { broker: ParksBroker };
+
+  return body.broker;
+};
+
+export const updateParksBroker = async (
+  brokerId: string,
+  input: Partial<ParksBrokerInput>,
+): Promise<ParksBroker> => {
+  const response = await fetch(
+    `${PARKS_SERVICE_URL}/commercial/brokers/${brokerId}`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  const body = (await response.json()) as { broker: ParksBroker };
+
+  return body.broker;
+};
+
+export const fetchParksEmpresasBroker = async (): Promise<
+  ParksEmpresaBroker[]
+> => {
+  const response = await fetch(
+    `${PARKS_SERVICE_URL}/commercial/empresas-broker`,
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  const body = (await response.json()) as { empresas: ParksEmpresaBroker[] };
+
+  return body.empresas;
+};
+
+export const createParksEmpresaBroker = async (
+  input: ParksEmpresaBrokerInput,
+): Promise<ParksEmpresaBroker> => {
+  const response = await fetch(
+    `${PARKS_SERVICE_URL}/commercial/empresas-broker`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  const body = (await response.json()) as { empresa: ParksEmpresaBroker };
+
+  return body.empresa;
+};
+
+export const updateParksEmpresaBroker = async (
+  empresaBrokerId: string,
+  input: Partial<ParksEmpresaBrokerInput>,
+): Promise<ParksEmpresaBroker> => {
+  const response = await fetch(
+    `${PARKS_SERVICE_URL}/commercial/empresas-broker/${empresaBrokerId}`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  const body = (await response.json()) as { empresa: ParksEmpresaBroker };
+
+  return body.empresa;
 };
 
 export const fetchParksHojaByOpportunity = async (
@@ -533,7 +788,10 @@ export const validateParksStageGate = async (input: {
   };
 
   if (!response.ok) {
-    return { ok: false, error: body.error ?? (await parseErrorMessage(response)) };
+    return {
+      ok: false,
+      error: body.error ?? (await parseErrorMessage(response)),
+    };
   }
 
   return body;
@@ -544,7 +802,7 @@ export const createParksOpportunityForInquilino = async (
   input: Omit<CreateParksLeadInput, 'empresa' | 'nombreCompleto'> & {
     nombreCompleto?: string;
   },
-): Promise<{ opportunityId: string; inquilinoId: string }> => {
+): Promise<{ opportunityId: string; inquilinoId: string; folio?: string }> => {
   const response = await fetch(
     `${PARKS_SERVICE_URL}/commercial/inquilinos/${inquilinoId}/opportunities`,
     {
@@ -561,6 +819,7 @@ export const createParksOpportunityForInquilino = async (
   return (await response.json()) as {
     opportunityId: string;
     inquilinoId: string;
+    folio?: string;
   };
 };
 
@@ -581,6 +840,17 @@ export const fetchParksAccount360 = async (
     },
   );
 };
+
+export const fetchParksExpansionSignals =
+  async (): Promise<ParksExpansionSignalsResponse> => {
+    const response = await fetch(PARKS_COMMERCIAL_EXPANSION_SIGNALS_ENDPOINT);
+
+    if (!response.ok) {
+      throw new Error(await parseErrorMessage(response));
+    }
+
+    return (await response.json()) as ParksExpansionSignalsResponse;
+  };
 
 export const fetchParksDecisores = async ({
   opportunityId,
@@ -933,7 +1203,9 @@ export const downloadParksFichaTecnicaPdf = async ({
   URL.revokeObjectURL(objectUrl);
 };
 
-export const openParksFichaTecnicaPdf = async (token: string): Promise<void> => {
+export const openParksFichaTecnicaPdf = async (
+  token: string,
+): Promise<void> => {
   const response = await fetch(
     `${PARKS_SERVICE_URL}/commercial/ficha/${token}/pdf`,
   );
