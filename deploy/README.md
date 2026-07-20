@@ -108,6 +108,10 @@ El microservicio **parks** corre en el droplet (`crm_sf-parks`) y Caddy lo
 expone en `https://parks.bridgehub.mx/parks-api/*`. El frontend se compila con
 `VITE_PARKS_SERVICE_URL=https://parks.bridgehub.mx/parks-api`.
 
+Las fichas técnicas usan `PARKS_PUBLIC_BASE_URL` (= `$SERVER_URL/parks-api`) y
+`PARKS_FRONT_BASE_URL` (= `$SERVER_URL`) para que el link compartido no apunte a
+localhost. Los tokens se guardan en el volumen `parks-data`.
+
 **Secret requerido en GitHub** (Settings → Secrets → Actions):
 
 | Secret | Valor |

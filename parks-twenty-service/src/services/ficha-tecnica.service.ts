@@ -31,8 +31,23 @@ const resolveTemplatesDirectory = (): string => {
   return fromDist;
 };
 
-const getFrontBaseUrl = (): string =>
-  process.env.PARKS_FRONT_BASE_URL ?? 'http://localhost:3001';
+const getFrontBaseUrl = (): string => {
+  if (process.env.PARKS_FRONT_BASE_URL) {
+    return process.env.PARKS_FRONT_BASE_URL.replace(/\/$/, '');
+  }
+
+  const workspaceOrigin = (
+    process.env.TWENTY_WORKSPACE_ORIGIN ??
+    process.env.SERVER_URL ??
+    ''
+  ).replace(/\/$/, '');
+
+  if (workspaceOrigin.startsWith('http')) {
+    return workspaceOrigin;
+  }
+
+  return 'http://localhost:3001';
+};
 
 const toPublicImageUrl = (imageUrl: string): string => {
   const trimmedUrl = imageUrl.trim();

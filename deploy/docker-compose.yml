@@ -85,12 +85,17 @@ services:
   # API Parks (CEO Command Center, comité, CxC, comercial, legal)
   parks:
     image: ghcr.io/bridgestudio-mx/crm_sf-parks:${TAG:-latest}
+    volumes:
+      - parks-data:/app/data
     environment:
       NODE_ENV: production
       PORT: 3002
       TWENTY_API_URL: http://server:3000
       TWENTY_API_KEY: ${TWENTY_API_KEY:-}
       TWENTY_WORKSPACE_ORIGIN: ${SERVER_URL:-https://parks.bridgehub.mx}
+      # Fichas públicas: links e imágenes deben usar el dominio real (no localhost)
+      PARKS_PUBLIC_BASE_URL: ${SERVER_URL:-https://parks.bridgehub.mx}/parks-api
+      PARKS_FRONT_BASE_URL: ${SERVER_URL:-https://parks.bridgehub.mx}
       WEBHOOK_URL: ${SERVER_URL:-https://parks.bridgehub.mx}/parks-api/webhooks/twenty
       ORACLE_MOCK: "true"
       PARKS_AI_MOCK: "true"
@@ -111,5 +116,6 @@ services:
 volumes:
   db-data:
   server-local-data:
+  parks-data:
   caddy-data:
   caddy-config:
