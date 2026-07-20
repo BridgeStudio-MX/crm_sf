@@ -46,8 +46,7 @@ export const resolveProspectIndustryKey = (
     normalized.includes('food') ||
     normalized.includes('alimento') ||
     normalized.includes('nestle') ||
-    normalized.includes('nestlé') ||
-    normalized.includes('genomma')
+    normalized.includes('nestlé')
   ) {
     return 'alimentos';
   }

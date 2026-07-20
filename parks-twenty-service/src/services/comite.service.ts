@@ -4,10 +4,12 @@ import { envConfig } from '../config/env.config';
 import { brokerNotificationStore } from './broker-notification.store';
 import { commercialLegalHandoffService } from './commercial-legal-handoff.service';
 import {
+  COMITE_MIN_GLA_M2,
   comiteStore,
   computeComiteIaFlags,
   DEFAULT_COMITE_MEMBERS,
   hydrateDealSnapshot,
+  requiresComiteByGla,
 } from './comite.store';
 import { twentyDataService } from './twenty-data.service';
 import {
@@ -328,6 +330,12 @@ export const comiteService = {
       throw new Error('PARKS_COMITE_ENABLED=false');
     }
 
+    if (!requiresComiteByGla(input.deal.glaM2)) {
+      throw new Error(
+        `COMITE_GLA_BELOW_MIN: el comité solo aplica a deals con GLA mayor a ${COMITE_MIN_GLA_M2.toLocaleString('es-MX')} m² (recibido ${input.deal.glaM2})`,
+      );
+    }
+
     const existing = comiteStore.getByHojaId(input.hojaDeAcuerdosId);
 
     if (existing && existing.estatus === 'Abierto — en deliberación') {
@@ -586,6 +594,73 @@ export const comiteService = {
         `${respuestaPorNombre} respondió pregunta ${preguntaId}`,
       ),
     });
+  },
+
+  // CEO breaks ties after committee empate — not a regular vote seat.
+  ceoDecision: async ({
+    comiteId,
+    decision,
+    comentario,
+    viewerEmail,
+    viewerNombre,
+  }: {
+    comiteId: string;
+    decision: 'Aprueba' | 'Rechaza';
+    comentario?: string;
+    viewerEmail?: string;
+    viewerNombre?: string;
+  }): Promise<ComiteAutorizacion> => {
+    const comite = comiteStore.getById(comiteId);
+
+    if (!comite) {
+      throw new Error('Comité not found');
+    }
+
+    if (comite.resolucion !== 'Empate — escalar') {
+      throw new Error(
+        'Solo el CEO puede decidir cuando hay empate escalado',
+      );
+    }
+
+    const ceoNombre = viewerNombre?.trim() || 'CEO / Director General';
+    const nota = comentario?.trim();
+
+    if (decision === 'Rechaza' && !nota) {
+      throw new Error(
+        'Debes explicar el motivo del rechazo ejecutivo para continuar.',
+      );
+    }
+
+    if (decision === 'Aprueba') {
+      let next: ComiteAutorizacion = {
+        ...comite,
+        resolucion: 'Aprobado — decisión CEO',
+        fechaResolucion: new Date().toISOString(),
+        estatus: 'Resuelto — Aprobado',
+        auditoria: appendAudit(
+          comite,
+          `${ceoNombre}${viewerEmail ? ` <${viewerEmail}>` : ''} decidió: Aprueba${nota ? ` — "${nota}"` : ''}`,
+        ),
+      };
+
+      next = await activarFlujoLegal(next);
+      return comiteStore.upsert(next);
+    }
+
+    let next: ComiteAutorizacion = {
+      ...comite,
+      resolucion: 'Rechazado — decisión CEO',
+      fechaResolucion: new Date().toISOString(),
+      estatus: 'Resuelto — Rechazado',
+      resumenRazonesRechazo: `${ceoNombre} (CEO):\n"${nota}"`,
+      auditoria: appendAudit(
+        comite,
+        `${ceoNombre}${viewerEmail ? ` <${viewerEmail}>` : ''} decidió: Rechaza — "${nota}"`,
+      ),
+    };
+
+    next = await activarFlujoRechazo(next);
+    return comiteStore.upsert(next);
   },
 
   cancelForLostOpportunity: (opportunityId: string): void => {

@@ -45,7 +45,7 @@ cd packages/twenty-front && npx vite --host 127.0.0.1
 
 Abre http://localhost:3001/parks/dashboard
 
-## Seed demo Bajío (12 naves Silao + Genomma + Nestlé)
+## Seed demo Bajío (12 naves Silao + Sigma + Nestlé)
 
 ```bash
 cd apps/parks-dashboard

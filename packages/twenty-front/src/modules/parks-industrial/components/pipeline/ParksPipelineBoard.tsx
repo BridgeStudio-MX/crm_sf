@@ -13,7 +13,11 @@ import { themeCssVariables } from 'twenty-ui/theme-constants';
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
 import { PARKS_VISIBLE_PIPELINE_STAGES } from '@/parks-industrial/constants/parks-industrial.constants';
 import { useParksProspectScores } from '@/parks-industrial/hooks/useParksProspectScores';
-import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRecords';
+import { useParksParques } from '@/parks-industrial/hooks/useParksParques';
+import {
+  type ParksOpportunityRecord,
+  useParksNaves,
+} from '@/parks-industrial/hooks/useParksRecords';
 import { ParksEmptyState } from '@/parks-industrial/components/ui/ParksEmptyState';
 import {
   type ParksPipelineFilters,
@@ -34,6 +38,7 @@ import {
   isParksOpportunityAssignedToViewer,
 } from '@/parks-industrial/utils/parks-format.util';
 import { isParksLeasingOfficerRole } from '@/parks-industrial/utils/parks-role-access.util';
+import { parseParksTourNavesMostradas } from '@/parks-industrial/utils/parks-tour-naves.util';
 import { StyledParksPageStack } from '@/parks-industrial/components/ui/ParksSectionCard';
 import { validateParksStageGate } from '@/parks-industrial/services/parks-commercial.client';
 import {
@@ -84,10 +89,56 @@ type ParksPipelineBoardProps = {
   onOpportunitiesRefresh?: () => void;
 };
 
+type ParksPipelineParqueFilterContext = {
+  parqueIdByNaveId: Map<string, string>;
+  parqueIdByNombreNormalized: Map<string, string>;
+  parqueNombreById: Map<string, string>;
+};
+
+const resolveOpportunityParqueIds = (
+  opportunity: ParksOpportunityRecord,
+  parqueContext: ParksPipelineParqueFilterContext,
+): string[] => {
+  const parqueIds = new Set<string>();
+  const linkedNaveId =
+    opportunity.naveVinculadaId ?? opportunity.naveVinculada?.id;
+
+  if (linkedNaveId) {
+    const parqueId = parqueContext.parqueIdByNaveId.get(linkedNaveId);
+
+    if (parqueId) {
+      parqueIds.add(parqueId);
+    }
+  }
+
+  for (const tourNave of parseParksTourNavesMostradas(
+    opportunity.tourNavesMostradas,
+  )) {
+    const parqueIdFromNave = parqueContext.parqueIdByNaveId.get(tourNave.id);
+
+    if (parqueIdFromNave) {
+      parqueIds.add(parqueIdFromNave);
+    }
+
+    if (tourNave.parqueNombre) {
+      const parqueIdFromNombre = parqueContext.parqueIdByNombreNormalized.get(
+        tourNave.parqueNombre.trim().toLowerCase(),
+      );
+
+      if (parqueIdFromNombre) {
+        parqueIds.add(parqueIdFromNombre);
+      }
+    }
+  }
+
+  return [...parqueIds];
+};
+
 const filterOpportunities = (
   opportunities: ParksOpportunityRecord[],
   filters: ParksPipelineFilters,
-  viewerName?: string | null,
+  viewerName: string | null | undefined,
+  parqueContext: ParksPipelineParqueFilterContext,
 ): ParksOpportunityRecord[] =>
   opportunities.filter((opportunity) => {
     if (opportunity.stage === 'PERDIDO') {
@@ -96,12 +147,20 @@ const filterOpportunities = (
 
     const ownerName = getParksOwnerName(opportunity);
     const leasingOfficerName = getParksAssignedLeasingOfficerName(opportunity);
+    const opportunityParqueIds = resolveOpportunityParqueIds(
+      opportunity,
+      parqueContext,
+    );
+    const parqueNames = opportunityParqueIds
+      .map((parqueId) => parqueContext.parqueNombreById.get(parqueId))
+      .filter(Boolean);
     const searchTarget = [
       opportunity.name,
       opportunity.inquilinoVinculado?.empresa,
       opportunity.naveVinculada?.identificador,
       ownerName,
       leasingOfficerName,
+      ...parqueNames,
     ]
       .filter(Boolean)
       .join(' ')
@@ -124,7 +183,15 @@ const filterOpportunities = (
       matchesOwner = ownerName === filters.ownerFilter;
     }
 
-    return matchesSearch && matchesOwner;
+    let matchesParque = true;
+
+    if (filters.parqueFilter === '__SIN_PARQUE__') {
+      matchesParque = opportunityParqueIds.length === 0;
+    } else if (filters.parqueFilter.length > 0) {
+      matchesParque = opportunityParqueIds.includes(filters.parqueFilter);
+    }
+
+    return matchesSearch && matchesOwner && matchesParque;
   });
 
 export const ParksPipelineBoard = ({
@@ -138,7 +205,10 @@ export const ParksPipelineBoard = ({
   const [filters, setFilters] = useState<ParksPipelineFilters>({
     searchQuery: '',
     ownerFilter: '',
+    parqueFilter: '',
   });
+  const { records: parques } = useParksParques();
+  const { records: naves } = useParksNaves();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
   const [deepLinkTab, setDeepLinkTab] = useState<ParksDealGuideTab | undefined>();
@@ -155,6 +225,44 @@ export const ParksPipelineBoard = ({
   const prospectScoresById = useParksProspectScores(items);
   const { updateOneRecord } = useUpdateOneRecord();
   const { openRecordInSidePanel } = useOpenRecordInSidePanel();
+
+  const parqueFilterContext = useMemo((): ParksPipelineParqueFilterContext => {
+    const parqueIdByNaveId = new Map<string, string>();
+    const parqueIdByNombreNormalized = new Map<string, string>();
+    const parqueNombreById = new Map<string, string>();
+
+    for (const parque of parques) {
+      if (parque.nombre) {
+        parqueNombreById.set(parque.id, parque.nombre);
+        parqueIdByNombreNormalized.set(
+          parque.nombre.trim().toLowerCase(),
+          parque.id,
+        );
+      }
+    }
+
+    for (const nave of naves) {
+      if (nave.parqueId) {
+        parqueIdByNaveId.set(nave.id, nave.parqueId);
+      }
+    }
+
+    return {
+      parqueIdByNaveId,
+      parqueIdByNombreNormalized,
+      parqueNombreById,
+    };
+  }, [naves, parques]);
+
+  const parqueOptions = useMemo(
+    () =>
+      parques.flatMap((parque) =>
+        parque.nombre
+          ? [{ id: parque.id, nombre: parque.nombre }]
+          : [],
+      ),
+    [parques],
+  );
 
   useEffect(() => {
     if (safeOpportunities.length === 0) {
@@ -258,8 +366,9 @@ export const ParksPipelineBoard = ({
   };
 
   const filteredItems = useMemo(
-    () => filterOpportunities(items, filters, displayName),
-    [displayName, filters, items],
+    () =>
+      filterOpportunities(items, filters, displayName, parqueFilterContext),
+    [displayName, filters, items, parqueFilterContext],
   );
 
   const dealsById = useMemo(
@@ -478,6 +587,7 @@ export const ParksPipelineBoard = ({
         filteredCount={filteredItems.length}
         viewerName={displayName}
         isLeasingOfficer={isLeasingOfficer}
+        parqueOptions={parqueOptions}
       />
 
       <StyledDragHint>

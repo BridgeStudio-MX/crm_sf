@@ -5,7 +5,11 @@ import { isDefined } from 'twenty-shared/utils';
 import { IconArrowRight, type IconComponent } from 'twenty-ui/icon';
 import { MOBILE_VIEWPORT, themeCssVariables } from 'twenty-ui/theme-constants';
 
-import { PARKS_COMMAND_CENTER } from '@/parks-industrial/constants/parks-theme.constants';
+import {
+  PARKS_BRAND,
+  PARKS_COMMAND_CENTER,
+  PARKS_VIBE,
+} from '@/parks-industrial/constants/parks-theme.constants';
 import { ParksBrandLogo } from '@/parks-industrial/components/ui/ParksBrandLogo';
 
 export type ParksPageHeroAction = {
@@ -35,15 +39,25 @@ const heroTextSecondary = PARKS_COMMAND_CENTER.textSecondary;
 const StyledHero = styled.section`
   background: ${PARKS_COMMAND_CENTER.background};
   border: 1px solid ${PARKS_COMMAND_CENTER.panelBorder};
-  border-radius: ${themeCssVariables.border.radius.xl};
+  border-radius: ${PARKS_VIBE.radiusLg};
   box-shadow: ${PARKS_COMMAND_CENTER.boxShadow};
   color: ${PARKS_COMMAND_CENTER.text};
   overflow: hidden;
-  padding: ${themeCssVariables.spacing[5]};
+  padding: ${PARKS_VIBE.space.xl};
   position: relative;
 
+  &::before {
+    background: ${PARKS_COMMAND_CENTER.accentBar};
+    content: '';
+    height: ${PARKS_VIBE.accentBarHeight};
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
   @media (min-width: ${MOBILE_VIEWPORT}px) {
-    padding: ${themeCssVariables.spacing[6]};
+    padding: ${PARKS_VIBE.space.xxl};
   }
 `;
 
@@ -60,7 +74,7 @@ const StyledGlowOrb = styled.div<{ top: string; left: string; size: string }>`
 
 const StyledHeroGrid = styled.div<{ hasSide: boolean }>`
   display: grid;
-  gap: ${themeCssVariables.spacing[5]};
+  gap: ${PARKS_VIBE.space.xl};
   position: relative;
   z-index: 1;
 
@@ -74,33 +88,34 @@ const StyledHeroGrid = styled.div<{ hasSide: boolean }>`
 const StyledHeroCopy = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[3]};
+  gap: ${PARKS_VIBE.space.md};
 `;
 
 const StyledHeroBrand = styled.div`
-  margin-bottom: ${themeCssVariables.spacing[1]};
+  margin-bottom: ${PARKS_VIBE.space.xs};
 `;
 
 const StyledEyebrow = styled.div`
-  color: ${heroTextMuted};
+  color: ${PARKS_BRAND.primary};
   font-size: ${themeCssVariables.font.size.xs};
   font-weight: ${themeCssVariables.font.weight.medium};
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 `;
 
 const StyledHeroTitle = styled.h2`
-  font-size: clamp(1.75rem, 3vw, 2.35rem);
+  color: ${PARKS_COMMAND_CENTER.text};
+  font-size: clamp(1.65rem, 2.6vw, 2.1rem);
   font-weight: ${themeCssVariables.font.weight.semiBold};
-  letter-spacing: -0.03em;
-  line-height: 1.08;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
   margin: 0;
 `;
 
 const StyledHeroSubtitle = styled.p`
   color: ${heroTextSecondary};
   font-size: ${themeCssVariables.font.size.md};
-  line-height: 1.55;
+  line-height: 1.5;
   margin: 0;
   max-width: 560px;
 `;
@@ -108,17 +123,16 @@ const StyledHeroSubtitle = styled.p`
 const StyledHeroActions = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: ${themeCssVariables.spacing[2]};
-  margin-top: ${themeCssVariables.spacing[1]};
+  gap: ${PARKS_VIBE.space.sm};
+  margin-top: ${PARKS_VIBE.space.xs};
 `;
 
 const StyledHeroAction = styled(Link)`
   align-items: center;
-  backdrop-filter: blur(8px);
   background: ${PARKS_COMMAND_CENTER.actionBackground};
   border: 1px solid ${PARKS_COMMAND_CENTER.actionBorder};
-  border-radius: ${themeCssVariables.border.radius.pill};
-  color: ${PARKS_COMMAND_CENTER.text};
+  border-radius: ${PARKS_VIBE.radiusSm};
+  color: ${PARKS_COMMAND_CENTER.actionText};
   display: inline-flex;
   font-size: ${themeCssVariables.font.size.sm};
   font-weight: ${themeCssVariables.font.weight.medium};
@@ -127,27 +141,29 @@ const StyledHeroAction = styled(Link)`
   text-decoration: none;
   transition:
     background 0.15s ease,
+    box-shadow 0.15s ease,
     transform 0.15s ease;
 
   &:hover {
     background: ${PARKS_COMMAND_CENTER.actionHoverBackground};
+    box-shadow: ${PARKS_VIBE.shadowSoft};
     transform: translateY(-1px);
   }
 `;
 
 const StyledSidePanel = styled.div`
-  backdrop-filter: blur(12px);
   background: ${PARKS_COMMAND_CENTER.panelBackground};
   border: 1px solid ${PARKS_COMMAND_CENTER.panelBorder};
-  border-radius: ${themeCssVariables.border.radius.md};
-  padding: ${themeCssVariables.spacing[3]};
+  border-radius: ${PARKS_VIBE.radiusMd};
+  box-shadow: ${PARKS_VIBE.shadowSoft};
+  padding: ${PARKS_VIBE.space.lg};
 `;
 
 const StyledStatsRow = styled.div`
   display: grid;
-  gap: ${themeCssVariables.spacing[3]};
+  gap: ${PARKS_VIBE.space.md};
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: ${themeCssVariables.spacing[4]};
+  margin-top: ${PARKS_VIBE.space.xl};
   position: relative;
   z-index: 1;
 
@@ -157,11 +173,11 @@ const StyledStatsRow = styled.div`
 `;
 
 const StyledStatCard = styled.div`
-  backdrop-filter: blur(10px);
-  background: ${PARKS_COMMAND_CENTER.panelBackground};
+  background: ${PARKS_VIBE.surface};
   border: 1px solid ${PARKS_COMMAND_CENTER.panelBorder};
-  border-radius: ${themeCssVariables.border.radius.md};
-  padding: ${themeCssVariables.spacing[3]};
+  border-radius: ${PARKS_VIBE.radiusSm};
+  box-shadow: ${PARKS_VIBE.shadowSoft};
+  padding: ${PARKS_VIBE.space.md};
 `;
 
 const StyledStatLabel = styled.div`
@@ -171,6 +187,7 @@ const StyledStatLabel = styled.div`
 `;
 
 const StyledStatValue = styled.div`
+  color: ${PARKS_COMMAND_CENTER.text};
   font-size: ${themeCssVariables.font.size.lg};
   font-weight: ${themeCssVariables.font.weight.semiBold};
   margin-top: 6px;

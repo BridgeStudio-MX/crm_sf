@@ -457,7 +457,7 @@ export const ParksCxcAccountDetailPanel = ({
       onAccountUpdated(updated);
       setMessage(
         escalate
-          ? t`Escalado a Claudia — notificación enviada a Gerente CxC`
+          ? t`Escalado a Gerente CxC — notificación enviada`
           : t`Recordatorio OC registrado`,
       );
     } catch (error) {
@@ -563,7 +563,7 @@ export const ParksCxcAccountDetailPanel = ({
       setActionNote('');
       setMessage(
         type === 'escalar_claudia'
-          ? t`Escalado a Claudia — notificación enviada a Gerente CxC`
+          ? t`Escalado a Gerente CxC — notificación enviada`
           : type === 'compromiso_pago'
             ? t`Compromiso de pago marcado en la plataforma`
             : t`Seguimiento registrado en la plataforma`,
@@ -774,7 +774,7 @@ export const ParksCxcAccountDetailPanel = ({
                 variant="primary"
               />
               <Button
-                title={t`Escalar a Claudia`}
+                title={t`Escalar a Gerente CxC`}
                 onClick={() => void handleCobranzaAction('escalar_claudia')}
                 disabled={busy}
                 variant="secondary"

@@ -38,6 +38,10 @@ const StyledOwnerSelect = styled(StyledParksSelect)`
   min-width: 220px;
 `;
 
+const StyledParqueSelect = styled(StyledParksSelect)`
+  min-width: 200px;
+`;
+
 const StyledMetrics = styled.div`
   display: grid;
   gap: ${themeCssVariables.spacing[3]};
@@ -76,6 +80,7 @@ const StyledLegendLabel = styled.span`
 export type ParksPipelineFilters = {
   searchQuery: string;
   ownerFilter: string;
+  parqueFilter: string;
 };
 
 type ParksPipelineToolbarProps = {
@@ -85,6 +90,7 @@ type ParksPipelineToolbarProps = {
   filteredCount: number;
   viewerName?: string | null;
   isLeasingOfficer?: boolean;
+  parqueOptions?: Array<{ id: string; nombre: string }>;
 };
 
 export const ParksPipelineToolbar = ({
@@ -94,6 +100,7 @@ export const ParksPipelineToolbar = ({
   filteredCount,
   viewerName,
   isLeasingOfficer = false,
+  parqueOptions = [],
 }: ParksPipelineToolbarProps) => {
   const ownerOptions = Array.from(
     new Set(opportunities.map((opportunity) => getParksOwnerName(opportunity))),
@@ -166,6 +173,23 @@ export const ParksPipelineToolbar = ({
             </option>
           ))}
         </StyledOwnerSelect>
+        <StyledParqueSelect
+          value={filters.parqueFilter}
+          onChange={(event) =>
+            onFiltersChange({
+              ...filters,
+              parqueFilter: event.target.value,
+            })
+          }
+        >
+          <option value="">{t`Todos los parques`}</option>
+          <option value="__SIN_PARQUE__">{t`Sin parque vinculado`}</option>
+          {parqueOptions.map((parque) => (
+            <option key={parque.id} value={parque.id}>
+              {parque.nombre}
+            </option>
+          ))}
+        </StyledParqueSelect>
       </StyledFilters>
 
       <StyledLegend>

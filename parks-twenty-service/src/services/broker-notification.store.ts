@@ -68,7 +68,7 @@ const seedDemoNotifications = (): void => {
       type: 'alert',
       priority: 'high',
       title: 'OC pendiente · Distribuciones Norte',
-      body: 'Sin OC desde hace 8 días. Factura bloqueada · renta $318,000 MXN. Escalar a Claudia si no responde hoy.',
+      body: 'Sin OC desde hace 8 días. Factura bloqueada · renta $318,000 MXN. Escalar a Gerente CxC si no responde hoy.',
       area: 'CxC',
       opportunityName: 'Distribuciones Norte S.A.',
       actionPath: '/parks/inquilinos/cxc-norte?tab=cxc',

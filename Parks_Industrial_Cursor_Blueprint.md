@@ -393,7 +393,7 @@ Coordenadas: 20.9356 N, 101.4456 W
 
 ### 12 Naves
 ```
-Nave 1  — 3,500 m² — Genomma Lab     — vence en 45 días  → ROJO
+Nave 1  — 3,500 m² — Sigma Alimentos     — vence en 45 días  → ROJO
 Nave 2  — 2,800 m² — Helvex          — vence en 140 días → AMARILLO
 Nave 3  — 4,200 m² — Grupo Lala      — vence en 380 días → VERDE
 Nave 4  — 3,100 m² — DISPONIBLE
@@ -414,12 +414,12 @@ Nave: Nave 4 (disponible, 3,100 m²)
 Valor estimado: $310,000 USD/año
 Etapa: Negociación
 Responsable: Héctor Torres
-D�as en etapa: 18 → aparece en AMARILLO (trigger de seguimiento)
+D�as en etapa: 18 → aparece en AMARILLO (trigger de seguimiento)
 ```
 
 ### Contrato en aprobación (WOW moment para Catalina)
 ```
-Inquilino: Genomma Lab (renovación urgente — vence en 45 días)
+Inquilino: Sigma Alimentos (renovación urgente — vence en 45 días)
 Nave: Nave 1
 Nueva duración: 36 meses
 Etapa actual: Revisión Legal (etapa 2)

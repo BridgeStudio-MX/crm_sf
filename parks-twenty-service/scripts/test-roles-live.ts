@@ -65,7 +65,7 @@ const ROUTE_ACCESS: Record<RouteKey, readonly string[]> = {
     ROLE.CEO,
     ROLE.AdminSistema,
   ],
-  valorAgregado: [ROLE.CEM, ROLE.CEO, ROLE.AdminSistema],
+  valorAgregado: [],
   legalPipeline: [
     ROLE.AdminLegal,
     ROLE.DirLegal,
@@ -155,8 +155,8 @@ const CASES: CaseExpectation[] = [
     email: 'jony.ive@apple.dev',
     password: 'tim@apple.dev',
     expectedRole: ROLE.CEO,
-    allow: ['comite', 'pipeline', 'cxc', 'valorAgregado', 'notificaciones'],
-    deny: ['asignacion', 'leadsCem', 'legalPipeline'],
+    allow: ['comite', 'pipeline', 'cxc', 'notificaciones'],
+    deny: ['asignacion', 'leadsCem', 'legalPipeline', 'valorAgregado'],
   },
   {
     email: 'phil.schiler@apple.dev',
@@ -167,10 +167,9 @@ const CASES: CaseExpectation[] = [
       'comite',
       'pipeline',
       'cxc',
-      'valorAgregado',
       'leadsCem',
     ],
-    deny: ['legalPipeline'],
+    deny: ['legalPipeline', 'valorAgregado'],
   },
   {
     email: 'director.financiero@parksindustrial.com',

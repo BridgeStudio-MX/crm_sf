@@ -39,7 +39,7 @@ export const ParksLegalDashboardHero = ({
         slices={semaforoSlices}
         centerLabel={t`Semáforos SLA`}
         centerValue={String(dashboard.enRiesgo)}
-        variant="inverted"
+        variant="default"
       />
     }
     stats={[

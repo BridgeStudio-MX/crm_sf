@@ -12,6 +12,7 @@ import { toSelectValue } from '../utils/select-value.util';
 import { brokerNotificationStore } from './broker-notification.store';
 import { comiteService } from './comite.service';
 import { commercialLegalHandoffService } from './commercial-legal-handoff.service';
+import { COMITE_MIN_GLA_M2, requiresComiteByGla } from './comite.store';
 import { twentyClient } from './twenty.client';
 import { twentyDataService } from './twenty-data.service';
 import {
@@ -562,14 +563,18 @@ export const commercialHojaService = {
       });
 
       try {
-        if (envConfig.parksComiteEnabled) {
-          const opportunity = await twentyDataService.getOpportunityById(
-            input.opportunityId,
-          );
-          const updatedHoja =
-            (await twentyDataService.getHojaDeAcuerdosById(input.hojaId)) ??
-            existing;
+        const opportunity = await twentyDataService.getOpportunityById(
+          input.opportunityId,
+        );
+        const updatedHoja =
+          (await twentyDataService.getHojaDeAcuerdosById(input.hojaId)) ??
+          existing;
+        const glaM2 =
+          updatedHoja.m2Acordados ?? opportunity?.m2Requeridos ?? 0;
+        const shouldOpenComite =
+          envConfig.parksComiteEnabled && requiresComiteByGla(glaM2);
 
+        if (shouldOpenComite) {
           const comite = await comiteService.createFromHoja({
             opportunityId: input.opportunityId,
             opportunityName: opportunity?.name,
@@ -586,7 +591,7 @@ export const commercialHojaService = {
                 updatedHoja.nave?.identificador ??
                 opportunity?.naveVinculada?.identificador ??
                 'Nave',
-              glaM2: updatedHoja.m2Acordados ?? opportunity?.m2Requeridos ?? 0,
+              glaM2,
               precioAcordadoM2:
                 updatedHoja.precioUsdM2 ?? opportunity?.precioPorM2Usd ?? 0,
               plazoMeses:
@@ -620,7 +625,10 @@ export const commercialHojaService = {
             );
 
           casoLegalId = handoff.casoLegalId;
-          handoffReason = handoff.reason;
+          handoffReason =
+            envConfig.parksComiteEnabled && !requiresComiteByGla(glaM2)
+              ? `GLA ${glaM2.toLocaleString('es-MX')} m² ≤ ${COMITE_MIN_GLA_M2.toLocaleString('es-MX')} m² — sin comité; ${handoff.reason ?? 'handoff a Legal'}`
+              : handoff.reason;
 
           if (handoff.created || handoff.casoLegalId) {
             nextStage = toSelectValue(OPPORTUNITY_STAGE_EN_PROCESO_LEGAL);
@@ -628,6 +636,8 @@ export const commercialHojaService = {
 
           if (!handoff.created) {
             const notifyLegal = Boolean(handoff.casoLegalId);
+            const skippedComiteForGla =
+              envConfig.parksComiteEnabled && !requiresComiteByGla(glaM2);
 
             brokerNotificationStore.add({
               type: 'alert',
@@ -636,7 +646,9 @@ export const commercialHojaService = {
               body:
                 handoff.reason === 'PARKS_LEGAL_HANDOFF_ENABLED=false'
                   ? 'Handoff a Legal desactivado (PARKS_LEGAL_HANDOFF_ENABLED=false).'
-                  : `Firmas completas. ${handoff.reason ?? 'Listo para Legal.'}`,
+                  : skippedComiteForGla
+                    ? `Firmas completas. GLA ≤ ${COMITE_MIN_GLA_M2.toLocaleString('es-MX')} m² — va directo a Legal sin comité.`
+                    : `Firmas completas. ${handoff.reason ?? 'Listo para Legal.'}`,
               area: notifyLegal ? 'Legal' : 'Comercial',
               opportunityId: input.opportunityId,
               actionPath: notifyLegal

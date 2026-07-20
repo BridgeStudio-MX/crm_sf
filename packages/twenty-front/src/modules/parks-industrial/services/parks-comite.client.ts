@@ -69,6 +69,40 @@ export const voteParksComite = async ({
   return (await response.json()) as ComiteAutorizacion;
 };
 
+export const decideParksComiteAsCeo = async ({
+  comiteId,
+  decision,
+  comentario,
+  viewerEmail,
+  viewerNombre,
+}: {
+  comiteId: string;
+  decision: 'Aprueba' | 'Rechaza';
+  comentario?: string;
+  viewerEmail?: string;
+  viewerNombre?: string;
+}): Promise<ComiteAutorizacion> => {
+  const response = await fetch(
+    `${PARKS_COMITE_ENDPOINT}/${comiteId}/ceo-decision`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        decision,
+        comentario,
+        viewerEmail,
+        viewerNombre,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  return (await response.json()) as ComiteAutorizacion;
+};
+
 export const askParksComiteQuestion = async ({
   comiteId,
   memberId,

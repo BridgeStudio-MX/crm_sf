@@ -7,6 +7,7 @@ import {
   PARKS_LEGAL_ASSIGN_LAWYER_ROLE_LABELS,
   PARKS_LEGAL_EDITOR_ROLE_LABELS,
   PARKS_NAV_ROUTE_ACCESS,
+  PARKS_ROLE_HOME_PATH,
   PARKS_ROUTE_ACCESS_BY_KEY,
   ParksRoleLabel,
   type ParksRouteAccessKey,
@@ -146,8 +147,17 @@ export const useParksAccess = () => {
     );
   }, [hasFullParksAccess, hasParksRole, parksRoleLabels]);
 
-  const defaultAccessiblePath =
-    accessibleNavRoutes[0]?.to ?? AppPath.ParksNotificaciones;
+  const preferredHomePath = primaryParksRoleLabel
+    ? PARKS_ROLE_HOME_PATH[primaryParksRoleLabel]
+    : undefined;
+
+  const canUsePreferredHome =
+    isDefined(preferredHomePath) &&
+    accessibleNavRoutes.some((routeAccess) => routeAccess.to === preferredHomePath);
+
+  const defaultAccessiblePath = canUsePreferredHome
+    ? preferredHomePath
+    : (accessibleNavRoutes[0]?.to ?? AppPath.ParksNotificaciones);
 
   const canEditLegalWorkflow =
     hasFullParksAccess ||

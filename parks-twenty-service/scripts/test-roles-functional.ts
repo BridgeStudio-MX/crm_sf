@@ -75,7 +75,7 @@ const ROUTE_ACCESS: Record<RouteKey, readonly string[]> = {
     ROLE.AdminSistema,
   ],
   pipeline: [ROLE.LO, ROLE.LO_AAA, ROLE.LO_STD, ROLE.CEM, ROLE.CEO, ROLE.AdminSistema],
-  valorAgregado: [ROLE.CEM, ROLE.CEO, ROLE.AdminSistema],
+  valorAgregado: [],
   legalPipeline: [
     'Parks — Admin Legal',
     'Parks — Director Legal',
@@ -273,7 +273,8 @@ const main = async (): Promise<void> => {
   );
 
   assert.equal(canAccess('tim@apple.dev', 'valorAgregado'), false);
-  assert.equal(canAccess('phil.schiler@apple.dev', 'valorAgregado'), true);
+  assert.equal(canAccess('phil.schiler@apple.dev', 'valorAgregado'), false);
+  assert.equal(canAccess('jony.ive@apple.dev', 'valorAgregado'), false);
   assert.equal(canAccess('tim@apple.dev', 'pipeline'), true);
   assert.equal(canAccess('tim@apple.dev', 'comite'), true);
 

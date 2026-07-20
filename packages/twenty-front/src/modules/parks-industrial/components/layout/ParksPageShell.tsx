@@ -24,6 +24,7 @@ const StyledContent = styled.div`
   display: flex;
   flex: 1;
   flex-direction: column;
+  font-family: ${themeCssVariables.font.family};
   gap: ${themeCssVariables.spacing[4]};
   min-height: 0;
   overflow-y: auto;

@@ -1,3 +1,4 @@
+import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
 import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -9,11 +10,13 @@ import {
   ParksNavigationGroupsStack,
 } from '@/parks-industrial/components/navigation/ParksNavigationBrandPanel';
 import { ParksNavigationGroup } from '@/parks-industrial/components/navigation/ParksNavigationGroup';
+import { ParksNavigationItemInfo } from '@/parks-industrial/components/navigation/ParksNavigationItemInfo';
 import { ParksNavigationSectionTitle } from '@/parks-industrial/components/navigation/ParksNavigationSectionTitle';
 import {
   ParksNavigationUnreadBadge,
   ParksNavigationUnreadIconDot,
 } from '@/parks-industrial/components/navigation/ParksNavigationUnreadBadge';
+import { PARKS_NAVIGATION_ITEM_HELP } from '@/parks-industrial/constants/parks-navigation-help.constants';
 import {
   type ParksNavigationGroupKey,
   type ParksNavigationItemKey,
@@ -30,6 +33,12 @@ import { isNavigationSectionOpenFamilyState } from '@/ui/navigation/navigation-d
 import { useAtomFamilyStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomFamilyStateValue';
 
 const PARKS_SECTION_ID = 'ParksIndustrial';
+
+const StyledItemHelpRow = styled.div`
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+`;
 
 const isParksNavigationItemActive = (
   pathname: string,
@@ -86,7 +95,6 @@ export const ParksNavigationSection = ({
     cxc: t`CxC`,
     cxcCartera: t`Cartera CxC`,
     comite: t`Comité`,
-    valorAgregado: t`Valor agregado`,
     asignacion: t`Asignación`,
     loCampo: t`Campo LO`,
     renovaciones: t`Renovaciones`,
@@ -159,11 +167,12 @@ export const ParksNavigationSection = ({
             >
               {navigationGroup.visibleItems.map(({ itemKey, definition }) => {
                 const isNotificaciones = itemKey === 'notificaciones';
+                const itemLabel = itemLabels[itemKey];
 
                 return (
                   <NavigationDrawerItem
                     key={definition.to}
-                    label={itemLabels[itemKey]}
+                    label={itemLabel}
                     to={definition.to}
                     Icon={
                       isNotificaciones ? NotificacionesIcon : definition.Icon
@@ -175,15 +184,19 @@ export const ParksNavigationSection = ({
                         : undefined
                     }
                     rightOptions={
-                      isNotificaciones && unreadNotificationsCount > 0 ? (
-                        <ParksNavigationUnreadBadge
-                          count={unreadNotificationsCount}
+                      <StyledItemHelpRow>
+                        <ParksNavigationItemInfo
+                          title={itemLabel}
+                          description={PARKS_NAVIGATION_ITEM_HELP[itemKey]}
                         />
-                      ) : undefined
+                        {isNotificaciones && unreadNotificationsCount > 0 ? (
+                          <ParksNavigationUnreadBadge
+                            count={unreadNotificationsCount}
+                          />
+                        ) : null}
+                      </StyledItemHelpRow>
                     }
-                    alwaysShowRightOptions={
-                      isNotificaciones && unreadNotificationsCount > 0
-                    }
+                    alwaysShowRightOptions
                     active={isParksNavigationItemActive(
                       pathname,
                       definition.to,

@@ -14,7 +14,6 @@ import {
   IconRefresh,
   IconReportMoney,
   IconShield,
-  IconSparkles,
   IconTarget,
   IconTargetArrow,
   IconUserPlus,
@@ -35,7 +34,6 @@ import {
   PARKS_LEGAL_PIPELINE_PATH,
   PARKS_LO_CAMPO_PATH,
   PARKS_MIS_PENDIENTES_PATH,
-  PARKS_VALOR_AGREGADO_PATH,
 } from '@/parks-industrial/constants/parks-routes.constants';
 
 export type ParksNavigationItemKey =
@@ -53,7 +51,6 @@ export type ParksNavigationItemKey =
   | 'cxc'
   | 'cxcCartera'
   | 'comite'
-  | 'valorAgregado'
   | 'asignacion'
   | 'loCampo'
   | 'renovaciones'
@@ -169,12 +166,6 @@ export const PARKS_NAVIGATION_ITEMS: Record<
     to: PARKS_COMITE_PATH,
     Icon: IconShield,
     iconColor: 'blue',
-  },
-  valorAgregado: {
-    accessKey: 'valorAgregado',
-    to: PARKS_VALOR_AGREGADO_PATH,
-    Icon: IconSparkles,
-    iconColor: 'purple',
   },
   asignacion: {
     accessKey: 'asignacion',

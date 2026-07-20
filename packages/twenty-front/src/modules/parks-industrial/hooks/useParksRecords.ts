@@ -192,6 +192,7 @@ export type ParksComisionRecord = ObjectRecord & {
   motivoAjuste?: string;
   fechaCierre?: string;
   fechaPago?: string;
+  aplicaFuno?: boolean;
   opportunityId?: string;
   casoLegal?: ObjectRecord & { referencia?: string; folio?: string };
   hojaDeAcuerdos?: ObjectRecord & {

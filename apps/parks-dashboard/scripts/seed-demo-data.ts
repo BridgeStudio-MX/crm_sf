@@ -164,7 +164,7 @@ const FIND_HOJA_BY_REF = `
 type IdMap = Record<string, string>;
 
 const NAVES = [
-  { key: 'n1', id: 'Nave 1', m2: 3500, tenant: 'Genomma Lab', days: 45, estatus: 'Rentada' },
+  { key: 'n1', id: 'Nave 1', m2: 3500, tenant: 'Sigma Alimentos', days: 45, estatus: 'Rentada' },
   { key: 'n2', id: 'Nave 2', m2: 2800, tenant: 'Helvex', days: 140, estatus: 'Rentada' },
   { key: 'n3', id: 'Nave 3', m2: 4200, tenant: 'Grupo Lala', days: 380, estatus: 'Rentada' },
   { key: 'n4', id: 'Nave 4', m2: 3100, tenant: null, days: null, estatus: 'Disponible' },
@@ -371,7 +371,7 @@ const main = async () => {
             naveId: ids[nave.key],
             notasCatalina:
               nave.key === 'n1'
-                ? 'APROBACION_ETAPA:legal\nRenovación urgente Genomma Lab'
+                ? 'APROBACION_ETAPA:legal\nRenovación urgente Sigma Alimentos'
                 : undefined,
           },
         },

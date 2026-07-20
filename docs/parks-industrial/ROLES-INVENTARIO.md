@@ -32,12 +32,21 @@ Fuente: `Parks_Industrial_Roles_Permisos_Cursor.md` (Julio 2026)
 
 Confirmados al implementar (pedido explícito: implementar + probar):
 
-1. **CEO** → quitar acceso a `/parks/asignacion` (no puede asignar LOs). Conserva comité en modo lectura / empate; **ya no vota**.
+1. **CEO** → sin acceso a `/parks/asignacion` (no asigna LOs). **Sí vota en Comité**: Aprueba / Rechaza como parte del flujo de votación cuando hay empate (1–1–1) o escalamiento. No ocupa asiento permanente del trío; su voto rompe el empate y resuelve el expediente (`Aprobado — decisión CEO` / `Rechazado — decisión CEO`).
 2. **Director Legal** → quitar acceso a `/parks/comite` (no vota ni deliberada).
 3. **Admin Legal** → quitar acceso a `/parks/cxc` (sin carteras de cobranza).
-4. **Ejecutivo Comercial / LO** → quitar `/parks/valor-agregado` (reportes CEM); conserva comité Q&A/tracker sin voto.
-5. **Asientos DEFAULT del comité** → CFO/Ops usan emails `director.financiero@` / `director.operaciones@` (ya no CEO ni Director Legal).
-6. **UI voto comité** → solo si el email del viewer coincide con un asiento; sin impersonar el asiento `[0]`.
+4. **Valor agregado** → menú `/parks/valor-agregado` oculto en todas las sesiones (sin acceso por rol).
+5. **Asientos DEFAULT del comité (trío)** → Dir. Comercial + CFO + Ops (`phil.schiler@` / `director.financiero@` / `director.operaciones@`). El CEO no reemplaza un asiento; entra al voto cuando el trío empata.
+6. **UI voto comité** → asientos del trío votan si el email coincide; CEO ve **Tu voto · CEO** (Aprobar / Rechazar) en casos `Empate — escalar`.
+
+### Quién vota en `/parks/comite`
+
+| Rol | Cómo vota |
+|---|---|
+| Parks — Director Comercial | Asiento 1 del trío (Aprueba / Rechaza / Se abstiene) |
+| Parks — Miembro del Comité (CFO / Ops) | Asientos 2 y 3 del trío |
+| Parks — CEO | Voto ejecutivo Aprueba / Rechaza cuando el trío empata (parte del flujo de resolución) |
+| LO / otros | Solo lectura + Q&A (sin voto) |
 
 Aliases conservados (sin renombrar usuarios):
 

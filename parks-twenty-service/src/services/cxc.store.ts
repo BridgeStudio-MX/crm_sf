@@ -438,7 +438,7 @@ const buildDemoAccounts = (): CxcAccount[] => {
       deposito: null,
       escalacionInpc: null,
       holdover: null,
-      notasCobranza: 'Portal cliente — escalar a Claudia si no llega OC hoy.',
+      notasCobranza: 'Portal cliente — escalar a Gerente CxC si no llega OC hoy.',
       actividadesCobranza: [
         {
           id: 'act-norte-1',
@@ -462,7 +462,7 @@ const buildDemoAccounts = (): CxcAccount[] => {
         compromisoPagoFecha: daysFromNow(3),
         compromisoMonto: 318_000,
         proximaAccionFecha: daysFromNow(1),
-        proximaAccionNota: 'Verificar si llegó la OC; si no, escalar a Claudia',
+        proximaAccionNota: 'Verificar si llegó la OC; si no, escalar a Gerente CxC',
         ultimoContactoAt: new Date(Date.now() - 36_000_000).toISOString(),
         ultimoContactoTipo: 'llamada',
       }),
@@ -870,7 +870,7 @@ const buildDemoAccounts = (): CxcAccount[] => {
           type: 'nota',
           label: 'Handoff Legal → CxC',
           detail:
-            'Contrato firmado. Claudia asignó a Sofía Herrera. Solicitar cuenta bancaria Fibra Uno.',
+            'Contrato firmado. Gerente CxC asignó a Sofía Herrera. Solicitar cuenta bancaria Fibra Uno.',
           createdBy: 'Sistema',
           createdAt: daysAgo(1),
         },
@@ -1188,7 +1188,7 @@ const buildDemoAccounts = (): CxcAccount[] => {
         compromisoMonto: 285_000,
         proximaAccionFecha: daysFromNow(3),
         proximaAccionNota:
-          'Si no cae el pago parcial, llamar y escalar a Claudia',
+          'Si no cae el pago parcial, llamar y escalar a Gerente CxC',
         ultimoContactoAt: daysAgo(2),
         ultimoContactoTipo: 'compromiso_pago',
       }),
@@ -1415,12 +1415,12 @@ const buildDemoAccounts = (): CxcAccount[] => {
       escalacionInpc: null,
       holdover: null,
       notasCobranza:
-        'Escalado a Claudia. Cliente no responde. Evaluar carta formal.',
+        'Escalado a Gerente CxC. Cliente no responde. Evaluar carta formal.',
       actividadesCobranza: [
         {
           id: 'act-auto-1',
           type: 'escalar_claudia',
-          label: 'Escalado a Claudia',
+          label: 'Escalado a Gerente CxC',
           detail: '45d mora · 3 facturas · sin respuesta CxP.',
           createdBy: 'Mariana López',
           createdAt: daysAgo(3),
@@ -1432,7 +1432,7 @@ const buildDemoAccounts = (): CxcAccount[] => {
         compromisoMonto: null,
         proximaAccionFecha: daysFromNow(1),
         proximaAccionNota:
-          'Claudia: decidir carta formal vs. llamada a DG del cliente',
+          'Gerente CxC: decidir carta formal vs. llamada a DG del cliente',
         ultimoContactoAt: daysAgo(3),
         ultimoContactoTipo: 'escalar_claudia',
       }),
@@ -1593,7 +1593,7 @@ const buildDemoAnomalies = (): CxcAnomaly[] => [
     title: 'Factura no emitida por OC pendiente',
     detail: 'Sin OC desde hace 8 días · renta $318,000 MXN en riesgo.',
     suggestedAction:
-      'Llamar CxP del cliente y escalar a Claudia si no responde hoy.',
+      'Llamar CxP del cliente y escalar a Gerente CxC si no responde hoy.',
     resolved: false,
     resolvedNote: null,
   },
@@ -1606,7 +1606,7 @@ const buildDemoAnomalies = (): CxcAnomaly[] => [
     detail:
       'Adeudo $570,000 MXN · 22 días de mora · compromiso parcial martes.',
     suggestedAction:
-      'Verificar compromiso $285k; si no cae, escalar a Claudia.',
+      'Verificar compromiso $285k; si no cae, escalar a Gerente CxC.',
     resolved: false,
     resolvedNote: null,
   },
@@ -1617,7 +1617,7 @@ const buildDemoAnomalies = (): CxcAnomaly[] => [
     empresa: 'AutoParts Bajío',
     title: 'Mora 45 días — ya escalado',
     detail: '3 facturas · $153,600 USD · sin respuesta CxP.',
-    suggestedAction: 'Claudia: carta formal o llamada a DG.',
+    suggestedAction: 'Gerente CxC: carta formal o llamada a DG.',
     resolved: false,
     resolvedNote: null,
   },

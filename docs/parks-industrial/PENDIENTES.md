@@ -24,7 +24,7 @@ Acoplado a `Parks_Industrial_Roles_Permisos_Cursor.md`:
 
 - [x] Inventario + reporte de cambios a roles existentes ([ROLES-INVENTARIO.md](./ROLES-INVENTARIO.md))
 - [x] 14 system codes / 16 labels Twenty (aliases LO + CxC)
-- [x] Matriz rutas front (CEO sin asignación; Dir. Legal sin comité; Admin Legal sin CxC)
+- [x] Matriz rutas front (CEO sin asignación; Dir. Legal sin comité; Admin Legal sin CxC; CEO vota en comité al empate)
 - [x] Asientos comité CFO/Ops + guard de voto por `viewerEmail`
 - [x] 12 usuarios nuevos `@parksindustrial.com` (`Parks2026!NN`); 8 `@apple.dev` sin cambio de password
 - [x] Prueba funcional `npx tsx scripts/test-roles-functional.ts`
@@ -72,20 +72,21 @@ Acoplado a `Parks_Industrial_Funcionalidades_ValorAgregado_Cursor.md` (solo agre
 
 Acoplado a `Parks_Industrial_Comite_Autorizacion_V2_Cursor.md`:
 
-- [x] Store + API `/comite` (list, detail, vote, Q&A, config)
+- [x] Store + API `/comite` (list, detail, vote, Q&A, config, ceo-decision)
 - [x] Gate: Hoja firmada CEM+cliente → abre comité (no Legal directo) si `PARKS_COMITE_ENABLED=true`
-- [x] Mayoría simple 2/3 con resolución inmediata; abstenciones / empate → escalar CEO
+- [x] Mayoría simple 2/3 con resolución inmediata; abstenciones / empate → **voto CEO** (Aprueba / Rechaza)
 - [x] Aprobado → `commercialLegalHandoffService` crea caso legal
 - [x] Rechazado → oportunidad a negociación + razones al LO
-- [x] UI `/parks/comite` — listado, votación, semáforo descuento, broker naranja, Q&A
-- [x] 4 escenarios demo (FEMSA deliberación, LogiMex aprobado disidente, XYZ rechazado, Samsung empate)
+- [x] UI `/parks/comite` — listado, votación trío, voto CEO en empate, semáforo, flags IA, bitácora, Q&A
+- [x] 4 escenarios demo (FEMSA deliberación, LogiMex aprobado disidente, XYZ rechazado, Samsung empate → CEO)
 - [ ] Metadata Twenty persistente (`Comite_Autorizacion`, `Pregunta_Comite`)
 - [ ] SLA real por horas hábiles + jobs de recordatorio/vencimiento
-- [ ] Rol dedicado “Miembro del Comité” (hoy: Dir. Comercial / CEO / Dir. Legal votan en demo)
+- [ ] Rol dedicado “Miembro del Comité” (hoy: CFO / Ops + Dir. Comercial en asientos; CEO vota al empate)
 
-**API:** `GET /comite`, `GET /comite/:id`, `POST .../vote`, `POST .../questions`, `POST .../questions/:id/answer`, `GET|PATCH /comite/config`
+**API:** `GET /comite`, `GET /comite/:id`, `POST .../vote`, `POST .../ceo-decision`, `POST .../questions`, `POST .../questions/:id/answer`, `GET|PATCH /comite/config`
 
-**Demo votos:** Héctor=`phil.schiler@apple.dev` · CFO=`jony.ive@apple.dev` · Ops=`roberto.salinas@apple.dev`
+**Demo votos (trío):** Héctor=`phil.schiler@apple.dev` · CFO=`director.financiero@parksindustrial.com` · Ops=`director.operaciones@parksindustrial.com`  
+**Voto CEO (empate):** Charles=`jony.ive@apple.dev` → Aprobar / Rechazar
 
 ---
 
@@ -253,10 +254,10 @@ Seed verificado 2026-06-25 (`DEMO-*` presente, Twenty GraphQL OK).
 
 Comprobar en UI que existan datos visibles en:
 
-- **Renovaciones:** contratos por vencer (ej. Genomma ~45 días)
+- **Renovaciones:** contratos por vencer (ej. Sigma Alimentos ~45 días)
 - **Reservas:** nave en negociación (ej. Nestlé / Nave 4)
 - **Pipeline:** deal de Nestlé en etapa Negociación
-- **Aprobación:** caso Genomma en Revisión Legal
+- **Aprobación:** caso Sigma Alimentos en Revisión Legal
 
 ### 4. Microservicio activo para IA y webhooks
 

@@ -40,6 +40,16 @@ const StyledHero = styled.section`
   padding: ${themeCssVariables.spacing[5]};
   position: relative;
 
+  &::before {
+    background: ${PARKS_COMMAND_CENTER.accentBar};
+    content: '';
+    height: 4px;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
   @media (min-width: ${MOBILE_VIEWPORT}px) {
     padding: ${themeCssVariables.spacing[6]};
   }
@@ -197,7 +207,7 @@ const StyledLink = styled(Link)`
   background: ${PARKS_COMMAND_CENTER.actionBackground};
   border: 1px solid ${PARKS_COMMAND_CENTER.actionBorder};
   border-radius: ${themeCssVariables.border.radius.sm};
-  color: ${PARKS_COMMAND_CENTER.text};
+  color: ${PARKS_COMMAND_CENTER.actionText};
   display: inline-flex;
   font-size: ${themeCssVariables.font.size.sm};
   font-weight: ${themeCssVariables.font.weight.medium};

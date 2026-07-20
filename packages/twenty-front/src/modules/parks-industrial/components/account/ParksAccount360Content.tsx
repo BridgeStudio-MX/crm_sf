@@ -691,7 +691,7 @@ export const ParksAccount360Content = ({
         <StyledAlertBanner>
           <IconAlertTriangle size={18} />
           <span>
-            {t`Este cliente tiene contratos en propiedades FUNO. Valida la ruta de archivo y el impacto en comisiones antes de negociar.`}
+            {t`Este cliente ya renta naves de Fibra Uno (FUNO). Antes de negociar: confirma si la nueva operación también es FUNO (sin comisión interna para Parks y con firmas/archivo FUNO) o si es propiedad Parks (comisión normal).`}
           </span>
         </StyledAlertBanner>
       ) : null}

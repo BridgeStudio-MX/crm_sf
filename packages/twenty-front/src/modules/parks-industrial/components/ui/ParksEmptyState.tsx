@@ -2,6 +2,11 @@ import { styled } from '@linaria/react';
 import { type ReactNode } from 'react';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
+import {
+  PARKS_BRAND,
+  PARKS_VIBE,
+} from '@/parks-industrial/constants/parks-theme.constants';
+
 type ParksEmptyStateProps = {
   title: string;
   description?: string;
@@ -10,30 +15,27 @@ type ParksEmptyStateProps = {
 
 const StyledContainer = styled.div`
   align-items: center;
-  background: linear-gradient(
-    145deg,
-    ${themeCssVariables.color.blue1} 0%,
-    ${themeCssVariables.background.primary} 100%
-  );
-  border: 1px dashed ${themeCssVariables.color.blue3};
-  border-radius: ${themeCssVariables.border.radius.md};
+  background: ${PARKS_VIBE.surface};
+  border: 1px dashed ${PARKS_VIBE.borderStrong};
+  border-radius: ${PARKS_VIBE.radiusMd};
+  box-shadow: ${PARKS_VIBE.shadowSoft};
   display: flex;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[2]};
+  gap: ${PARKS_VIBE.space.sm};
   justify-content: center;
   min-height: 160px;
-  padding: ${themeCssVariables.spacing[6]};
+  padding: ${PARKS_VIBE.space.xxl};
   text-align: center;
 `;
 
 const StyledTitle = styled.div`
-  color: ${themeCssVariables.color.blue};
+  color: ${PARKS_BRAND.primary};
   font-size: ${themeCssVariables.font.size.md};
   font-weight: ${themeCssVariables.font.weight.semiBold};
 `;
 
 const StyledDescription = styled.div`
-  color: ${themeCssVariables.font.color.secondary};
+  color: ${PARKS_VIBE.textSecondary};
   font-size: ${themeCssVariables.font.size.sm};
   max-width: 360px;
 `;

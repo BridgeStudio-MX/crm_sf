@@ -17,8 +17,10 @@ export type ComiteResolucion =
   | 'Aprobado — 3 de 3'
   | 'Aprobado — 2 de 3'
   | 'Aprobado — 2 de 3 (con voto disidente)'
+  | 'Aprobado — decisión CEO'
   | 'Rechazado — 2 de 3'
   | 'Rechazado — 3 de 3'
+  | 'Rechazado — decisión CEO'
   | 'Empate — escalar'
   | 'Vencido sin resolución';
 
@@ -59,32 +61,40 @@ export type ComitePregunta = {
 };
 
 export type ComiteDealSnapshot = {
+  portafolio: string;
+  cotizacionReferencia: string;
   parqueNombre: string;
   naveNomenclatura: string;
+  pisos: string;
   esPropiedadFuno: boolean;
+  nombreComercio: string;
   clienteRazonSocial: string;
   clienteGiro: string;
   clienteHistorialParks: boolean;
   clienteAdeudosActivos: boolean;
+  glaClienteM2: number;
   glaM2: number;
   precioListaM2: number;
   precioAcordadoM2: number;
   descuentoPorcentaje: number;
   rentaMensual: number;
+  rentaVariablePct: number | null;
   moneda: 'MXN' | 'USD';
   semaforoPrecio: ComiteSemaforoPrecio;
   plazoMeses: number;
+  prorrogaMeses: number;
   periodoGraciaMeses: number;
   depositosGarantiaMeses: number;
   rentasAdelantadasMeses: number;
-  prorrogaMeses: number;
   guantePactado: number;
   mantenimientoPactado: number;
+  adeudoSinIva: number | null;
   incrementoTipo: 'INPC' | 'Porcentaje fijo';
   incrementoValor: number;
   rentaContratoAnterior?: number;
   brokerNombre: string;
   brokerClasificacion: ComiteBrokerClasificacion;
+  numeroGirosOperando: number | null;
   condicionesEspeciales: string;
   observacionesEntregaNave: string;
 };

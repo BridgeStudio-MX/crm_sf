@@ -9,7 +9,7 @@ import {
   CXC_PIPELINE_STAGES,
   resolveCxcPipelineStage,
 } from '@/parks-industrial/constants/parks-cxc-pipeline.constants';
-import { PARKS_BRAND } from '@/parks-industrial/constants/parks-theme.constants';
+import { PARKS_BRAND, PARKS_VIBE } from '@/parks-industrial/constants/parks-theme.constants';
 import { type CxcAccount } from '@/parks-industrial/types/parks-cxc.types';
 
 type ParksCxcPipelineBoardProps = {
@@ -21,30 +21,31 @@ type ParksCxcPipelineBoardProps = {
 const StyledLayout = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[3]};
+  gap: ${PARKS_VIBE.space.md};
 `;
 
 const StyledHint = styled.p`
-  color: ${themeCssVariables.font.color.tertiary};
+  color: ${PARKS_VIBE.textMuted};
   font-size: ${themeCssVariables.font.size.xs};
   margin: 0;
 `;
 
 const StyledBoard = styled.div`
   display: flex;
-  gap: ${themeCssVariables.spacing[3]};
+  gap: ${PARKS_VIBE.space.md};
   overflow-x: auto;
-  padding-bottom: ${themeCssVariables.spacing[2]};
+  padding-bottom: ${PARKS_VIBE.space.sm};
 `;
 
 const StyledColumn = styled.section`
-  background: ${themeCssVariables.background.secondary};
-  border: 1px solid ${themeCssVariables.border.color.light};
-  border-radius: ${themeCssVariables.border.radius.md};
+  background: ${PARKS_VIBE.surfaceMuted};
+  border: 1px solid ${PARKS_VIBE.border};
+  border-radius: ${PARKS_VIBE.radiusMd};
+  box-shadow: ${PARKS_VIBE.shadowSoft};
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  gap: ${themeCssVariables.spacing[2]};
+  gap: ${PARKS_VIBE.space.sm};
   max-height: calc(100vh - 280px);
   min-width: 260px;
   overflow: hidden;
@@ -52,17 +53,17 @@ const StyledColumn = styled.section`
 `;
 
 const StyledColumnHeader = styled.header`
-  background: ${themeCssVariables.background.primary};
-  border-bottom: 1px solid ${themeCssVariables.border.color.light};
+  background: ${PARKS_VIBE.surface};
+  border-bottom: 1px solid ${PARKS_VIBE.border};
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: ${themeCssVariables.spacing[3]};
+  padding: ${PARKS_VIBE.space.md};
 `;
 
 const StyledColumnTitle = styled.div`
   align-items: center;
-  color: ${themeCssVariables.font.color.primary};
+  color: ${PARKS_VIBE.textPrimary};
   display: flex;
   font-size: ${themeCssVariables.font.size.sm};
   font-weight: ${themeCssVariables.font.weight.semiBold};
@@ -71,7 +72,7 @@ const StyledColumnTitle = styled.div`
 
 const StyledCount = styled.span`
   background: ${PARKS_BRAND.primarySoft};
-  border-radius: ${themeCssVariables.border.radius.pill};
+  border-radius: ${PARKS_VIBE.radiusPill};
   color: ${PARKS_BRAND.primary};
   font-size: ${themeCssVariables.font.size.xs};
   font-weight: ${themeCssVariables.font.weight.semiBold};
@@ -79,7 +80,7 @@ const StyledCount = styled.span`
 `;
 
 const StyledColumnDesc = styled.div`
-  color: ${themeCssVariables.font.color.tertiary};
+  color: ${PARKS_VIBE.textMuted};
   font-size: ${themeCssVariables.font.size.xs};
   line-height: 1.35;
 `;
@@ -87,9 +88,9 @@ const StyledColumnDesc = styled.div`
 const StyledColumnBody = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[2]};
+  gap: ${PARKS_VIBE.space.sm};
   overflow-y: auto;
-  padding: ${themeCssVariables.spacing[2]};
+  padding: ${PARKS_VIBE.space.sm};
 `;
 
 export const ParksCxcPipelineBoard = ({

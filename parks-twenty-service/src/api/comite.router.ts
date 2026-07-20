@@ -95,6 +95,40 @@ comiteRouter.post('/:comiteId/vote', async (request, response) => {
   }
 });
 
+comiteRouter.post('/:comiteId/ceo-decision', async (request, response) => {
+  try {
+    const body = request.body as {
+      decision?: 'Aprueba' | 'Rechaza';
+      comentario?: string;
+      viewerEmail?: string;
+      viewerNombre?: string;
+    };
+
+    if (!body.decision || !['Aprueba', 'Rechaza'].includes(body.decision)) {
+      response.status(400).json({ error: 'decision must be Aprueba or Rechaza' });
+      return;
+    }
+
+    const comite = await comiteService.ceoDecision({
+      comiteId: request.params.comiteId,
+      decision: body.decision,
+      comentario: body.comentario,
+      viewerEmail: body.viewerEmail,
+      viewerNombre: body.viewerNombre,
+    });
+
+    response.json(comite);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    const status = message.includes('not found')
+      ? 404
+      : message.includes('Solo el CEO') || message.includes('Debes explicar')
+        ? 400
+        : 500;
+    response.status(status).json({ error: message });
+  }
+});
+
 comiteRouter.post('/:comiteId/questions', (request, response) => {
   try {
     const body = request.body as {

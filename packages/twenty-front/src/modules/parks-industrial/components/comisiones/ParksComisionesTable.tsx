@@ -13,6 +13,7 @@ import { Button } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
 import { ParksCommissionRateMatrixPanel } from '@/parks-industrial/components/comisiones/ParksCommissionRateMatrixPanel';
+import { ParksComisionDetailPanel } from '@/parks-industrial/components/comisiones/ParksComisionDetailPanel';
 import { ParksComisionesSummary } from '@/parks-industrial/components/comisiones/ParksComisionesSummary';
 import {
   ParksDashboardFeaturedMetric,
@@ -117,12 +118,19 @@ const StyledHeaderCell = styled.th`
   }
 `;
 
-const StyledRow = styled.tr`
-  background: ${themeCssVariables.background.primary};
+const StyledRow = styled.tr<{ isSelected?: boolean }>`
+  background: ${({ isSelected }) =>
+    isSelected
+      ? PARKS_BRAND.primarySoft
+      : themeCssVariables.background.primary};
+  cursor: pointer;
   transition: background 0.12s ease;
 
   &:nth-child(even) {
-    background: ${themeCssVariables.background.secondary};
+    background: ${({ isSelected }) =>
+      isSelected
+        ? PARKS_BRAND.primarySoft
+        : themeCssVariables.background.secondary};
   }
 
   &:hover {
@@ -293,11 +301,14 @@ export const ParksComisionesTable = ({
     hasFullParksAccess ||
     hasAnyParksRoleLabel(parksRoleLabels, [
       ParksRoleLabel.DirectorComercial,
+      ParksRoleLabel.CEO,
       ParksRoleLabel.AdminSistema,
     ]);
-  const isCeoViewer =
-    !canManageCommissions &&
-    hasAnyParksRoleLabel(parksRoleLabels, [ParksRoleLabel.CEO]);
+  const isCeo =
+    hasAnyParksRoleLabel(parksRoleLabels, [ParksRoleLabel.CEO]) &&
+    !hasAnyParksRoleLabel(parksRoleLabels, [
+      ParksRoleLabel.DirectorComercial,
+    ]);
   const [dashboard, setDashboard] = useState<ParksCommissionDashboard | null>(
     null,
   );
@@ -311,6 +322,9 @@ export const ParksComisionesTable = ({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [selectedComisionId, setSelectedComisionId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     void (async () => {
@@ -375,19 +389,31 @@ export const ParksComisionesTable = ({
     });
   }, [estatusFilter, items, search, tipoPagoFilter]);
 
-  const handleApprove = async (comisionId: string) => {
+  const selectedComision = useMemo(
+    () => items.find((comision) => comision.id === selectedComisionId) ?? null,
+    [items, selectedComisionId],
+  );
+
+  const handleApprove = async (
+    comisionId: string,
+    motivoAjuste?: string,
+  ) => {
     setIsBusy(true);
     setError(null);
     try {
       const updated = await approveParksCommission({
         comisionId,
         aprobadoPor: displayName || 'Director Comercial',
+        ...(motivoAjuste?.trim()
+          ? { motivoAjuste: motivoAjuste.trim() }
+          : {}),
       });
       setItems((previous) =>
         previous.map((item) =>
           item.id === comisionId ? { ...item, ...updated } : item,
         ),
       );
+      setSelectedComisionId(null);
       setMessage(t`Comisión autorizada — pendiente de pago`);
     } catch (approveError) {
       setError(
@@ -400,9 +426,16 @@ export const ParksComisionesTable = ({
     }
   };
 
-  const handleReject = async (comisionId: string) => {
-    const motivo = window.prompt(t`Motivo del rechazo`);
-    if (!motivo?.trim()) {
+  const handleReject = async (
+    comisionId: string,
+    motivoAjuste?: string,
+  ) => {
+    const motivo =
+      motivoAjuste?.trim() ||
+      window.prompt(t`Motivo del rechazo`)?.trim() ||
+      '';
+
+    if (!motivo) {
       return;
     }
 
@@ -419,6 +452,7 @@ export const ParksComisionesTable = ({
           item.id === comisionId ? { ...item, ...updated } : item,
         ),
       );
+      setSelectedComisionId(null);
       setMessage(t`Comisión rechazada`);
     } catch (rejectError) {
       setError(
@@ -495,16 +529,12 @@ export const ParksComisionesTable = ({
     <StyledParksPageStack>
       <ParksPageHero
         eyebrow={
-          isCeoViewer
-            ? t`Command Center · CEO`
-            : t`Director Comercial · Héctor`
+          isCeo ? t`Command Center · CEO` : t`Director Comercial · Héctor`
         }
-        title={
-          isCeoViewer ? t`Comisiones (consulta)` : t`Motor de comisiones`
-        }
+        title={t`Motor de comisiones`}
         subtitle={
-          isCeoViewer
-            ? t`Vista informativa: totales, desglose y detalle por folio. La gestión y aprobación las opera Comercial.`
+          isCeo
+            ? t`Totales, desglose por folio y autorización ejecutiva. Interno (LO) y externo (broker).`
             : t`Cálculo por folio, matriz configurable y autorización comercial. Interno (LO) y externo (broker).`
         }
         actions={[
@@ -582,10 +612,6 @@ export const ParksComisionesTable = ({
         />
       ) : null}
 
-      {isCeoViewer && matrix ? (
-        <ParksCommissionRateMatrixPanel matrix={matrix} readOnly />
-      ) : null}
-
       <ParksSectionCard title={t`Comisiones por folio`} accent="green">
         <StyledToolbar>
           <StyledFilters>
@@ -651,7 +677,11 @@ export const ParksComisionesTable = ({
                 </thead>
                 <tbody>
                   {filtered.map((comision) => (
-                    <StyledRow key={comision.id}>
+                    <StyledRow
+                      key={comision.id}
+                      isSelected={selectedComisionId === comision.id}
+                      onClick={() => setSelectedComisionId(comision.id)}
+                    >
                       <StyledCell>
                         <StyledPrimary>
                           {comision.folio ?? '—'}
@@ -702,8 +732,19 @@ export const ParksComisionesTable = ({
                           label={getComisionStatusLabel(comision.estatus)}
                         />
                       </StyledCell>
-                      <StyledCell data-align="right">
+                      <StyledCell
+                        data-align="right"
+                        onClick={(event) => event.stopPropagation()}
+                      >
                         <StyledActions>
+                          <ParksActionButton
+                            size="sm"
+                            variant="secondary"
+                            title={t`Ver resumen`}
+                            onClick={() =>
+                              setSelectedComisionId(comision.id)
+                            }
+                          />
                           {canManageCommissions &&
                           isPendingValidation(comision.estatus) ? (
                             <>
@@ -763,6 +804,21 @@ export const ParksComisionesTable = ({
           ) : null}
         </StyledFooterNotes>
       </ParksSectionCard>
+
+      {selectedComision ? (
+        <ParksComisionDetailPanel
+          comision={selectedComision}
+          canManage={canManageCommissions}
+          isBusy={isBusy}
+          onClose={() => setSelectedComisionId(null)}
+          onApprove={(comentario) =>
+            void handleApprove(selectedComision.id, comentario)
+          }
+          onReject={(comentario) =>
+            void handleReject(selectedComision.id, comentario)
+          }
+        />
+      ) : null}
     </StyledParksPageStack>
   );
 };

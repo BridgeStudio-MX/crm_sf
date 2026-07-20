@@ -59,7 +59,7 @@ export const ParksDashboardHero = ({
         slices={ocupacionSlices}
         centerLabel={t`Ocupación global`}
         centerValue={`${ocupacion}%`}
-        variant="inverted"
+        variant="default"
       />
     }
     stats={[

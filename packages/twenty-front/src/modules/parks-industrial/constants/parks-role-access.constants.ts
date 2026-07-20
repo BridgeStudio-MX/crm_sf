@@ -112,6 +112,7 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
   stackingPlanIndex: withAdminSistema([
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
     ParksRoleLabel.DirectorComercial,
+    ParksRoleLabel.CEO,
     ParksRoleLabel.AdminLegal,
     ParksRoleLabel.DirectorLegal,
     ParksRoleLabel.SubdirectorLegal,
@@ -121,6 +122,7 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
   stackingPlan: withAdminSistema([
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
     ParksRoleLabel.DirectorComercial,
+    ParksRoleLabel.CEO,
     ParksRoleLabel.AdminLegal,
     ParksRoleLabel.DirectorLegal,
     ParksRoleLabel.SubdirectorLegal,
@@ -196,10 +198,8 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
     ParksRoleLabel.CEO,
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
   ]),
-  valorAgregado: withAdminSistema([
-    ParksRoleLabel.DirectorComercial,
-    ParksRoleLabel.CEO,
-  ]),
+  // Hidden from all sessions — menu removed from Parks nav
+  valorAgregado: [],
   asignacion: withAdminSistema([ParksRoleLabel.DirectorComercial]),
   loCampo: withAdminSistema([
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
@@ -245,6 +245,7 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
   mapa: withAdminSistema([
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
     ParksRoleLabel.DirectorComercial,
+    ParksRoleLabel.CEO,
     ParksRoleLabel.AdminLegal,
     ParksRoleLabel.DirectorLegal,
     ParksRoleLabel.AbogadoAsignado,
@@ -282,6 +283,18 @@ export const PARKS_NAV_ROUTE_ACCESS: Array<{
   { accessKey: 'miDesempeno', to: AppPath.ParksMiDesempeno },
   { accessKey: 'mapa', to: AppPath.ParksMapa },
 ];
+
+// Preferred first screen for demos — not the generic nav order.
+export const PARKS_ROLE_HOME_PATH: Partial<Record<string, string>> = {
+  [ParksRoleLabel.CEO]: AppPath.ParksDashboard,
+  [ParksRoleLabel.DirectorComercial]: AppPath.ParksDashboard,
+  [ParksRoleLabel.EjecutivoComercial]: AppPath.ParksPipeline,
+  [ParksRoleLabel.LoAaaSenior]: AppPath.ParksPipeline,
+  [ParksRoleLabel.LoEstandar]: AppPath.ParksPipeline,
+  [ParksRoleLabel.CxC]: PARKS_CXC_PATH,
+  [ParksRoleLabel.GerenteCxc]: PARKS_CXC_PATH,
+  [ParksRoleLabel.EjecutivoCxc]: PARKS_CXC_PATH,
+};
 
 export const PARKS_DEMO_EMAIL_TO_ROLE_LABEL: Record<string, string> = {
   'jane.austen@apple.dev': ParksRoleLabel.AdminLegal,

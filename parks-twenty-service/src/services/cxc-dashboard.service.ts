@@ -81,7 +81,7 @@ const ACTION_LABELS: Record<CxcCobranzaActionType, string> = {
   whatsapp: 'WhatsApp CxP',
   nota: 'Nota operativa',
   compromiso_pago: 'Compromiso de pago',
-  escalar_claudia: 'Escalado a Claudia',
+  escalar_claudia: 'Escalado a Gerente CxC',
   recordatorio_oc: 'Recordatorio OC',
   pago_aplicado: 'Pago aplicado',
   oc_registrada: 'OC registrada',
@@ -580,7 +580,7 @@ export const cxcDashboardService = {
     const intentos = account.ordenCompra.intentosRecordatorio + 1;
     const escalate = input?.escalate === true || intentos >= 4;
     const detail = escalate
-      ? `Recordatorio OC #${intentos} — escalado a Claudia (Gerente CxC).`
+      ? `Recordatorio OC #${intentos} — escalado a Gerente CxC.`
       : `Recordatorio OC #${intentos} enviado a ${account.contactoPagosEmail}.`;
 
     const next: CxcAccount = {
