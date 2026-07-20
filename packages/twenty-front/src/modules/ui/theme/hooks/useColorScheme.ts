@@ -20,7 +20,7 @@ export const useColorScheme = () => {
   const { updateWorkspaceMemberSettings } = useUpdateWorkspaceMemberSettings();
   const setPersistedColorScheme = useSetAtomState(persistedColorSchemeState);
 
-  const colorScheme = currentWorkspaceMember?.colorScheme ?? 'System';
+  const colorScheme = currentWorkspaceMember?.colorScheme ?? 'Light';
 
   const setColorScheme = useCallback(
     async (value: ColorScheme) => {

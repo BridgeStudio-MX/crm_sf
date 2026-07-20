@@ -130,7 +130,7 @@ export const UserMetadataProviderInitialEffect = () => {
     ) => {
       return {
         ...workspaceMember,
-        colorScheme: (workspaceMember.colorScheme as ColorScheme) ?? 'System',
+        colorScheme: (workspaceMember.colorScheme as ColorScheme) ?? 'Light',
         locale: resolveApplicationLocale(
           workspaceMember.locale as keyof typeof APP_LOCALES,
         ),

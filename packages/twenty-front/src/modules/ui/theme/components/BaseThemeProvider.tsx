@@ -1,6 +1,5 @@
 import { type JSX, createContext } from 'react';
 
-import { useSystemColorScheme } from '@/ui/theme/hooks/useSystemColorScheme';
 import { persistedColorSchemeState } from '@/ui/theme/states/persistedColorSchemeState';
 import { useAtomState } from '@/ui/utilities/state/jotai/hooks/useAtomState';
 import { type ColorScheme } from 'twenty-ui/input';
@@ -18,11 +17,10 @@ export const BaseThemeProvider = ({ children }: BaseThemeProviderProps) => {
   const [persistedColorScheme, setPersistedColorScheme] = useAtomState(
     persistedColorSchemeState,
   );
-  const systemColorScheme = useSystemColorScheme();
+
+  // Parks demo default: Light. Explicit Dark still works from Settings.
   const effectiveColorScheme =
-    persistedColorScheme === 'System'
-      ? systemColorScheme
-      : persistedColorScheme;
+    persistedColorScheme === 'Dark' ? 'Dark' : 'Light';
 
   return (
     <ThemeSchemeContext.Provider value={setPersistedColorScheme}>

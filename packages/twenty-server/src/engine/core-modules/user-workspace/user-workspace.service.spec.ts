@@ -300,7 +300,7 @@ describe('UserWorkspaceService', () => {
           firstName: user.firstName,
           lastName: user.lastName,
         },
-        colorScheme: 'System',
+        colorScheme: 'Light',
         userId: user.id,
         userEmail: user.email,
         locale: 'en',

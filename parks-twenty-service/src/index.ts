@@ -55,6 +55,13 @@ export const createApp = (): express.Application => {
     });
   });
 
+  // Public browser config (Maps JS key is designed to be referrer-restricted)
+  application.get('/config/public', (_request, response) => {
+    response.json({
+      googleMapsApiKey: envConfig.googleMapsApiKey,
+    });
+  });
+
   application.use('/webhooks', webhookRouter);
   application.use('/ai', parksAiRouter);
   application.use('/commercial', commercialRouter);

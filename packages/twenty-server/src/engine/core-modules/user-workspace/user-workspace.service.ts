@@ -169,7 +169,7 @@ export class UserWorkspaceService extends TypeOrmQueryService<UserWorkspaceEntit
           firstName: user.firstName,
           lastName: user.lastName,
         },
-        colorScheme: 'System',
+        colorScheme: 'Light',
         userId: user.id,
         userEmail: user.email,
         avatarUrl: userWorkspace.defaultAvatarUrl ?? null,

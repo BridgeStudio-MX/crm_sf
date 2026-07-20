@@ -22,12 +22,12 @@ import {
 import { type ParksParqueRecord } from '@/parks-industrial/hooks/useParksParques';
 import { useParksMapMetrics } from '@/parks-industrial/hooks/useParksMapMetrics';
 import {
-  getParksGoogleMapsApiKey,
-  isValidGoogleMapsApiKey,
   ParksGoogleMapPanel,
 } from '@/parks-industrial/components/mapa/ParksGoogleMapPanel';
 import { ParksLeadSidebarCard } from '@/parks-industrial/components/mapa/ParksLeadSidebarCard';
 import { ParksMapLeadOutreachPanel } from '@/parks-industrial/components/mapa/ParksMapLeadOutreachPanel';
+import { useParksGoogleMapsApiKey } from '@/parks-industrial/hooks/useParksGoogleMapsApiKey';
+import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
 import { ParksParqueSidebarCard } from '@/parks-industrial/components/mapa/ParksParqueSidebarCard';
 import { ParksAiQuickActions } from '@/parks-industrial/components/ai/ParksAiQuickActions';
 import { ParksEmptyState } from '@/parks-industrial/components/ui/ParksEmptyState';
@@ -451,8 +451,11 @@ export const ParksMapContent = ({
   const [cityFilterId, setCityFilterId] =
     useState<ParksMapCityFilterId>('all');
   const [mapLayerId, setMapLayerId] = useState<ParksMapLayerId>('ambos');
-  const googleMapsApiKey = getParksGoogleMapsApiKey();
-  const hasGoogleMapsApiKey = isValidGoogleMapsApiKey(googleMapsApiKey);
+  const {
+    apiKey: googleMapsApiKey,
+    isReady: hasGoogleMapsApiKey,
+    isLoading: isGoogleMapsApiKeyLoading,
+  } = useParksGoogleMapsApiKey();
   const showParques = mapLayerId === 'inventario' || mapLayerId === 'ambos';
   const showLeads = mapLayerId === 'demanda' || mapLayerId === 'ambos';
   const mapLayerOptions = useMemo(() => getParksMapLayerOptions(), []);
@@ -764,9 +767,12 @@ export const ParksMapContent = ({
 
       <StyledMapWorkspace>
         <StyledMapPane>
-          {hasGoogleMapsApiKey ? (
+          {isGoogleMapsApiKeyLoading ? (
+            <ParksLoadingSkeleton variant="map" />
+          ) : hasGoogleMapsApiKey ? (
             <>
               <ParksGoogleMapPanel
+                apiKey={googleMapsApiKey}
                 parques={filteredParques}
                 naves={naves}
                 leadMarkers={leadMarkers}

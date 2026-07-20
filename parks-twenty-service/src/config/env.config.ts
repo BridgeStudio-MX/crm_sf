@@ -78,6 +78,11 @@ export const envConfig = {
     process.env.PARKS_COMITE_SEMAFORO_AMARILLO_MAX_PCT,
     10,
   ),
+  // Browser Maps key (public) — served via GET /config/public for SPA
+  googleMapsApiKey:
+    process.env.GOOGLE_MAPS_API_KEY ??
+    process.env.REACT_APP_GOOGLE_MAPS_API_KEY ??
+    '',
   // Placeholder thresholds until Héctor confirms exact discount rules
   aprobacionCemDescuentoPctMax: parseNumber(
     process.env.APROBACION_CEM_DESCUENTO_PCT_MAX,

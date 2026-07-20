@@ -83,6 +83,7 @@ jobs:
           GH_ACTOR: ${{ github.actor }}
           IMAGE_TAG: ${{ github.sha }}
           TWENTY_API_KEY: ${{ secrets.TWENTY_API_KEY }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.REACT_APP_GOOGLE_MAPS_API_KEY }}
         run: |
           set -euo pipefail
           SSH_OPTS='-o StrictHostKeyChecking=no -o ConnectTimeout=60 -o ServerAliveInterval=15'
@@ -102,7 +103,7 @@ jobs:
           done
 
           sshpass -e ssh $SSH_OPTS "${DROPLET_USER}@${DROPLET_HOST}" \
-            "IMAGE_TAG='${IMAGE_TAG}' GHCR_TOKEN='${GHCR_TOKEN}' GH_ACTOR='${GH_ACTOR}' TWENTY_API_KEY='${TWENTY_API_KEY}' bash -s" <<'REMOTE'
+            "IMAGE_TAG='${IMAGE_TAG}' GHCR_TOKEN='${GHCR_TOKEN}' GH_ACTOR='${GH_ACTOR}' TWENTY_API_KEY='${TWENTY_API_KEY}' GOOGLE_MAPS_API_KEY='${GOOGLE_MAPS_API_KEY}' bash -s" <<'REMOTE'
           set -euo pipefail
           cd /opt/twenty
           echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GH_ACTOR" --password-stdin
@@ -112,12 +113,25 @@ jobs:
           elif [ -n "${TWENTY_API_KEY}" ]; then
             sed -i "s|^TWENTY_API_KEY=.*|TWENTY_API_KEY=${TWENTY_API_KEY}|" .env
           fi
+          if [ -n "${GOOGLE_MAPS_API_KEY}" ]; then
+            if ! grep -q '^GOOGLE_MAPS_API_KEY=' .env 2>/dev/null; then
+              echo "GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}" >> .env
+            else
+              sed -i "s|^GOOGLE_MAPS_API_KEY=.*|GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}|" .env
+            fi
+            if ! grep -q '^REACT_APP_GOOGLE_MAPS_API_KEY=' .env 2>/dev/null; then
+              echo "REACT_APP_GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}" >> .env
+            else
+              sed -i "s|^REACT_APP_GOOGLE_MAPS_API_KEY=.*|REACT_APP_GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}|" .env
+            fi
+          fi
           docker compose pull
           docker compose up -d
           docker compose restart caddy
           docker image prune -f
           sleep 10
           docker compose exec -T parks curl -sf http://localhost:3002/health
+          docker compose exec -T parks curl -sf http://localhost:3002/config/public | head -c 80
           REMOTE
 
   parks-bootstrap:

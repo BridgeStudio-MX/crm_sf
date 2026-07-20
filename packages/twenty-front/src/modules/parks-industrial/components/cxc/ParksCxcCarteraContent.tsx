@@ -29,8 +29,8 @@ type CxcCarteraTab =
   | 'depositos';
 
 const CARTERA_TABS: CxcCarteraTab[] = [
-  'pipeline',
   'prioridad',
+  'pipeline',
   'todas',
   'oc',
   'holdover',
@@ -101,7 +101,7 @@ export const ParksCxcCarteraContent = () => {
 
   const activeTab: CxcCarteraTab = isCxcCarteraTab(searchParams.get('tab'))
     ? (searchParams.get('tab') as CxcCarteraTab)
-    : 'pipeline';
+    : 'prioridad';
   const deepLinkedAccountId = searchParams.get('accountId');
 
   const openAccount360 = useCallback(
@@ -281,7 +281,7 @@ export const ParksCxcCarteraContent = () => {
       </StyledToolbar>
 
       <StyledHint>
-        {t`Pestañas: Pipeline (Legal→CxC) · Prioridad · Cartera · OC portal · Holdover · Depósitos`}
+        {t`Pestañas: Prioridad · Pipeline (Legal→CxC) · Cartera · OC portal · Holdover · Depósitos`}
       </StyledHint>
 
       <ParksPageTabs
@@ -290,14 +290,14 @@ export const ParksCxcCarteraContent = () => {
         onTabChange={handleTabChange}
         tabs={[
           {
-            id: 'pipeline',
-            label: t`Pipeline`,
-            count: dashboard.accounts.length,
-          },
-          {
             id: 'prioridad',
             label: t`Prioridad`,
             count: dashboard.priorityAccounts.length,
+          },
+          {
+            id: 'pipeline',
+            label: t`Pipeline`,
+            count: dashboard.accounts.length,
           },
           {
             id: 'todas',

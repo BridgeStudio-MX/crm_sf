@@ -84,6 +84,7 @@ export type ParksMapMarker = {
 };
 
 type ParksGoogleMapPanelProps = {
+  apiKey: string;
   parques: ParksParqueRecord[];
   naves: ParksNaveRecord[];
   leadMarkers?: ParksMapLeadMarker[];
@@ -97,11 +98,10 @@ type ParksGoogleMapPanelProps = {
   onSelectRegionLeads?: (regionId: ParksMapLeadRegionId) => void;
 };
 
-export const getParksGoogleMapsApiKey = (): string =>
-  import.meta.env.REACT_APP_GOOGLE_MAPS_API_KEY ?? '';
-
-export const isValidGoogleMapsApiKey = (apiKey: string): boolean =>
-  apiKey.startsWith('AIza');
+export {
+  getParksGoogleMapsApiKeyFromEnv as getParksGoogleMapsApiKey,
+  isValidGoogleMapsApiKey,
+} from '@/parks-industrial/hooks/useParksGoogleMapsApiKey';
 
 const buildMarkerIcon = (
   ocupacion: number,
@@ -149,6 +149,7 @@ const getMapBalloonPixelOffset = (
 });
 
 export const ParksGoogleMapPanel = ({
+  apiKey,
   parques,
   naves,
   leadMarkers = [],
@@ -161,7 +162,6 @@ export const ParksGoogleMapPanel = ({
   onSelectLeadRegion,
   onSelectRegionLeads,
 }: ParksGoogleMapPanelProps) => {
-  const apiKey = getParksGoogleMapsApiKey();
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const mapOptions = useMemo(
     () => getParksGoogleMapOptions(colorScheme),
