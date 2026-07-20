@@ -249,6 +249,7 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
     ParksRoleLabel.AdminLegal,
     ParksRoleLabel.DirectorLegal,
     ParksRoleLabel.AbogadoAsignado,
+    ParksRoleLabel.AdminParque,
   ]),
 };
 
@@ -294,6 +295,14 @@ export const PARKS_ROLE_HOME_PATH: Partial<Record<string, string>> = {
   [ParksRoleLabel.CxC]: PARKS_CXC_PATH,
   [ParksRoleLabel.GerenteCxc]: PARKS_CXC_PATH,
   [ParksRoleLabel.EjecutivoCxc]: PARKS_CXC_PATH,
+  [ParksRoleLabel.AdminLegal]: PARKS_LEGAL_DASHBOARD_PATH,
+  [ParksRoleLabel.DirectorLegal]: PARKS_LEGAL_DASHBOARD_PATH,
+  [ParksRoleLabel.SubdirectorLegal]: PARKS_LEGAL_DASHBOARD_PATH,
+  [ParksRoleLabel.AbogadoAsignado]: PARKS_LEGAL_PIPELINE_PATH,
+  [ParksRoleLabel.MiembroComite]: PARKS_COMITE_PATH,
+  [ParksRoleLabel.AdminSistema]: AppPath.ParksDashboard,
+  [ParksRoleLabel.ContratosFacturacion]: PARKS_CXC_PATH,
+  [ParksRoleLabel.AdminParque]: AppPath.ParksMapa,
 };
 
 export const PARKS_DEMO_EMAIL_TO_ROLE_LABEL: Record<string, string> = {

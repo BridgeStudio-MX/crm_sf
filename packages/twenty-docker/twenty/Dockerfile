@@ -67,16 +67,21 @@ COPY ./packages/twenty-ui /app/packages/twenty-ui
 COPY ./packages/twenty-shared /app/packages/twenty-shared
 COPY ./packages/twenty-sdk /app/packages/twenty-sdk
 COPY ./packages/twenty-client-sdk /app/packages/twenty-client-sdk
+
+# Baked into the SPA at build time (Vite envPrefix: REACT_APP_ / VITE_)
+ARG REACT_APP_PARKS_SERVICE_URL=http://localhost:3002
+ARG VITE_PARKS_SERVICE_URL=http://localhost:3002
+ARG REACT_APP_GOOGLE_MAPS_API_KEY=
+ENV REACT_APP_PARKS_SERVICE_URL=$REACT_APP_PARKS_SERVICE_URL
+ENV VITE_PARKS_SERVICE_URL=$VITE_PARKS_SERVICE_URL
+ENV REACT_APP_GOOGLE_MAPS_API_KEY=$REACT_APP_GOOGLE_MAPS_API_KEY
+
 RUN npx nx run twenty-front:lingui:extract && \
     npx nx run twenty-front:lingui:compile
-# To skip the memory-intensive frontend build, pre-build on the host:
-#   npx nx build twenty-front
-# The check below will use packages/twenty-front/build/ if it already exists.
-RUN if [ -d /app/packages/twenty-front/build ]; then \
-      echo "Using pre-built frontend from host"; \
-    else \
-      NODE_OPTIONS="--max-old-space-size=8192" npx nx build twenty-front; \
-    fi
+
+# Always rebuild so parks-api URL / Maps key / Lingui catalogs match this image
+RUN rm -rf /app/packages/twenty-front/build && \
+    NODE_OPTIONS="--max-old-space-size=8192" npx nx build twenty-front
 
 
 # ===========================================================================

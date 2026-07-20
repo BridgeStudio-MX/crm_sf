@@ -8,6 +8,7 @@ import { useFilteredObjectMetadataItems } from '@/object-metadata/hooks/useFilte
 import { objectMetadataItemsSelector } from '@/object-metadata/states/objectMetadataItemsSelector';
 import { filterReadableActiveObjectMetadataItems } from '@/object-metadata/utils/filterReadableActiveObjectMetadataItems';
 import { useObjectPermissions } from '@/object-record/hooks/useObjectPermissions';
+import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
 import { useAtomFamilySelectorValue } from '@/ui/utilities/state/jotai/hooks/useAtomFamilySelectorValue';
 import { useAtomFamilyStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomFamilyStateValue';
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
@@ -19,6 +20,7 @@ import { getAppPath, getSettingsPath, isDefined } from 'twenty-shared/utils';
 
 export const useDefaultHomePagePath = () => {
   const currentUser = useAtomStateValue(currentUserState);
+  const { hasAnyParksNavAccess, defaultAccessiblePath } = useParksAccess();
   const { objectPermissionsByObjectMetadataId } = useObjectPermissions();
   const metadataStore = useAtomFamilyStateValue(
     metadataStoreState,
@@ -90,6 +92,11 @@ export const useDefaultHomePagePath = () => {
       return AppPath.SignInUp;
     }
 
+    // Parks demo users land on their role home, not the Companies list
+    if (hasAnyParksNavAccess) {
+      return defaultAccessiblePath;
+    }
+
     if (isEmpty(readableNonSystemObjectMetadataItems)) {
       // Object metadata may legitimately be empty for a user with no readable
       // objects, in which case /settings/profile is the intended fallback.
@@ -127,6 +134,8 @@ export const useDefaultHomePagePath = () => {
     );
   }, [
     currentUser,
+    hasAnyParksNavAccess,
+    defaultAccessiblePath,
     readableNonSystemObjectMetadataItems,
     areObjectMetadataItemsLoaded,
     areNavigationMenuItemsLoaded,

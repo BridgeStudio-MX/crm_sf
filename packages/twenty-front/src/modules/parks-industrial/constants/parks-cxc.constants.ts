@@ -1,5 +1,7 @@
 export const PARKS_CXC_SERVICE_URL =
-  import.meta.env.VITE_PARKS_SERVICE_URL ?? 'http://localhost:3002';
+  import.meta.env.REACT_APP_PARKS_SERVICE_URL ??
+  import.meta.env.VITE_PARKS_SERVICE_URL ??
+  'http://localhost:3002';
 
 export const PARKS_CXC_DASHBOARD_ENDPOINT = `${PARKS_CXC_SERVICE_URL}/cxc/dashboard`;
 

@@ -1,5 +1,7 @@
 export const PARKS_SERVICE_URL =
-  import.meta.env.VITE_PARKS_SERVICE_URL ?? 'http://localhost:3002';
+  import.meta.env.REACT_APP_PARKS_SERVICE_URL ??
+  import.meta.env.VITE_PARKS_SERVICE_URL ??
+  'http://localhost:3002';
 
 export const PARKS_COMMERCIAL_INBOX_ENDPOINT = `${PARKS_SERVICE_URL}/commercial/inbox`;
 export const PARKS_COMMERCIAL_NOTIFICATIONS_ENDPOINT = `${PARKS_SERVICE_URL}/commercial/notifications`;

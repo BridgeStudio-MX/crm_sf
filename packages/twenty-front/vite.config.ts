@@ -246,7 +246,7 @@ export default defineConfig(({ mode }) => {
       },
     },
 
-    envPrefix: 'REACT_APP_',
+    envPrefix: ['REACT_APP_', 'VITE_'],
 
     define: {
       'process.env': {

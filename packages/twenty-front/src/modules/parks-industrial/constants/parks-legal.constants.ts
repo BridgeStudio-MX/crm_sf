@@ -1,5 +1,7 @@
 export const PARKS_LEGAL_SERVICE_URL =
-  import.meta.env.VITE_PARKS_SERVICE_URL ?? 'http://localhost:3002';
+  import.meta.env.REACT_APP_PARKS_SERVICE_URL ??
+  import.meta.env.VITE_PARKS_SERVICE_URL ??
+  'http://localhost:3002';
 
 export const PARKS_LEGAL_VALIDATE_ENDPOINT = `${PARKS_LEGAL_SERVICE_URL}/legal/validate-documents`;
 export const PARKS_LEGAL_CONTRACT_TYPES_ENDPOINT = `${PARKS_LEGAL_SERVICE_URL}/legal/contract-types`;
