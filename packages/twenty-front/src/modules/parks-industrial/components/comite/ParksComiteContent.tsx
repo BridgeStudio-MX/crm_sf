@@ -513,9 +513,7 @@ const StyledVotePriorityActions = styled.div<{ columns: 2 | 3 }>`
   }
 `;
 
-const StyledVoteDecisionButton = styled.button<{
-  tone: 'approve' | 'reject' | 'abstain';
-}>`
+const StyledVoteDecisionButton = styled.button`
   align-items: center;
   border-radius: ${PARKS_VIBE.radiusMd};
   border-style: solid;
@@ -535,52 +533,46 @@ const StyledVoteDecisionButton = styled.button<{
     transform 140ms ease;
   width: 100%;
 
-  ${({ tone }) => {
-    if (tone === 'approve') {
-      return `
-        background: ${PARKS_BRAND.primary};
-        border-color: ${PARKS_BRAND.primary};
-        box-shadow: 0 8px 18px rgba(0, 104, 55, 0.28);
-        color: #ffffff;
+  &[data-tone='approve'] {
+    background: ${PARKS_BRAND.primary};
+    border-color: ${PARKS_BRAND.primary};
+    box-shadow: 0 8px 18px rgba(0, 104, 55, 0.28);
+    color: #ffffff;
+  }
 
-        &:hover:not(:disabled) {
-          background: #005a2f;
-          border-color: #005a2f;
-          box-shadow: 0 10px 22px rgba(0, 104, 55, 0.34);
-          transform: translateY(-1px);
-        }
-      `;
-    }
+  &[data-tone='approve']:hover:not(:disabled) {
+    background: #005a2f;
+    border-color: #005a2f;
+    box-shadow: 0 10px 22px rgba(0, 104, 55, 0.34);
+    transform: translateY(-1px);
+  }
 
-    if (tone === 'reject') {
-      return `
-        background: ${PARKS_VISUAL_THEME.accents.red.background};
-        border-color: ${PARKS_VISUAL_THEME.accents.red.accent};
-        box-shadow: 0 6px 14px rgba(180, 35, 24, 0.12);
-        color: ${PARKS_VISUAL_THEME.accents.red.accent};
+  &[data-tone='reject'] {
+    background: ${PARKS_VISUAL_THEME.accents.red.background};
+    border-color: ${PARKS_VISUAL_THEME.accents.red.accent};
+    box-shadow: 0 6px 14px rgba(180, 35, 24, 0.12);
+    color: ${PARKS_VISUAL_THEME.accents.red.accent};
+  }
 
-        &:hover:not(:disabled) {
-          background: ${themeCssVariables.color.red3};
-          box-shadow: 0 8px 18px rgba(180, 35, 24, 0.18);
-          transform: translateY(-1px);
-        }
-      `;
-    }
+  &[data-tone='reject']:hover:not(:disabled) {
+    background: ${themeCssVariables.color.red3};
+    box-shadow: 0 8px 18px rgba(180, 35, 24, 0.18);
+    transform: translateY(-1px);
+  }
 
-    return `
-      background: ${themeCssVariables.background.primary};
-      border-color: ${PARKS_VIBE.borderStrong};
-      box-shadow: ${PARKS_VIBE.shadowSoft};
-      color: ${PARKS_VIBE.textSecondary};
+  &[data-tone='abstain'] {
+    background: ${themeCssVariables.background.primary};
+    border-color: ${PARKS_VIBE.borderStrong};
+    box-shadow: ${PARKS_VIBE.shadowSoft};
+    color: ${PARKS_VIBE.textSecondary};
+  }
 
-      &:hover:not(:disabled) {
-        background: ${PARKS_VIBE.surfaceMuted};
-        border-color: ${PARKS_VIBE.textMuted};
-        color: ${PARKS_VIBE.textPrimary};
-        transform: translateY(-1px);
-      }
-    `;
-  }}
+  &[data-tone='abstain']:hover:not(:disabled) {
+    background: ${PARKS_VIBE.surfaceMuted};
+    border-color: ${PARKS_VIBE.textMuted};
+    color: ${PARKS_VIBE.textPrimary};
+    transform: translateY(-1px);
+  }
 
   &:disabled {
     box-shadow: none;
@@ -638,7 +630,7 @@ const VoteDecisionButton = ({
 }: VoteDecisionButtonProps) => (
   <StyledVoteDecisionButton
     type="button"
-    tone={tone}
+    data-tone={tone}
     disabled={disabled}
     onClick={onClick}
   >
