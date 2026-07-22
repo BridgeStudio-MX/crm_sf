@@ -92,6 +92,7 @@ jobs:
             echo "SCP attempt ${attempt}..."
             if sshpass -e scp $SSH_OPTS \
               deploy/docker-compose.yml deploy/Caddyfile \
+              deploy/rename-charles-el-mann.sql \
               "${DROPLET_USER}@${DROPLET_HOST}:/opt/twenty/"; then
               break
             fi
@@ -135,41 +136,9 @@ jobs:
           docker image prune -f
           sleep 10
           # Display name only — Charlie Meta → Charles El Mann Metta
-          docker compose exec -T db psql -U "${PG_DATABASE_USER:-postgres}" -d default <<'SQL'
-UPDATE core."user"
-SET "firstName" = 'Charles', "lastName" = 'El Mann Metta'
-WHERE email = 'jony.ive@apple.dev'
-  AND ("firstName" IS DISTINCT FROM 'Charles'
-    OR "lastName" IS DISTINCT FROM 'El Mann Metta');
-
-DO $$
-DECLARE
-  workspace_schema text;
-BEGIN
-  FOR workspace_schema IN
-    SELECT nspname FROM pg_namespace WHERE nspname LIKE 'workspace_%'
-  LOOP
-    BEGIN
-      EXECUTE format(
-        'UPDATE %I."workspaceMember"
-         SET "nameFirstName" = %L, "nameLastName" = %L
-         WHERE "userEmail" = %L
-           AND ("nameFirstName" IS DISTINCT FROM %L
-             OR "nameLastName" IS DISTINCT FROM %L)',
-        workspace_schema,
-        'Charles',
-        'El Mann Metta',
-        'jony.ive@apple.dev',
-        'Charles',
-        'El Mann Metta'
-      );
-    EXCEPTION
-      WHEN undefined_table OR undefined_column THEN
-        NULL;
-    END;
-  END LOOP;
-END $$;
-SQL
+          docker compose exec -T db \
+            psql -U "${PG_DATABASE_USER:-postgres}" -d default \
+            < /opt/twenty/rename-charles-el-mann.sql
           docker compose exec -T parks curl -sf http://localhost:3002/health
           docker compose exec -T parks curl -sf http://localhost:3002/config/public | head -c 80
           REMOTE
