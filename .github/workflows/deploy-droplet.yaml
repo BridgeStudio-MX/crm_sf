@@ -39,6 +39,7 @@ jobs:
           file: packages/twenty-docker/twenty/Dockerfile
           target: twenty
           push: true
+          no-cache: true
           build-args: |
             REACT_APP_PARKS_SERVICE_URL=https://parks.bridgehub.mx/parks-api
             VITE_PARKS_SERVICE_URL=https://parks.bridgehub.mx/parks-api
