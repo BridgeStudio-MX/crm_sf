@@ -22,7 +22,7 @@ export const ParksMisPendientesPage = () => {
       title={t`Mis pendientes`}
       subtitle={getParksIndustrialPageSubtitle(
         isCem
-          ? t`Cola CEM, aprobaciones y firmas de Hoja de Acuerdos`
+          ? t`Cola Director Comercial, aprobaciones y firmas de Hoja de Acuerdos`
           : t`Aprobaciones y firmas que requieren tu acción`,
       )}
       icon={<IconListCheck size={theme.icon.size.md} />}

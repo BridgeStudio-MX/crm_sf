@@ -24,7 +24,7 @@ export const ParksDashboardPage = () => {
           t`Pulso del grupo: ocupación, ingresos, legal, CxC y renovaciones`,
         )
       : getParksIndustrialPageSubtitle(
-          t`Pipeline, ocupación, ingresos y cola CEM — vista operativa`,
+          t`Pipeline, ocupación, ingresos y cola Director Comercial — vista operativa`,
         );
 
   return (

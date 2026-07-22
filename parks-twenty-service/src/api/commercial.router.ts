@@ -791,7 +791,7 @@ commercialRouter.post(
         type: 'alert',
         priority: 'normal',
         title: 'Broker reclasificado',
-        body: `Nueva clasificación: ${body.clasificacion}. Por: ${body.changedBy ?? 'CEM'}`,
+        body: `Nueva clasificación: ${body.clasificacion}. Por: ${body.changedBy ?? 'Director Comercial'}`,
         area: 'CEM',
       });
 

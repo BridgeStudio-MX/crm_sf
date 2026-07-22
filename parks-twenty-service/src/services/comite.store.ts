@@ -585,7 +585,7 @@ export const buildDemoComites = (): ComiteAutorizacion[] => {
       preguntas: [],
       auditoria: [
         `${hoursAgo(8)} Empate — escalar a Director General`,
-        `${hoursAgo(8)} Notificación enviada a Charlie / CEO`,
+        `${hoursAgo(8)} Notificación enviada a Charles El Mann Metta / CEO`,
       ],
       createdAt: hoursAgo(16),
       updatedAt: hoursAgo(8),

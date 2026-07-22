@@ -45,7 +45,7 @@ const buildLeadItems = async (): Promise<CemInboxItem[]> => {
       id: `lead-${lead.id}`,
       kind: 'lead-sin-asignar' as const,
       title: lead.name ?? 'Lead sin nombre',
-      subtitle: 'Cola CEM · asignación a LO',
+      subtitle: 'Cola Director Comercial · asignación a LO',
       detail: `${canal} · ${m2Label} · ${ubicacion}`,
       priority: 'high' as const,
       actionPath: '/parks/leads-cem',
@@ -76,7 +76,7 @@ const buildApprovalItems = async (): Promise<CemInboxItem[]> => {
         id: `approval-${opportunity.id}`,
         kind: 'aprobacion-comercial' as const,
         title: opportunity.name ?? 'Oportunidad sin nombre',
-        subtitle: 'Aprobación CEM · condiciones especiales',
+        subtitle: 'Aprobación Director Comercial · condiciones especiales',
         detail:
           opportunity.comentarioAprobacion?.trim() ||
           'Condiciones especiales pendientes de autorización del Director Comercial.',
@@ -153,8 +153,8 @@ const buildHojaFirmaItems = async (): Promise<CemInboxItem[]> => {
           id: `hoja-${hoja.id}`,
           kind: 'firma-hoja' as const,
           title: hoja.referencia ?? `Hoja ${hoja.id.slice(0, 8)}`,
-          subtitle: `Firma CEM · ${empresa}`,
-          detail: `${clienteStatus}. Abre el deal y firma la Hoja de Acuerdos como CEM.`,
+          subtitle: `Firma Director Comercial · ${empresa}`,
+          detail: `${clienteStatus}. Abre el deal y firma la Hoja de Acuerdos como Director Comercial.`,
           priority: hoja.firmadaPorCliente
             ? ('high' as const)
             : ('normal' as const),

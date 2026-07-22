@@ -168,7 +168,7 @@ export const ParksLegalLoiPanel = ({ casoLegal }: ParksLegalLoiPanelProps) => {
             <ParksStatusBadge
               color={copyMeta.firmadaPorCem ? 'green' : 'orange'}
               label={
-                copyMeta.firmadaPorCem ? t`Firma CEM` : t`CEM pendiente`
+                copyMeta.firmadaPorCem ? t`Firma Director Comercial` : t`Director Comercial pendiente`
               }
             />
             <ParksStatusBadge

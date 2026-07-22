@@ -44,7 +44,7 @@ const CANAL_OPTIONS = [
   'Página web',
   'LinkedIn',
   'Call Center',
-  'CEM',
+  'Director Comercial',
   'Broker',
   'Recomendación',
   'Evento',
@@ -860,7 +860,7 @@ export const ParksNewLeadModal = ({
   };
 
   const footerHint = isFormValid
-    ? t`El lead entrará a la cola CEM en Lead recibido`
+    ? t`El lead entrará a la cola Director Comercial en Lead recibido`
     : t`Completa contacto, requerimientos y canal para continuar`;
 
   return createPortal(
@@ -905,7 +905,7 @@ export const ParksNewLeadModal = ({
                 <StyledSubtitle>
                   {prefillInquilino
                     ? t`Crea una oportunidad adicional vinculada a la misma cuenta sin perder el historial.`
-                    : t`Captura el lead con los datos mínimos para calificación. Entrará a la cola del CEM para asignación al LO.`}
+                    : t`Captura el lead con los datos mínimos para calificación. Entrará a la cola del Director Comercial para asignación al LO.`}
                 </StyledSubtitle>
               </StyledHeaderText>
               <StyledCloseButton

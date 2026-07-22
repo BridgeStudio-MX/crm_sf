@@ -1198,7 +1198,7 @@ export const ParksCommercialWorkflowPanel = ({
           ) : null}
           <ParksFormField
             label={t`Condiciones propuestas`}
-            hint={t`Descuentos, plazos, mejoras — requiere aprobación CEM`}
+            hint={t`Descuentos, plazos, mejoras — requiere aprobación Director Comercial`}
             fullWidth
           >
             <StyledParksTextarea
@@ -1222,12 +1222,12 @@ export const ParksCommercialWorkflowPanel = ({
                       descuentoPct: 3,
                     });
                   },
-                  t`Aprobación solicitada al CEM`,
+                  t`Aprobación solicitada al Director Comercial`,
                 );
               }}
             />
             <ParksActionButton
-              title={t`Aprobar (CEM)`}
+              title={t`Aprobar (Director Comercial)`}
               size="sm"
               variant="secondary"
               disabled={isBusy}
@@ -1714,13 +1714,13 @@ export const ParksCommercialWorkflowPanel = ({
               </StyledActionsRow>
 
               <StyledHint>
-                {t`Firmas: el CEM firma primero; luego el LO registra la firma del cliente. Con ambas, el deal entra al Comité de Autorización (mayoría 2 de 3) antes de Legal.`}
+                {t`Firmas: el Director Comercial firma primero; luego el LO registra la firma del cliente. Con ambas, el deal entra al Comité de Autorización (mayoría 2 de 3) antes de Legal.`}
               </StyledHint>
 
               <StyledSignatureGrid>
                 <StyledSignatureCard isDone={hojaFirmadaPorCem}>
                   <StyledSignatureTitle>
-                    {t`Firma CEM`}
+                    {t`Firma Director Comercial`}
                     <ParksStatusBadge
                       color={hojaFirmadaPorCem ? 'green' : 'orange'}
                       label={hojaFirmadaPorCem ? t`Firmada` : t`Pendiente`}
@@ -1731,7 +1731,7 @@ export const ParksCommercialWorkflowPanel = ({
                   </StyledSignatureMeta>
                   {!hojaFirmadaPorCem ? (
                     <ParksActionButton
-                      title={t`Firmar como CEM`}
+                      title={t`Firmar como Director Comercial`}
                       size="sm"
                       disabled={isBusy || !hojaId || !canSignAsCem}
                       onClick={() => {
@@ -1749,7 +1749,7 @@ export const ParksCommercialWorkflowPanel = ({
                             });
                             applySignResult(result);
                           },
-                          t`CEM firmó · falta firma del cliente`,
+                          t`Director Comercial firmó · falta firma del cliente`,
                         );
                       }}
                     />

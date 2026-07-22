@@ -236,8 +236,8 @@ export const validateCommercialStageTransition = (
     return {
       ok: false,
       error: 'El lead debe ser asignado por CEM antes de avanzar',
-      missingRequirements: ['Asignación del Leasing Officer (Cola CEM)'],
-      actionHint: 'Asigna el lead en Dashboard → Cola CEM',
+      missingRequirements: ['Asignación del Leasing Officer (Cola Director Comercial)'],
+      actionHint: 'Asigna el lead en Dashboard → Cola Director Comercial',
     };
   }
 

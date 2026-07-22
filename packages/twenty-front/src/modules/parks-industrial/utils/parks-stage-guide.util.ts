@@ -109,7 +109,7 @@ export const buildParksDealStageGuide = (
     const checklist: ParksDealGuideChecklistItem[] = [
       {
         id: 'asignacion',
-        label: t`Lead asignado por CEM`,
+        label: t`Lead asignado por Director Comercial`,
         done: hasAssignment,
       },
       {
@@ -294,7 +294,7 @@ export const buildParksDealStageGuide = (
       {
         id: 'aprobacion',
         label: deal.aprobacionRequerida
-          ? t`Aprobación CEM/CEO concedida`
+          ? t`Aprobación Director Comercial/CEO concedida`
           : t`Condiciones comerciales alineadas`,
         done: approvalOk,
         targetTab: 'aprobacion',

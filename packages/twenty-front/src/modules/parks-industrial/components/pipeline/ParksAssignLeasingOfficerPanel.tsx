@@ -80,8 +80,8 @@ export const ParksAssignLeasingOfficerPanel = ({
   }
 
   const assignedByLabel = displayName
-    ? `${displayName}${primaryParksRoleLabel ? ' (CEM)' : ''}`
-    : 'Héctor Montelongo (CEM)';
+    ? `${displayName}${primaryParksRoleLabel ? ' (Director Comercial)' : ''}`
+    : 'Héctor Montelongo (Director Comercial)';
 
   const handleAssign = async () => {
     if (!selectedLo.trim()) {

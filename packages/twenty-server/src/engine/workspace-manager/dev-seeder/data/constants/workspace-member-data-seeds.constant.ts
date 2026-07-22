@@ -57,7 +57,7 @@ const originalWorkspaceMembers: WorkspaceMemberDataSeed[] = [
   {
     id: WORKSPACE_MEMBER_DATA_SEED_IDS.JONY,
     nameFirstName: 'Charles',
-    nameLastName: 'El-Mann Metta',
+    nameLastName: 'El Mann Metta',
     locale: 'es-ES',
     colorScheme: 'Light',
     userEmail: 'jony.ive@apple.dev',

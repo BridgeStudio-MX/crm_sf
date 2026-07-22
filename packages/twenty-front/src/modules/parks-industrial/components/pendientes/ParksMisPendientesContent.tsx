@@ -66,7 +66,7 @@ export const ParksMisPendientesContent = () => {
       <StyledParksPageStack>
         <StyledToolbar>
           <StyledHint>
-            {t`Leads por asignar, aprobaciones CEM y firmas de Hoja de Acuerdos.`}
+            {t`Leads por asignar, aprobaciones Director Comercial y firmas de Hoja de Acuerdos.`}
           </StyledHint>
           <Button
             variant="secondary"

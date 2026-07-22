@@ -200,7 +200,7 @@ export const ParksCemDirectorDashboard = () => {
   return (
     <>
       <ParksSectionCard
-        title={t`Vista Director Comercial (CEM)`}
+        title={t`Vista Director Comercial (Director Comercial)`}
         accent="green"
         action={
           <Link to={AppPath.ParksPipeline} style={{ fontSize: 12 }}>

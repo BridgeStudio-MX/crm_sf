@@ -12,7 +12,7 @@ export const ParksLeadsCemPage = () => {
 
   return (
     <ParksPageShell
-      title={t`Leads CEM`}
+      title={t`Leads Director Comercial`}
       subtitle={getParksIndustrialPageSubtitle(
         t`Cola de leads sin asignar — asigna cada uno a un Leasing Officer`,
       )}

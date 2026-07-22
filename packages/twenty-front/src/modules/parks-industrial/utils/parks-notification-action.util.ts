@@ -63,7 +63,7 @@ export const resolveParksNotificationActionLabel = (actionPath?: string) => {
   }
 
   if (actionPath.includes('/parks/leads-cem')) {
-    return 'Ver cola CEM';
+    return 'Ver cola Director Comercial';
   }
 
   return 'Ir a la acción';

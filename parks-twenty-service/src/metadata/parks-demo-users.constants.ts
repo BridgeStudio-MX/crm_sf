@@ -50,9 +50,9 @@ export const PARKS_DEMO_USERS: ParksDemoUser[] = [
     email: 'jony.ive@apple.dev',
     password: PARKS_DEMO_USER_PASSWORD,
     firstName: 'Charles',
-    lastName: 'El-Mann Metta',
+    lastName: 'El Mann Metta',
     roleLabel: `${PARKS_ROLE_LABEL_PREFIX}CEO`,
-    persona: 'Charlie Meta (CEO) — alias apple.dev',
+    persona: 'Charles El Mann Metta (CEO) — alias apple.dev',
     provisionStatus: 'existing',
   },
   {
@@ -90,7 +90,7 @@ export const PARKS_DEMO_USERS: ParksDemoUser[] = [
     firstName: 'Phil',
     lastName: 'Schiler',
     roleLabel: `${PARKS_ROLE_LABEL_PREFIX}Director Comercial`,
-    persona: 'Héctor Montelongo (CEM) — alias apple.dev',
+    persona: 'Héctor Montelongo (Director Comercial) — alias apple.dev',
     provisionStatus: 'existing',
   },
 

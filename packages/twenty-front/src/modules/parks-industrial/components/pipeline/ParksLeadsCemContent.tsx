@@ -124,8 +124,8 @@ export const ParksLeadsCemContent = () => {
 
   const defaultLeasingOfficer = leasingOfficerOptions[0] ?? 'Edgard Vargas';
   const assignedByLabel = displayName
-    ? `${displayName}${primaryParksRoleLabel ? ' (CEM)' : ''}`
-    : 'Héctor Montelongo (CEM)';
+    ? `${displayName}${primaryParksRoleLabel ? ' (Director Comercial)' : ''}`
+    : 'Héctor Montelongo (Director Comercial)';
 
   const staleLeadsCount = leads.filter(
     (lead) => getLeadAgeHours(lead.createdAt) >= 24,
@@ -173,7 +173,7 @@ export const ParksLeadsCemContent = () => {
     <StyledParksPageStack>
       <ParksPageHero
         eyebrow={t`Parks Industrial · Comercial`}
-        title={t`Cola de leads CEM`}
+        title={t`Cola de leads Director Comercial`}
         subtitle={t`Asigna cada lead a un Leasing Officer. Se crea tarea de contacto en 24h para no perder velocidad comercial.`}
         actions={[
           {
@@ -186,7 +186,7 @@ export const ParksLeadsCemContent = () => {
           {
             label: t`Sin asignar`,
             value: String(leads.length),
-            hint: t`Pendientes CEM`,
+            hint: t`Pendientes Director Comercial`,
           },
           {
             label: t`+24 horas`,
@@ -210,7 +210,7 @@ export const ParksLeadsCemContent = () => {
         <ParksDashboardFeaturedMetric
           label={t`Leads sin asignar`}
           value={String(leads.length)}
-          hint={t`Cola CEM`}
+          hint={t`Cola Director Comercial`}
           icon={IconUserPlus}
           accent="green"
         />
@@ -236,7 +236,7 @@ export const ParksLeadsCemContent = () => {
         {leads.length === 0 ? (
           <ParksEmptyState
             title={t`No hay leads pendientes`}
-            description={t`La cola CEM está vacía. Los nuevos leads sin asignar aparecerán aquí.`}
+            description={t`La cola Director Comercial está vacía. Los nuevos leads sin asignar aparecerán aquí.`}
           />
         ) : (
           <StyledCardGrid>

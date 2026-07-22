@@ -12,15 +12,15 @@ export const PARKS_NAVIGATION_ITEM_HELP: Record<
   stackingPlan:
     'Plano de ocupación por parque y nave: qué está libre, ocupado o en negociación.',
   pipeline:
-    'Embudo de deals comerciales (lead → cotización → hoja → legal). Aquí vive el trabajo diario del LO y el CEM.',
+    'Embudo de deals comerciales (lead → cotización → hoja → legal). Aquí vive el trabajo diario del LO y el Director Comercial.',
   leadsCem:
-    'Bandeja de leads nuevos sin asignar para que el Director Comercial (CEM) los asigne a un LO.',
+    'Bandeja de leads nuevos sin asignar para que el Director Comercial los asigne a un LO.',
   prospectos:
     'Lista de prospectos / cuentas potenciales en seguimiento comercial.',
   notificaciones:
     'Centro de alertas y tareas: firmas, handoffs, comités y avisos operativos con acceso directo a la acción.',
   misPendientes:
-    'Bandeja de decisiones que requieren tu OK: aprobaciones, condonaciones, firmas o firmas CEM según tu rol.',
+    'Bandeja de decisiones que requieren tu OK: aprobaciones, condonaciones, firmas o firmas Director Comercial según tu rol.',
   contratos:
     'Expedientes legales activos: elaboración, checklist, versiones, cotejo IA y flujo de firmas.',
   legalPipeline:

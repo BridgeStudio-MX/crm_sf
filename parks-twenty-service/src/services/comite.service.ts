@@ -149,7 +149,7 @@ const evaluateResultado = async (
       actionPath: `/parks/comite/${next.id}`,
       actionLabel: 'Ver comité',
       audienceRoleLabels: ['Parks — CEO', 'Parks — Director Comercial'],
-      audienceNames: ['Charles El-Mann', 'Charlie'],
+      audienceNames: ['Charles El Mann Metta', 'Charles'],
     });
 
     return comiteStore.upsert(next);

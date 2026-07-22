@@ -85,7 +85,7 @@ export const ParksNavigationSection = ({
     dashboardComercial: t`Dashboard comercial`,
     stackingPlan: t`Stacking Plan`,
     pipeline: t`Pipeline`,
-    leadsCem: t`Leads CEM`,
+    leadsCem: t`Leads Director Comercial`,
     prospectos: t`Prospectos`,
     notificaciones: t`Notificaciones`,
     misPendientes: t`Mis pendientes`,

@@ -102,12 +102,12 @@ export const ParksUnassignedLeadsBanner = ({
         <StyledBannerCopy>
           <StyledBannerTitle>{pendingLabel}</StyledBannerTitle>
           <StyledBannerHint>
-            {t`Pendientes de asignación CEM — gestiona la cola en Leads CEM`}
+            {t`Pendientes de asignación Director Comercial — gestiona la cola en Leads Director Comercial`}
           </StyledBannerHint>
         </StyledBannerCopy>
       </StyledBannerMain>
       <StyledBannerLink to={PARKS_LEADS_CEM_PATH}>
-        {t`Ir a cola CEM`}
+        {t`Ir a cola Director Comercial`}
         <IconArrowRight size={14} />
       </StyledBannerLink>
     </StyledBanner>

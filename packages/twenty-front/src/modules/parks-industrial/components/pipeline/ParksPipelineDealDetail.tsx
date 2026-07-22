@@ -694,7 +694,7 @@ export const ParksPipelineDealDetail = ({
             embedded
             sections={['aprobacion']}
             title={t`Aprobación`}
-            hint={t`Solicita o resuelve condiciones especiales que requieren OK de CEM/CEO.`}
+            hint={t`Solicita o resuelve condiciones especiales que requieren OK de Director Comercial/CEO.`}
             onDealUpdated={(update) => onDealUpdated?.(deal.id, update)}
           />
         ) : null}
@@ -705,7 +705,7 @@ export const ParksPipelineDealDetail = ({
             embedded
             sections={['hoja', 'perdida']}
             title={t`Hoja de Acuerdos`}
-            hint={t`Genera el borrador, firma con CEM y cliente, o marca el deal como perdido.`}
+            hint={t`Genera el borrador, firma con Director Comercial y cliente, o marca el deal como perdido.`}
             onDealUpdated={(update) => onDealUpdated?.(deal.id, update)}
           />
         ) : null}

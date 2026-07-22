@@ -436,7 +436,7 @@ export const asignacionInteligenteService = {
           'Parks — Director Comercial',
           'Parks — CEO',
         ],
-        audienceNames: [CEM_NOMBRE, 'Charles El-Mann'],
+        audienceNames: [CEM_NOMBRE, 'Charles El Mann Metta'],
       });
     } else {
       const giroNorm = normalize(input.giroEmpresa);

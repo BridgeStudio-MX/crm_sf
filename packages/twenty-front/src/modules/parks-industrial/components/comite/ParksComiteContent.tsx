@@ -1040,11 +1040,11 @@ export const ParksComiteContent = () => {
         <ParksPageHero
           eyebrow={t`Parks Industrial · Gobernanza`}
           title={t`Comité de Autorización`}
-          subtitle={t`Cuando una Hoja de Acuerdos quede firmada por CEM y cliente, el caso se abrirá aquí para votación.`}
+          subtitle={t`Cuando una Hoja de Acuerdos quede firmada por Director Comercial y cliente, el caso se abrirá aquí para votación.`}
         />
         <ParksEmptyState
           title={t`No hay comités`}
-          description={t`Cuando una Hoja de Acuerdos quede firmada por CEM y cliente, se abrirá aquí.`}
+          description={t`Cuando una Hoja de Acuerdos quede firmada por Director Comercial y cliente, se abrirá aquí.`}
         />
       </StyledParksPageStack>
     );
@@ -1233,7 +1233,7 @@ export const ParksComiteContent = () => {
                     <IconShield size={14} />
                   </StyledIdentityIcon>
                   <div>
-                    <StyledIdentityLabel>{t`CEM firmante`}</StyledIdentityLabel>
+                    <StyledIdentityLabel>{t`Director Comercial firmante`}</StyledIdentityLabel>
                     <StyledIdentityValue>
                       {selected.cemQueFirmoNombre}
                     </StyledIdentityValue>
@@ -1560,7 +1560,7 @@ export const ParksComiteContent = () => {
                     rows={2}
                     value={preguntaTexto}
                     onChange={(event) => setPreguntaTexto(event.target.value)}
-                    placeholder={t`Pregunta al LO / CEM`}
+                    placeholder={t`Pregunta al LO / Director Comercial`}
                   />
                   <Button
                     title={t`Enviar pregunta`}
@@ -1731,7 +1731,7 @@ export const ParksComiteContent = () => {
                     ) : (
                       <StyledFieldBlock>
                         <StyledFieldLabel>
-                          {t`Respuesta del LO / CEM`}
+                          {t`Respuesta del LO / Director Comercial`}
                         </StyledFieldLabel>
                         <StyledParksTextarea
                           rows={2}

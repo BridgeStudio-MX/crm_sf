@@ -63,7 +63,7 @@ const resolveParksPageTitle = (pathname: string): string | null => {
   }
 
   if (pathname.startsWith(AppPath.ParksLeadsCem)) {
-    return t`Leads CEM`;
+    return t`Leads Director Comercial`;
   }
 
   if (pathname.startsWith(AppPath.ParksContratos)) {

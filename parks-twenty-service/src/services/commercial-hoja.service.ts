@@ -344,7 +344,7 @@ export const commercialHojaService = {
     brokerNotificationStore.add({
       type: 'alert',
       priority: 'high',
-      title: 'Hoja de Acuerdos lista para firma CEM',
+      title: 'Hoja de Acuerdos lista para firma Director Comercial',
       body: `${referencia} · Revisa y firma la Hoja en la pestaña Hoja.`,
       area: 'Comercial',
       opportunityId: input.opportunityId,
@@ -352,7 +352,7 @@ export const commercialHojaService = {
       actionPath: buildPipelineDealActionPath(input.opportunityId, {
         tab: 'hoja',
       }),
-      actionLabel: 'Firmar como CEM',
+      actionLabel: 'Firmar como Director Comercial',
       audienceRoleLabels: [...PARKS_NOTIFICATION_CEM_ROLES],
     });
 
@@ -520,7 +520,7 @@ export const commercialHojaService = {
       brokerNotificationStore.add({
         type: 'alert',
         priority: 'normal',
-        title: 'CEM firmó la Hoja de Acuerdos',
+        title: 'Director Comercial firmó la Hoja de Acuerdos',
         body: 'Pendiente registrar la firma del cliente para enviar a Legal.',
         area: 'Comercial',
         opportunityId: input.opportunityId,
@@ -539,14 +539,14 @@ export const commercialHojaService = {
       brokerNotificationStore.add({
         type: 'alert',
         priority: 'high',
-        title: 'Cliente firmó — falta firma CEM',
-        body: 'Abre el deal y firma la Hoja de Acuerdos como CEM.',
+        title: 'Cliente firmó — falta firma Director Comercial',
+        body: 'Abre el deal y firma la Hoja de Acuerdos como Director Comercial.',
         area: 'Comercial',
         opportunityId: input.opportunityId,
         actionPath: buildPipelineDealActionPath(input.opportunityId, {
           tab: 'hoja',
         }),
-        actionLabel: 'Firmar como CEM',
+        actionLabel: 'Firmar como Director Comercial',
         audienceRoleLabels: [...PARKS_NOTIFICATION_CEM_ROLES],
       });
     }
@@ -642,7 +642,7 @@ export const commercialHojaService = {
             brokerNotificationStore.add({
               type: 'alert',
               priority: 'high',
-              title: 'Hoja de Acuerdos firmada por CEM y cliente',
+              title: 'Hoja de Acuerdos firmada por Director Comercial y cliente',
               body:
                 handoff.reason === 'PARKS_LEGAL_HANDOFF_ENABLED=false'
                   ? 'Handoff a Legal desactivado (PARKS_LEGAL_HANDOFF_ENABLED=false).'

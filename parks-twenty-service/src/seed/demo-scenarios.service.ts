@@ -61,7 +61,7 @@ export const DEMO_SCENARIO_LEADS: ScenarioLeadDefinition[] = [
     canal: 'Página web',
     presupuestoMensualUsd: 4_200,
     plazoMeses: 60,
-    screenshotNote: 'Cola CEM — lead sin asignar',
+    screenshotNote: 'Cola Director Comercial — lead sin asignar',
   },
   {
     key: 'lead-calificado',

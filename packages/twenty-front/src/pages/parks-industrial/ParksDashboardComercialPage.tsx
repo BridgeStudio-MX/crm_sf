@@ -15,7 +15,7 @@ export const ParksDashboardComercialPage = () => {
     <ParksPageShell
       title={t`Dashboard comercial`}
       subtitle={getParksIndustrialPageSubtitle(
-        t`Pipeline, ocupación, ingresos y cola CEM — vista informativa`,
+        t`Pipeline, ocupación, ingresos y cola Director Comercial — vista informativa`,
       )}
       icon={<IconLayoutKanban size={theme.icon.size.md} />}
     >

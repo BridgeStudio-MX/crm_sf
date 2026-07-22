@@ -13,8 +13,8 @@ Todos los roles llevan el prefijo **"Parks — "** en el workspace (ej. *Parks �
 
 | Email | Contraseña | Persona | Rol |
 |---|---|---|---|
-| jony.ive@apple.dev | tim@apple.dev | Charlie Meta (CEO) | Parks — CEO |
-| phil.schiler@apple.dev | tim@apple.dev | Héctor Montelongo (CEM) | Parks — Director Comercial |
+| jony.ive@apple.dev | tim@apple.dev | Charles El Mann Metta (CEO) | Parks — CEO |
+| phil.schiler@apple.dev | tim@apple.dev | Héctor Montelongo (Director Comercial) | Parks — Director Comercial |
 | tim@apple.dev | tim@apple.dev | Leasing Officer (legacy) | Parks — Ejecutivo Comercial |
 | scott.forstall@apple.dev | tim@apple.dev | Gerente CxC (legacy) | Parks — CxC |
 | jane.austen@apple.dev | tim@apple.dev | Catalina Moreno (Admin Legal) | Parks — Admin Legal |
@@ -61,4 +61,4 @@ Todos los roles llevan el prefijo **"Parks — "** en el workspace (ej. *Parks �
 
 **Voto CEO (parte del flujo cuando hay empate 1–1–1):**
 
-4. Charles El-Mann Metta — CEO — `jony.ive@apple.dev` → **Aprobar / Rechazar** en el caso escalado (demo: Samsung)
+4. Charles El Mann Metta — CEO — `jony.ive@apple.dev` → **Aprobar / Rechazar** en el caso escalado (demo: Samsung)

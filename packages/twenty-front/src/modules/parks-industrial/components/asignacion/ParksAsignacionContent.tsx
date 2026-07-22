@@ -496,7 +496,7 @@ export const ParksAsignacionContent = () => {
         assignedBy: displayName || 'Héctor Montelongo',
         razonCambio:
           suggested && suggested !== leasingOfficerName
-            ? `CEM eligió ${leasingOfficerName} en lugar de ${suggested}`
+            ? `Director Comercial eligió ${leasingOfficerName} en lugar de ${suggested}`
             : undefined,
       });
       await refresh();
@@ -559,7 +559,7 @@ export const ParksAsignacionContent = () => {
         actions={[
           {
             to: PARKS_LEADS_CEM_PATH,
-            label: t`Cola CEM`,
+            label: t`Cola Director Comercial`,
             icon: IconUsers,
           },
         ]}

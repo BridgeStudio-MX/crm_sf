@@ -39,7 +39,7 @@ export const ParksCemQueueSection = ({
   refreshKey = 0,
 }: ParksCemQueueSectionProps) => (
   <ParksSectionCard
-    title={t`Cola CEM — leads sin asignar`}
+    title={t`Cola Director Comercial — leads sin asignar`}
     accent="green"
   >
     <StyledSectionIntro>

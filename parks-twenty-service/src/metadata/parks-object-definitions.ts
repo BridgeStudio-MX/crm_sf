@@ -371,7 +371,7 @@ export const PARKS_OBJECT_DEFINITIONS: ParksObjectDefinition[] = [
         ]),
       },
       { name: 'firmadaPorCliente', label: 'Firmada por cliente', type: 'BOOLEAN' },
-      { name: 'firmadaPorCem', label: 'Firmada por CEM', type: 'BOOLEAN' },
+      { name: 'firmadaPorCem', label: 'Firmada por Director Comercial', type: 'BOOLEAN' },
       {
         name: 'estatus',
         label: 'Estatus',

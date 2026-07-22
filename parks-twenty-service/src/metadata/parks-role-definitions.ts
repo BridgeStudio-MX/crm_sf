@@ -141,7 +141,7 @@ export const PARKS_ROLE_DEFINITIONS: ParksRoleDefinition[] = [
     label: `${PARKS_ROLE_LABEL_PREFIX}CEO`,
     systemCode: 'CEO_Director_General',
     description:
-      'Charles El-Mann Metta — solo lectura + aprobaciones ejecutivas',
+      'Charles El Mann Metta — solo lectura + aprobaciones ejecutivas',
     icon: 'IconCrown',
     canReadAllObjectRecords: true,
     canUpdateAllObjectRecords: false,

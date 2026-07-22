@@ -141,7 +141,7 @@ export type ParksLeadAssignedPayload = {
 type ParksUnassignedLeadsPanelProps = {
   onAssigned?: (payload: ParksLeadAssignedPayload) => void;
   refreshKey?: number;
-  // compact = dashboard (3 + asignar); full = página Leads CEM
+  // compact = dashboard (3 + asignar); full = página Leads Director Comercial
   variant?: 'compact' | 'full';
 };
 
@@ -166,8 +166,8 @@ export const ParksUnassignedLeadsPanel = ({
 
   const defaultLeasingOfficer = leasingOfficerOptions[0] ?? 'Edgard Vargas';
   const assignedByLabel = displayName
-    ? `${displayName}${primaryParksRoleLabel ? ' (CEM)' : ''}`
-    : 'Héctor Montelongo (CEM)';
+    ? `${displayName}${primaryParksRoleLabel ? ' (Director Comercial)' : ''}`
+    : 'Héctor Montelongo (Director Comercial)';
 
   const isCompact = variant === 'compact';
 
@@ -222,14 +222,14 @@ export const ParksUnassignedLeadsPanel = ({
     if (isCompact) {
       return (
         <StyledPanel>
-          <StyledHint>{t`No hay leads pendientes de asignación CEM.`}</StyledHint>
+          <StyledHint>{t`No hay leads pendientes de asignación Director Comercial.`}</StyledHint>
         </StyledPanel>
       );
     }
 
     return (
       <StyledPanel>
-        <StyledTitle>{t`Leads sin asignar (CEM)`}</StyledTitle>
+        <StyledTitle>{t`Leads sin asignar (Director Comercial)`}</StyledTitle>
         <StyledHint>{t`No hay leads pendientes de asignación.`}</StyledHint>
       </StyledPanel>
     );
@@ -238,7 +238,7 @@ export const ParksUnassignedLeadsPanel = ({
   return (
     <StyledPanel>
       <StyledHeader>
-        <StyledTitle>{t`Leads sin asignar (CEM)`}</StyledTitle>
+        <StyledTitle>{t`Leads sin asignar (Director Comercial)`}</StyledTitle>
         <StyledCount>
           {leads.length === 1
             ? t`1 pendiente`

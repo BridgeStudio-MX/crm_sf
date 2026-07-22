@@ -96,7 +96,7 @@ query StackingPlan($parqueId: ID!) {
 
 ---
 
-## MÓDULO 2 — DASHBOARD EJECUTIVO (para Charlie Meta, CEO)
+## MÓDULO 2 — DASHBOARD EJECUTIVO (para Charles El Mann Metta, CEO)
 
 ### Qué es
 Dashboard de métricas de alto nivel. Funciona en desktop y móvil. Responde a lo que Charlie pidió: métricas del grupo, no de nave individual.

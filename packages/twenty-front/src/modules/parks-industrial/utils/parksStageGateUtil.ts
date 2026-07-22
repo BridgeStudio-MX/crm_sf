@@ -167,7 +167,7 @@ const collectHojaRequirements = (
     opportunity.aprobacionRequerida &&
     !isParksApprovalApproved(opportunity.estatusAprobacion)
   ) {
-    return [t`Aprobación de condiciones especiales (CEM o CEO)`];
+    return [t`Aprobación de condiciones especiales (Director Comercial o CEO)`];
   }
 
   return [];
@@ -272,10 +272,10 @@ export const validateParksStageTransition = (
   ) {
     return {
       ok: false,
-      error: t`El lead debe ser asignado por CEM antes de avanzar`,
-      missingRequirements: [t`Asignación del Leasing Officer (Cola CEM)`],
+      error: t`El lead debe ser asignado por Director Comercial antes de avanzar`,
+      missingRequirements: [t`Asignación del Leasing Officer (Cola Director Comercial)`],
       targetStageLabel,
-      actionHint: t`Asigna el lead en Dashboard → Cola CEM o en /parks/leads-cem`,
+      actionHint: t`Asigna el lead en Dashboard → Cola Director Comercial o en /parks/leads-cem`,
     };
   }
 

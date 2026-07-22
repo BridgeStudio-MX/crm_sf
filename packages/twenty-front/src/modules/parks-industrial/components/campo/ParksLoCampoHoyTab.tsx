@@ -199,7 +199,7 @@ export const ParksLoCampoHoyTab = ({
     {deals.length === 0 ? (
       <ParksEmptyState
         title={t`Sin deals para campo`}
-        description={t`Cuando CEM te asigne leads o tengas deals en tour, aparecerán aquí.`}
+        description={t`Cuando Director Comercial te asigne leads o tengas deals en tour, aparecerán aquí.`}
       />
     ) : (
       <StyledDealList>

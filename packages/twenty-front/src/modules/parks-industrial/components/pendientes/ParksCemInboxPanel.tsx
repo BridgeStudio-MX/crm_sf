@@ -121,7 +121,7 @@ const getKindLabel = (kind: ParksCemInboxItem['kind']): string => {
   }
 
   if (kind === 'aprobacion-comercial') {
-    return t`Aprobación CEM`;
+    return t`Aprobación Director Comercial`;
   }
 
   return t`Firma hoja`;
@@ -141,7 +141,7 @@ const getKindIcon = (kind: ParksCemInboxItem['kind']) => {
 
 const getActionLinkLabel = (kind: ParksCemInboxItem['kind']): string => {
   if (kind === 'lead-sin-asignar') {
-    return t`Ir a cola CEM →`;
+    return t`Ir a cola Director Comercial →`;
   }
 
   if (kind === 'firma-hoja') {
@@ -170,11 +170,11 @@ export const ParksCemInboxPanel = ({
       await resolveParksApproval({
         opportunityId: item.entityId,
         decision,
-        resolvedBy: displayName || 'CEM',
+        resolvedBy: displayName || 'Director Comercial',
         comentario:
           decision === 'Aprobada'
-            ? 'Aprobado desde Mis pendientes (CEM)'
-            : 'Rechazado desde Mis pendientes (CEM)',
+            ? 'Aprobado desde Mis pendientes (Director Comercial)'
+            : 'Rechazado desde Mis pendientes (Director Comercial)',
       });
       onResolved();
     } catch (resolveError) {
@@ -212,7 +212,7 @@ export const ParksCemInboxPanel = ({
       {inbox.items.length === 0 ? (
         <ParksEmptyState
           title={t`Sin acciones pendientes`}
-          description={t`Leads por asignar, aprobaciones CEM y firmas de Hoja aparecerán aquí.`}
+          description={t`Leads por asignar, aprobaciones Director Comercial y firmas de Hoja aparecerán aquí.`}
         />
       ) : (
         <StyledList>
