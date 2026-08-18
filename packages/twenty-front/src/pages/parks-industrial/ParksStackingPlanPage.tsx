@@ -17,7 +17,7 @@ export const ParksStackingPlanPage = () => {
     <ParksPageShell
       title={t`Stacking Plan`}
       subtitle={getParksIndustrialPageSubtitle(
-        t`Ocupación y vencimientos por nave industrial`,
+        t`Ocupación y vencimientos por nave — vuelve a Parques para ver toda la cartera`,
       )}
       icon={<IconLayoutGrid size={theme.icon.size.md} />}
     >

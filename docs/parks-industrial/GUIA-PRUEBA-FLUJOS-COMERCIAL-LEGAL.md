@@ -44,9 +44,9 @@ npm run setup:demo-users   # crea usuarios Parks por rol (opcional pero recomend
 
 1. Abre http://localhost:3001  
 2. **Continue with Email**  
-3. Credenciales por defecto en dev: **`tim@apple.dev`** / **`tim@apple.dev`**
+3. Correo del puesto (ej. `directorcomercial@prk.com.mx`) / contraseña **`parksindustrial2026!`**
 
-> En desarrollo, `tim@apple.dev` puede hacer todo aunque no tengas roles asignados. Para una demo realista con permisos, usa los usuarios de la tabla siguiente (requiere `npm run setup:demo-users`).
+> Lista completa: `docs/parks-industrial/USUARIOS_DEMO.md`. `tim@apple.dev` / `tim@apple.dev` es solo el admin técnico de Twenty en local.
 
 ### Handoff comercial → legal
 
@@ -72,20 +72,20 @@ cd parks-twenty-service
 npm run setup:demo-users
 ```
 
-> En desarrollo, `tim@apple.dev` puede hacer todo aunque no hayas corrido `setup:demo-users`. Para una demo realista con permisos por rol, usa la tabla siguiente.
+> Lista completa y misma contraseña para todos: `docs/parks-industrial/USUARIOS_DEMO.md`.
 
-| Persona (negocio) | Rol Parks | Correo | Contraseña | Usar en el flujo |
+| Puesto | Rol Parks | Correo | Contraseña | Usar en el flujo |
 |-------------------|-----------|--------|------------|------------------|
-| **Héctor Montelongo (CEM)** | Parks — Director Comercial | `phil.schiler@apple.dev` | `tim@apple.dev` | Cola CEM, asignar LO, aprobar condiciones, firmar Hoja (lado Parks) |
-| **Leasing Officer (LO)** | Parks — Ejecutivo Comercial | `tim@apple.dev` | `tim@apple.dev` | Lead asignado, tour, cotización, negociación, generar Hoja |
-| **Catalina Moreno (Admin Legal)** | Parks — Admin Legal | `S` | `tim@apple.dev` | Dashboard legal, asignar abogado, checklist, cotejo, pipeline legal |
-| **Director Legal** | Parks — Director Legal | `roberto.salinas@apple.dev` | `tim@apple.dev` | Dashboard legal (vista ejecutiva), métricas equipo |
-| **Subdirector Legal** | Parks — Subdirector Legal | `patricia.nunez@apple.dev` | `tim@apple.dev` | Flujo de firmas internas (paso 2 del flujo firmas) |
-| **Abogado asignado** | Parks — Abogado asignado | `miguel.soto@apple.dev` | `tim@apple.dev` | Elaboración, versiones, negociación con cliente |
-| **Charles El-Mann Metta (CEO)** | Parks — CEO | `jony.ive@apple.dev` | `tim@apple.dev` | Aprobación condonación holdover, firma final en flujo interno |
-| **CxC / Cobranza** | Parks — CxC | `scott.forstall@apple.dev` | `tim@apple.dev` | Solo lectura post-cierre; handoff CxC tras contrato firmado |
+| **Director Comercial** | Parks — Director Comercial | `directorcomercial@prk.com.mx` | `parksindustrial2026!` | Cola CEM, asignar LO, aprobar condiciones, firmar Hoja (lado Parks) |
+| **Leasing Officer AAA** | Parks — LO AAA Senior | `leasingofficeraaa@prk.com.mx` | `parksindustrial2026!` | Lead asignado, tour, cotización, negociación, generar Hoja |
+| **Admin Legal** | Parks — Admin Legal | `adminlegal@prk.com.mx` | `parksindustrial2026!` | Dashboard legal, asignar abogado, checklist, cotejo, pipeline legal |
+| **Director Legal** | Parks — Director Legal | `directorlegal@prk.com.mx` | `parksindustrial2026!` | Dashboard legal (vista ejecutiva), métricas equipo |
+| **Subdirector Legal** | Parks — Subdirector Legal | `subdirectorlegal@prk.com.mx` | `parksindustrial2026!` | Flujo de firmas internas (paso 2 del flujo firmas) |
+| **Abogado asignado** | Parks — Abogado asignado | `abogado@prk.com.mx` | `parksindustrial2026!` | Elaboración, versiones, negociación con cliente |
+| **CEO** | Parks — CEO | `ceo@prk.com.mx` | `parksindustrial2026!` | Aprobación condonación holdover, firma final en flujo interno |
+| **Gerente CxC** | Parks — Gerente CxC | `gerentecxc@prk.com.mx` | `parksindustrial2026!` | Solo lectura post-cierre; handoff CxC tras contrato firmado |
 
-**Nota:** Todos los usuarios demo comparten la misma contraseña en local: `tim@apple.dev`.
+**Nota:** Todos los logins Parks usan `parksindustrial2026!`. `tim@apple.dev` / `tim@apple.dev` es solo el admin técnico de Twenty en local.
 
 ### Permisos por rol (activo)
 
@@ -112,11 +112,11 @@ Abre **ventanas de incógnito** o perfiles de Chrome distintos:
 
 | Ventana | Usuario | Qué hace |
 |---------|---------|----------|
-| 1 | `phil.schiler@apple.dev` | CEM: cola, asignación, aprobaciones, firma Hoja |
-| 2 | `tim@apple.dev` | LO: calificar, tour, cotización, Hoja |
-| 3 | `jane.austen@apple.dev` | Legal admin: casos, cotejo, dashboard |
-| 4 | `miguel.soto@apple.dev` | Abogado: versiones y elaboración |
-| 5 | `jony.ive@apple.dev` | CEO: condonación holdover (si aplica) |
+| 1 | `directorcomercial@prk.com.mx` | CEM: cola, asignación, aprobaciones, firma Hoja |
+| 2 | `leasingofficeraaa@prk.com.mx` | LO: calificar, tour, cotización, Hoja |
+| 3 | `adminlegal@prk.com.mx` | Legal admin: casos, cotejo, dashboard |
+| 4 | `abogado@prk.com.mx` | Abogado: versiones y elaboración |
+| 5 | `ceo@prk.com.mx` | CEO: condonación holdover (si aplica) |
 
 ---
 
@@ -152,8 +152,8 @@ CAPTURA → CEM asigna LO → CALIFICADO → MATCH/TOUR → COTIZACIÓN
 
 | Paso | Usuario | Pantalla | Acción | Resultado esperado |
 |------|---------|----------|--------|-------------------|
-| 1.1 | LO (`tim@apple.dev`) o CEM | `/parks/pipeline` → **Nuevo lead** | Crear lead: empresa, canal, m², ubicación, giro, plazo, presupuesto | Deal en columna **Lead recibido** |
-| 1.2 | **CEM** (`phil.schiler@apple.dev`) | `/parks/leads-cem` o banner en Pipeline | Ver cola sin asignar | Lead visible con canal y meta |
+| 1.1 | LO (`leasingofficeraaa@prk.com.mx`) o CEM | `/parks/pipeline` → **Nuevo lead** | Crear lead: empresa, canal, m², ubicación, giro, plazo, presupuesto | Deal en columna **Lead recibido** |
+| 1.2 | **CEM** (`directorcomercial@prk.com.mx`) | `/parks/leads-cem` o banner en Pipeline | Ver cola sin asignar | Lead visible con canal y meta |
 | 1.3 | **CEM** | `/parks/leads-cem` | Asignar a LO (ej. Alejandro García / Tim) | Lead sale de cola sin reload |
 | 1.4 | LO | `/parks/pipeline` | Abrir deal → paneles IA/scoring (opcional) | Score o enriquecimiento visible |
 | 1.5 | LO | Kanban | Arrastrar a **Calificado** (con campos completos) | Pasa; si faltan campos, gate bloquea |
@@ -276,7 +276,7 @@ Abrir cualquier caso: `/parks/contratos` → clic en referencia → `/parks/cont
 | L5.2 | Catalina | Dashboard | **Generar reporte quincenal** | CSV en pantalla |
 | L5.3 | Comercial/Legal | `/parks/renovaciones` → tab Holdovers | Ver holdovers activos | Montos acumulados |
 | L5.4 | Legal | Renovaciones / API | Solicitar **condonación** holdover | Estatus pendiente CEO |
-| L5.5 | **CEO** (`jony.ive@apple.dev`) | Notificaciones / API resolve | Aprobar o rechazar condonación | CxC notificado |
+| L5.5 | **CEO** (`ceo@prk.com.mx`) | Notificaciones / API resolve | Aprobar o rechazar condonación | CxC notificado |
 
 ### Fase L6 — Acta de restitución (US-LEG-012)
 
@@ -307,13 +307,13 @@ Ideal para demo integrada con **3 ventanas de incógnito**:
 
 | Orden | Usuario | Hito |
 |-------|---------|------|
-| 1 | `tim@apple.dev` | Crear lead → calificar → tour → cotización |
-| 2 | `phil.schiler@apple.dev` | Asignar LO → aprobar → firmar Hoja (CEM) |
-| 3 | `tim@apple.dev` | Firmar Hoja (cliente) |
-| 4 | `jane.austen@apple.dev` | Ver caso nuevo en `/parks/contratos` → asignar abogado |
-| 5 | `miguel.soto@apple.dev` | Checklist OK → versión V1 → versión final |
-| 6 | `jane.austen@apple.dev` | Cotejo OK → firmas → caso cerrado |
-| 7 | `scott.forstall@apple.dev` | Ver notificaciones/tickets CxC (post-cierre) |
+| 1 | `leasingofficeraaa@prk.com.mx` | Crear lead → calificar → tour → cotización |
+| 2 | `directorcomercial@prk.com.mx` | Asignar LO → aprobar → firmar Hoja (CEM) |
+| 3 | `leasingofficeraaa@prk.com.mx` | Firmar Hoja (cliente) |
+| 4 | `adminlegal@prk.com.mx` | Ver caso nuevo en `/parks/contratos` → asignar abogado |
+| 5 | `abogado@prk.com.mx` | Checklist OK → versión V1 → versión final |
+| 6 | `adminlegal@prk.com.mx` | Cotejo OK → firmas → caso cerrado |
+| 7 | `gerentecxc@prk.com.mx` | Ver notificaciones/tickets CxC (post-cierre) |
 
 ---
 

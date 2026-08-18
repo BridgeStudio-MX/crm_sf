@@ -85,8 +85,8 @@ Acoplado a `Parks_Industrial_Comite_Autorizacion_V2_Cursor.md`:
 
 **API:** `GET /comite`, `GET /comite/:id`, `POST .../vote`, `POST .../ceo-decision`, `POST .../questions`, `POST .../questions/:id/answer`, `GET|PATCH /comite/config`
 
-**Demo votos (trío):** Héctor=`phil.schiler@apple.dev` · CFO=`director.financiero@parksindustrial.com` · Ops=`director.operaciones@parksindustrial.com`  
-**Voto CEO (empate):** Charles=`jony.ive@apple.dev` → Aprobar / Rechazar
+**Demo votos (trío):** Dir. Comercial=`directorcomercial@prk.com.mx` · CFO=`cfo@prk.com.mx` · Ops=`directoroperaciones@prk.com.mx`  
+**Voto CEO (empate):** CEO=`ceo@prk.com.mx` → Aprobar / Rechazar
 
 ---
 
@@ -223,17 +223,17 @@ cd parks-twenty-service
 npm run setup:assign-roles
 ```
 
-Mapeo demo (@apple.dev → persona Parks):
+Mapeo demo (`@prk.com.mx` / `parksindustrial2026!`):
 
-| Usuario | Rol Parks | Persona demo |
+| Usuario | Rol Parks | Puesto |
 | --- | --- | --- |
-| `jane.austen@apple.dev` | Admin Legal | Catalina |
-| `phil.schiler@apple.dev` | Director Comercial | Héctor |
-| `jony.ive@apple.dev` | CEO | Charles El-Mann Metta |
-| `scott.forstall@apple.dev` | CxC | Cobranza |
-| `tim@apple.dev` | Ejecutivo Comercial | Broker principal |
+| `adminlegal@prk.com.mx` | Admin Legal | Admin Legal |
+| `directorcomercial@prk.com.mx` | Director Comercial | Director Comercial |
+| `ceo@prk.com.mx` | CEO | CEO |
+| `gerentecxc@prk.com.mx` | Gerente CxC | Gerente CxC |
+| `leasingofficeraaa@prk.com.mx` | LO AAA Senior | Leasing Officer AAA |
 
-**Nota:** el workspace local puede tener solo `tim@apple.dev`. Invita a los demás en **Settings → Members** y vuelve a ejecutar `setup:assign-roles`, o asigna manualmente en la UI.
+**Nota:** el workspace local arranca con `tim@apple.dev` como admin técnico de Twenty. Para la demo Parks corre `npm run setup:demo-users` y entra con los correos `@prk.com.mx`. Lista: [USUARIOS_DEMO.md](./USUARIOS_DEMO.md).
 
 ### 2. Commitear y pushear el trabajo de UI
 

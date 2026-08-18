@@ -2,7 +2,10 @@ import axios from 'axios';
 
 import { envConfig } from '../config/env.config';
 import { twentyConfig } from '../config/twenty.config';
-import { PARKS_DEMO_USER_PASSWORD } from './parks-demo-users.constants';
+import {
+  TWENTY_BOOTSTRAP_EMAIL,
+  TWENTY_BOOTSTRAP_PASSWORD,
+} from './parks-demo-users.constants';
 
 const buildOrigin = (): string => {
   const originUrl = new URL(twentyConfig.apiUrl);
@@ -99,11 +102,11 @@ export const resolveTwentyUserAuthToken = async (): Promise<string> => {
   const email =
     process.env.TWENTY_BOOTSTRAP_EMAIL ??
     process.env.TWENTY_DEV_EMAIL ??
-    'tim@apple.dev';
+    TWENTY_BOOTSTRAP_EMAIL;
   const password =
     process.env.TWENTY_BOOTSTRAP_PASSWORD ??
     process.env.TWENTY_DEV_PASSWORD ??
-    PARKS_DEMO_USER_PASSWORD;
+    TWENTY_BOOTSTRAP_PASSWORD;
 
   return loginAsUser(email, password);
 };

@@ -134,6 +134,10 @@ export const ParksCeoExecutiveIndicatorsView = ({
         subtitle={t`Rollup Comercial + Legal + CxC. Misma lectura del Power BI, con UI Parks.`}
         actions={[
           {
+            to: AppPath.ParksStackingPlanIndex,
+            label: t`Parques y naves`,
+          },
+          {
             to: AppPath.ParksDashboardComercial,
             label: t`Panel Comercial`,
           },

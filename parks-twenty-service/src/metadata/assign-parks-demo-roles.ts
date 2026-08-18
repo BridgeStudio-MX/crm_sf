@@ -5,8 +5,9 @@ import { twentyConfig } from '../config/twenty.config';
 import { metadataClient } from './metadata-client';
 import { PARKS_DEMO_ROLE_ASSIGNMENTS } from './parks-demo-role-assignments.constants';
 import {
-  PARKS_DEMO_USER_PASSWORD,
   PARKS_DEMO_USERS,
+  TWENTY_BOOTSTRAP_EMAIL,
+  TWENTY_BOOTSTRAP_PASSWORD,
 } from './parks-demo-users.constants';
 import {
   resolveTwentyAuthTokenForUser,
@@ -184,7 +185,11 @@ export const assignParksDemoRoles = async (): Promise<void> => {
   const bootstrapEmail =
     process.env.TWENTY_BOOTSTRAP_EMAIL ??
     process.env.TWENTY_DEV_EMAIL ??
-    'tim@apple.dev';
+    TWENTY_BOOTSTRAP_EMAIL;
+  const bootstrapPassword =
+    process.env.TWENTY_BOOTSTRAP_PASSWORD ??
+    process.env.TWENTY_DEV_PASSWORD ??
+    TWENTY_BOOTSTRAP_PASSWORD;
 
   let assignedCount = 0;
 
@@ -197,82 +202,18 @@ export const assignParksDemoRoles = async (): Promise<void> => {
       roleIdByLabel,
       skipEmails: [bootstrapEmail],
     });
-
-    if (
-      bootstrapEmail.toLowerCase() !== 'tim@apple.dev' &&
-      PARKS_DEMO_ROLE_ASSIGNMENTS.some(
-        (assignment) =>
-          assignment.userEmail.toLowerCase() === 'tim@apple.dev',
-      )
-    ) {
-      try {
-        const timToken = await resolveTwentyAuthTokenForUser(
-          'tim@apple.dev',
-          PARKS_DEMO_USER_PASSWORD,
-        );
-
-        assignedCount += await runAssignments({
-          token: timToken,
-          assignerLabel: 'tim@apple.dev',
-          roleIdByLabel,
-          skipEmails: PARKS_DEMO_ROLE_ASSIGNMENTS.filter(
-            (assignment) =>
-              assignment.userEmail.toLowerCase() !== 'tim@apple.dev',
-          ).map((assignment) => assignment.userEmail),
-        });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        console.warn(
-          `${LOG_PREFIX}   ⚠ Could not assign tim@apple.dev via tim login: ${message}`,
-        );
-      }
-    }
   } else {
-    const primaryEmail = process.env.TWENTY_DEV_EMAIL ?? 'tim@apple.dev';
-    const primaryPassword =
-      process.env.TWENTY_DEV_PASSWORD ?? PARKS_DEMO_USER_PASSWORD;
-
     const primaryToken = await resolveTwentyAuthTokenForUser(
-      primaryEmail,
-      primaryPassword,
+      bootstrapEmail,
+      bootstrapPassword,
     );
 
     assignedCount += await runAssignments({
       token: primaryToken,
-      assignerLabel: primaryEmail,
-      skipEmails: [primaryEmail],
+      assignerLabel: bootstrapEmail,
+      skipEmails: [bootstrapEmail],
       roleIdByLabel,
     });
-
-    if (
-      primaryEmail.toLowerCase() === 'tim@apple.dev' &&
-      PARKS_DEMO_ROLE_ASSIGNMENTS.some(
-        (assignment) =>
-          assignment.userEmail.toLowerCase() === 'tim@apple.dev',
-      )
-    ) {
-      try {
-        const secondaryToken = await resolveTwentyAuthTokenForUser(
-          'jane.austen@apple.dev',
-          PARKS_DEMO_USER_PASSWORD,
-        );
-
-        assignedCount += await runAssignments({
-          token: secondaryToken,
-          assignerLabel: 'jane.austen@apple.dev',
-          roleIdByLabel,
-          skipEmails: PARKS_DEMO_ROLE_ASSIGNMENTS.filter(
-            (assignment) =>
-              assignment.userEmail.toLowerCase() !== 'tim@apple.dev',
-          ).map((assignment) => assignment.userEmail),
-        });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        console.warn(
-          `${LOG_PREFIX}   ⚠ Could not assign tim@apple.dev via jane.austen@apple.dev: ${message}`,
-        );
-      }
-    }
   }
 
   const userToken = await resolveTwentyUserAuthToken();

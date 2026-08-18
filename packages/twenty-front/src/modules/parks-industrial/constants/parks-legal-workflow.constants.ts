@@ -1,3 +1,4 @@
+import { PARKS_DEMO_EMAIL } from '@/parks-industrial/constants/parks-demo-logins.constants';
 import { isParksSelectValueEqual } from '@/parks-industrial/utils/parks-select-value.util';
 
 export const LEGAL_PIPELINE_STAGES = [
@@ -84,7 +85,8 @@ export const LEGAL_LAWYER_DIRECTORY: ReadonlyArray<{
   name: string;
   email: string;
 }> = [
-  { name: 'Miguel Soto', email: 'miguel.soto@apple.dev' },
+  { name: 'Miguel Soto', email: PARKS_DEMO_EMAIL.abogadoAsignado },
+  { name: 'Abogado asignado', email: PARKS_DEMO_EMAIL.abogadoAsignado },
 ] as const;
 
 export const resolveLegalLawyerEmail = (lawyerName: string): string | null => {

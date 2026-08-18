@@ -161,7 +161,8 @@ npm run dev
 # → http://localhost:3002/health
 ```
 
-**Login UI:** Continue with Email → `tim@apple.dev` / `tim@apple.dev`
+**Login UI (demo Parks):** Continue with Email → `directorcomercial@prk.com.mx` / `parksindustrial2026!`  
+**Admin técnico Twenty:** `tim@apple.dev` / `tim@apple.dev`
 
 ---
 

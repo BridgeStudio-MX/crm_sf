@@ -10,8 +10,11 @@ import {
 import {
   PARKS_DEMO_USER_PASSWORD,
   PARKS_DEMO_USERS,
+  TWENTY_BOOTSTRAP_EMAIL,
+  TWENTY_BOOTSTRAP_PASSWORD,
   type ParksDemoUser,
 } from './parks-demo-users.constants';
+import { renameParksDemoLogins } from './rename-parks-demo-logins';
 
 const LOG_PREFIX = '[setup:demo-users]';
 
@@ -48,9 +51,9 @@ const resolveAdminToken = async (): Promise<string> => {
     return resolveTwentyAuthToken();
   }
 
-  const adminEmail = process.env.TWENTY_DEV_EMAIL ?? 'tim@apple.dev';
+  const adminEmail = process.env.TWENTY_DEV_EMAIL ?? TWENTY_BOOTSTRAP_EMAIL;
   const adminPassword =
-    process.env.TWENTY_DEV_PASSWORD ?? PARKS_DEMO_USER_PASSWORD;
+    process.env.TWENTY_DEV_PASSWORD ?? TWENTY_BOOTSTRAP_PASSWORD;
 
   return resolveTwentyAuthTokenForUser(adminEmail, adminPassword);
 };
@@ -416,6 +419,16 @@ export const inviteParksDemoUsers = async (): Promise<void> => {
     `${LOG_PREFIX} Ensuring one workspace member per Parks role (${PARKS_DEMO_USERS.length} users)...`,
   );
 
+  try {
+    const renamedCount = await renameParksDemoLogins();
+    console.log(
+      `${LOG_PREFIX} Renamed/refreshed ${renamedCount} existing login(s) to @prk.com.mx`,
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`${LOG_PREFIX}   ⚠ Could not rename existing logins: ${message}`);
+  }
+
   const token = await resolveAdminToken();
   const workspaceContext = await resolveWorkspaceContext(token);
   const members = await fetchWorkspaceMembers(token);
@@ -460,13 +473,24 @@ export const inviteParksDemoUsers = async (): Promise<void> => {
         `${remainingCount} demo user(s) still missing from workspace after provisioning`,
       );
     }
+
+    try {
+      await renameParksDemoLogins();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(
+        `${LOG_PREFIX}   ⚠ Could not refresh names after provisioning: ${message}`,
+      );
+    }
   }
 
-  console.log(`${LOG_PREFIX} Demo users:`);
+  console.log(
+    `${LOG_PREFIX} Demo users (password for all: ${PARKS_DEMO_USER_PASSWORD}):`,
+  );
 
   for (const demoUser of PARKS_DEMO_USERS) {
     console.log(
-      `${LOG_PREFIX}   ${demoUser.email} → ${demoUser.roleLabel} · pass=${demoUser.password} (${demoUser.persona})`,
+      `${LOG_PREFIX}   ${demoUser.email} → ${demoUser.roleLabel} (${demoUser.persona})`,
     );
   }
 };

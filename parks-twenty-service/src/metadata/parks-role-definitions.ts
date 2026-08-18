@@ -187,7 +187,7 @@ export const PARKS_ROLE_DEFINITIONS: ParksRoleDefinition[] = [
     icon: 'IconTarget',
     objectPermissionsByObjectName: { ...LO_OBJECT_PERMISSIONS },
   },
-  // Legacy CxC alias kept for scott.forstall@apple.dev
+  // Legacy CxC alias kept for older workspaces that still have Parks — CxC assigned
   {
     label: `${PARKS_ROLE_LABEL_PREFIX}CxC`,
     systemCode: 'Gerente_CxC',

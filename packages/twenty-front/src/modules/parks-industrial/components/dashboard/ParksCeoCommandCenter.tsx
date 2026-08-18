@@ -10,6 +10,7 @@ import { ParksCeoComisionesSnapshot } from '@/parks-industrial/components/dashbo
 import { ParksCeoDailyView } from '@/parks-industrial/components/dashboard/ParksCeoDailyView';
 import { ParksCeoExecutiveIndicatorsView } from '@/parks-industrial/components/dashboard/ParksCeoExecutiveIndicatorsView';
 import { ParksCeoKpiCatalog } from '@/parks-industrial/components/dashboard/ParksCeoKpiCatalog';
+import { ParksPortfolioByParkSection } from '@/parks-industrial/components/portfolio/ParksPortfolioByParkSection';
 import { ParksEmptyState } from '@/parks-industrial/components/ui/ParksEmptyState';
 import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
 import { StyledParksPageStack } from '@/parks-industrial/components/ui/ParksSectionCard';
@@ -214,6 +215,8 @@ export const ParksCeoCommandCenter = () => {
       </StyledFilters>
 
       {error ? <StyledError>{error}</StyledError> : null}
+
+      <ParksPortfolioByParkSection />
 
       {view === 'ejecutivo' ? (
         <ParksCeoExecutiveIndicatorsView

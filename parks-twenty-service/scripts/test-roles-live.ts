@@ -4,7 +4,7 @@
  */
 import assert from 'node:assert/strict';
 
-import { PARKS_DEMO_USERS } from '../src/metadata/parks-demo-users.constants';
+import { PARKS_DEMO_EMAIL, PARKS_DEMO_USERS } from '../src/metadata/parks-demo-users.constants';
 import { resolveTwentyAuthTokenForUser } from '../src/metadata/resolve-twenty-auth-token';
 import { twentyConfig } from '../src/config/twenty.config';
 
@@ -150,17 +150,23 @@ type CaseExpectation = {
   deny: RouteKey[];
 };
 
+const demoPassword = (email: string): string => {
+  const demoUser = PARKS_DEMO_USERS.find((user) => user.email === email);
+  assert.ok(demoUser, `Missing demo user ${email}`);
+  return demoUser.password;
+};
+
 const CASES: CaseExpectation[] = [
   {
-    email: 'jony.ive@apple.dev',
-    password: 'tim@apple.dev',
+    email: PARKS_DEMO_EMAIL.ceo,
+    password: demoPassword(PARKS_DEMO_EMAIL.ceo),
     expectedRole: ROLE.CEO,
     allow: ['comite', 'pipeline', 'cxc', 'notificaciones'],
     deny: ['asignacion', 'leadsCem', 'legalPipeline', 'valorAgregado'],
   },
   {
-    email: 'phil.schiler@apple.dev',
-    password: 'tim@apple.dev',
+    email: PARKS_DEMO_EMAIL.directorComercial,
+    password: demoPassword(PARKS_DEMO_EMAIL.directorComercial),
     expectedRole: ROLE.CEM,
     allow: [
       'asignacion',
@@ -172,57 +178,50 @@ const CASES: CaseExpectation[] = [
     deny: ['legalPipeline', 'valorAgregado'],
   },
   {
-    email: 'director.financiero@parksindustrial.com',
-    password: 'Parks2026!04',
+    email: PARKS_DEMO_EMAIL.cfo,
+    password: demoPassword(PARKS_DEMO_EMAIL.cfo),
     expectedRole: ROLE.Miembro,
     allow: ['comite', 'notificaciones'],
     deny: ['pipeline', 'cxc', 'asignacion', 'legalPipeline', 'valorAgregado'],
   },
   {
-    email: 'roberto.salinas@apple.dev',
-    password: 'tim@apple.dev',
+    email: PARKS_DEMO_EMAIL.directorLegal,
+    password: demoPassword(PARKS_DEMO_EMAIL.directorLegal),
     expectedRole: ROLE.DirLegal,
     allow: ['legalPipeline', 'notificaciones'],
     deny: ['comite', 'cxc', 'asignacion', 'pipeline'],
   },
   {
-    email: 'jane.austen@apple.dev',
-    password: 'tim@apple.dev',
+    email: PARKS_DEMO_EMAIL.adminLegal,
+    password: demoPassword(PARKS_DEMO_EMAIL.adminLegal),
     expectedRole: ROLE.AdminLegal,
     allow: ['legalPipeline', 'notificaciones'],
     deny: ['cxc', 'comite', 'asignacion', 'pipeline'],
   },
   {
-    email: 'tim@apple.dev',
-    password: 'tim@apple.dev',
-    expectedRole: ROLE.LO,
+    email: PARKS_DEMO_EMAIL.loAaaIsrael,
+    password: demoPassword(PARKS_DEMO_EMAIL.loAaaIsrael),
+    expectedRole: ROLE.LO_AAA,
     allow: ['pipeline', 'comite', 'notificaciones'],
     deny: ['asignacion', 'valorAgregado', 'cxc', 'legalPipeline'],
   },
   {
-    email: 'israel.ramirez@parksindustrial.com',
-    password: 'Parks2026!01',
-    expectedRole: ROLE.LO_AAA,
-    allow: ['pipeline', 'comite'],
-    deny: ['asignacion', 'cxc', 'valorAgregado'],
-  },
-  {
-    email: 'claudia.rodriguez@parksindustrial.com',
-    password: 'Parks2026!06',
+    email: PARKS_DEMO_EMAIL.gerenteCxc,
+    password: demoPassword(PARKS_DEMO_EMAIL.gerenteCxc),
     expectedRole: ROLE.GerenteCxc,
     allow: ['cxc', 'notificaciones'],
     deny: ['pipeline', 'comite', 'asignacion', 'legalPipeline'],
   },
   {
-    email: 'jesus.gazon@parksindustrial.com',
-    password: 'Parks2026!10',
+    email: PARKS_DEMO_EMAIL.contratosFacturacion,
+    password: demoPassword(PARKS_DEMO_EMAIL.contratosFacturacion),
     expectedRole: ROLE.Facturacion,
     allow: ['notificaciones'],
     deny: ['pipeline', 'cxc', 'comite', 'asignacion'],
   },
   {
-    email: 'admin.parque.gdl@parksindustrial.com',
-    password: 'Parks2026!12',
+    email: PARKS_DEMO_EMAIL.adminParque,
+    password: demoPassword(PARKS_DEMO_EMAIL.adminParque),
     expectedRole: ROLE.AdminParque,
     allow: ['notificaciones'],
     deny: ['pipeline', 'comite', 'cxc', 'asignacion'],
@@ -250,13 +249,13 @@ const runComiteIdentityChecks = async (): Promise<void> => {
   };
 
   const cemSeat = detail.miembros.find(
-    (member) => member.email === 'phil.schiler@apple.dev',
+    (member) => member.email === PARKS_DEMO_EMAIL.directorComercial,
   );
   const cfoSeat = detail.miembros.find(
-    (member) => member.email === 'director.financiero@parksindustrial.com',
+    (member) => member.email === PARKS_DEMO_EMAIL.cfo,
   );
   const opsSeat = detail.miembros.find(
-    (member) => member.email === 'director.operaciones@parksindustrial.com',
+    (member) => member.email === PARKS_DEMO_EMAIL.directorOperaciones,
   );
 
   assert.ok(cemSeat, 'CEM seat');
@@ -270,7 +269,7 @@ const runComiteIdentityChecks = async (): Promise<void> => {
     body: JSON.stringify({
       memberId: cemSeat.memberId,
       voto: 'Se abstiene',
-      viewerEmail: 'jony.ive@apple.dev',
+      viewerEmail: PARKS_DEMO_EMAIL.ceo,
     }),
   });
   assert.equal(ceoReject.status, 400, 'CEO cannot impersonate CEM seat');
@@ -282,7 +281,7 @@ const runComiteIdentityChecks = async (): Promise<void> => {
     body: JSON.stringify({
       memberId: opsSeat.memberId,
       voto: 'Se abstiene',
-      viewerEmail: 'tim@apple.dev',
+      viewerEmail: PARKS_DEMO_EMAIL.loAaaIsrael,
     }),
   });
   assert.equal(loReject.status, 400, 'LO cannot impersonate Ops seat');
@@ -292,7 +291,7 @@ const runComiteIdentityChecks = async (): Promise<void> => {
     detail.miembros.find(
       (member) =>
         member.voto === 'Pendiente' &&
-        member.email === 'director.operaciones@parksindustrial.com',
+        member.email === PARKS_DEMO_EMAIL.directorOperaciones,
     ) ??
     detail.miembros.find((member) => member.voto === 'Pendiente');
 

@@ -4,7 +4,7 @@
  */
 import assert from 'node:assert/strict';
 
-import { PARKS_DEMO_USERS } from '../src/metadata/parks-demo-users.constants';
+import { PARKS_DEMO_EMAIL, PARKS_DEMO_USER_PASSWORD, PARKS_DEMO_USERS } from '../src/metadata/parks-demo-users.constants';
 import { PARKS_ROLE_DEFINITIONS } from '../src/metadata/parks-role-definitions';
 import { DEFAULT_COMITE_MEMBERS } from '../src/services/comite.store';
 
@@ -155,21 +155,21 @@ const runLiveComiteChecks = async (): Promise<void> => {
   };
 
   const cfoSeat = detail.miembros.find(
-    (member) => member.email === 'director.financiero@parksindustrial.com',
+    (member) => member.email === PARKS_DEMO_EMAIL.cfo,
   );
   const cemSeat = detail.miembros.find(
-    (member) => member.email === 'phil.schiler@apple.dev',
+    (member) => member.email === PARKS_DEMO_EMAIL.directorComercial,
   );
 
-  assert.ok(cfoSeat, 'CFO seat must use director.financiero@parksindustrial.com');
-  assert.ok(cemSeat, 'CEM seat must use phil.schiler@apple.dev');
+  assert.ok(cfoSeat, `CFO seat must use ${PARKS_DEMO_EMAIL.cfo}`);
+  assert.ok(cemSeat, `CEM seat must use ${PARKS_DEMO_EMAIL.directorComercial}`);
   assert.ok(
-    !detail.miembros.some((member) => member.email === 'jony.ive@apple.dev'),
+    !detail.miembros.some((member) => member.email === PARKS_DEMO_EMAIL.ceo),
     'CEO must not hold a voting seat',
   );
   assert.ok(
     !detail.miembros.some(
-      (member) => member.email === 'roberto.salinas@apple.dev',
+      (member) => member.email === PARKS_DEMO_EMAIL.directorLegal,
     ),
     'Director Legal must not hold a voting seat',
   );
@@ -183,7 +183,7 @@ const runLiveComiteChecks = async (): Promise<void> => {
       body: JSON.stringify({
         memberId: cemSeat.memberId,
         voto: 'Se abstiene',
-        viewerEmail: 'jony.ive@apple.dev',
+        viewerEmail: PARKS_DEMO_EMAIL.ceo,
       }),
     },
   );
@@ -220,90 +220,71 @@ const main = async (): Promise<void> => {
     (demoUser) => demoUser.provisionStatus === 'existing',
   );
 
-  assert.equal(existingUsers.length, 8);
-  assert.ok(createdUsers.length >= 12);
-
-  for (const demoUser of existingUsers) {
-    assert.equal(demoUser.password, 'tim@apple.dev');
-  }
+  assert.equal(existingUsers.length, 0);
+  assert.ok(createdUsers.length >= 19);
 
   for (const demoUser of createdUsers) {
-    assert.match(demoUser.password, /^Parks2026!\d{2}$/);
+    assert.equal(demoUser.password, PARKS_DEMO_USER_PASSWORD);
+    assert.ok(
+      demoUser.email.endsWith('@prk.com.mx'),
+      `${demoUser.email} must use prk.com.mx`,
+    );
   }
 
   console.log(
-    `${LOG} ✓ demo users: ${existingUsers.length} existing + ${createdUsers.length} new`,
+    `${LOG} ✓ demo users: ${createdUsers.length} @prk.com.mx / shared password`,
   );
 
   assert.equal(
     DEFAULT_COMITE_MEMBERS[0]?.email,
-    'phil.schiler@apple.dev',
+    PARKS_DEMO_EMAIL.directorComercial,
   );
-  assert.equal(
-    DEFAULT_COMITE_MEMBERS[1]?.email,
-    'director.financiero@parksindustrial.com',
-  );
+  assert.equal(DEFAULT_COMITE_MEMBERS[1]?.email, PARKS_DEMO_EMAIL.cfo);
   assert.equal(
     DEFAULT_COMITE_MEMBERS[2]?.email,
-    'director.operaciones@parksindustrial.com',
+    PARKS_DEMO_EMAIL.directorOperaciones,
   );
 
   console.log(`${LOG} ✓ default comité seats`);
 
   // Route limitantes (functional matrix)
-  assert.equal(canAccess('jony.ive@apple.dev', 'asignacion'), false);
-  assert.equal(canAccess('phil.schiler@apple.dev', 'asignacion'), true);
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.ceo, 'asignacion'), false);
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.directorComercial, 'asignacion'), true);
 
-  assert.equal(canAccess('jony.ive@apple.dev', 'comite'), true);
-  assert.equal(canAccess('roberto.salinas@apple.dev', 'comite'), false);
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.ceo, 'comite'), true);
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.directorLegal, 'comite'), false);
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.cfo, 'comite'), true);
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.cfo, 'pipeline'), false);
+
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.adminLegal, 'cxc'), false);
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.gerenteCxc, 'cxc'), true);
+
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.loAaaIsrael, 'valorAgregado'), false);
   assert.equal(
-    canAccess('director.financiero@parksindustrial.com', 'comite'),
-    true,
-  );
-  assert.equal(
-    canAccess('director.financiero@parksindustrial.com', 'pipeline'),
+    canAccess(PARKS_DEMO_EMAIL.directorComercial, 'valorAgregado'),
     false,
   );
-
-  assert.equal(canAccess('jane.austen@apple.dev', 'cxc'), false);
-  assert.equal(canAccess('scott.forstall@apple.dev', 'cxc'), true);
-  assert.equal(
-    canAccess('claudia.rodriguez@parksindustrial.com', 'cxc'),
-    true,
-  );
-
-  assert.equal(canAccess('tim@apple.dev', 'valorAgregado'), false);
-  assert.equal(canAccess('phil.schiler@apple.dev', 'valorAgregado'), false);
-  assert.equal(canAccess('jony.ive@apple.dev', 'valorAgregado'), false);
-  assert.equal(canAccess('tim@apple.dev', 'pipeline'), true);
-  assert.equal(canAccess('tim@apple.dev', 'comite'), true);
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.ceo, 'valorAgregado'), false);
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.loAaaIsrael, 'pipeline'), true);
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.loAaaIsrael, 'comite'), true);
 
   assert.equal(
-    canAccess('jesus.gazon@parksindustrial.com', 'pipeline'),
+    canAccess(PARKS_DEMO_EMAIL.contratosFacturacion, 'pipeline'),
     false,
   );
   assert.equal(
-    canAccess('jesus.gazon@parksindustrial.com', 'notificaciones'),
+    canAccess(PARKS_DEMO_EMAIL.contratosFacturacion, 'notificaciones'),
     true,
   );
 
   assert.equal(
-    canAccess('admin.parque.gdl@parksindustrial.com', 'stackingPlanIndex'),
+    canAccess(PARKS_DEMO_EMAIL.adminParque, 'stackingPlanIndex'),
     true,
   );
-  assert.equal(
-    canAccess('admin.parque.gdl@parksindustrial.com', 'pipeline'),
-    false,
-  );
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.adminParque, 'pipeline'), false);
 
-  assert.equal(
-    canAccess('lilibeth.lopez@parksindustrial.com', 'asignacion'),
-    true,
-  );
-  assert.equal(
-    canAccess('lilibeth.lopez@parksindustrial.com', 'legalPipeline'),
-    true,
-  );
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.adminSistema, 'asignacion'), true);
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.adminSistema, 'legalPipeline'), true);
 
   console.log(`${LOG} ✓ route access matrix (limitantes clave)`);
 

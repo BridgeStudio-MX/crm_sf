@@ -10,7 +10,7 @@ export const PARKS_NAVIGATION_ITEM_HELP: Record<
   dashboardComercial:
     'Tablero comercial con ocupación, pipeline, ingresos y riesgos de vencimiento para priorizar al equipo.',
   stackingPlan:
-    'Plano de ocupación por parque y nave: qué está libre, ocupado o en negociación.',
+    'Todos los parques: naves disponibles y leads del pipeline en cada uno. Entra a un parque para ver el plano de ocupación.',
   pipeline:
     'Embudo de deals comerciales (lead → cotización → hoja → legal). Aquí vive el trabajo diario del LO y el Director Comercial.',
   leadsCem:

@@ -148,6 +148,9 @@ export const ParksStackingPlanHeader = ({
           </StyledParqueSelect>
         ) : null}
         <StyledButtonRow>
+          <UndecoratedLink to={AppPath.ParksStackingPlanIndex}>
+            <Button title={t`Todos los parques`} variant="secondary" />
+          </UndecoratedLink>
           <Button
             title={t`Exportar Excel`}
             variant="secondary"

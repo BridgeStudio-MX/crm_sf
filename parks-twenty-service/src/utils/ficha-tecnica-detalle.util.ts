@@ -1,8 +1,9 @@
-import { type NaveRecord } from '../types/parks.types';
+import { PARKS_DEMO_EMAIL } from '../metadata/parks-demo-users.constants';
 import {
   type FichaDisponibilidadEstatus,
   type FichaTecnicaDetalle,
 } from '../types/ficha-tecnica.types';
+import { type NaveRecord } from '../types/parks.types';
 
 type CorridorProfile = {
   corredor: string;
@@ -298,10 +299,10 @@ export const buildFichaTecnicaDetalle = (input: {
     fotoAereaUrl: input.fotoParqueUrl ?? DAYLIGHT_AERIAL,
     planoPlantaNota: `Layout esquemático ${input.naveIdentificador} · GLA ${glaM2.toLocaleString('es-MX')} m²`,
 
-    loNombre: 'Tim Apple · Leasing Officer',
+    loNombre: 'Leasing Officer AAA',
     loTelefono: '+52 55 1234 5678',
     loWhatsapp: '+52 55 1234 5678',
-    loEmail: 'tim@apple.dev',
+    loEmail: PARKS_DEMO_EMAIL.loAaaIsrael,
     qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${qrPayload}`,
   };
 };

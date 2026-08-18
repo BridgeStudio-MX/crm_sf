@@ -1,4 +1,5 @@
 import { envConfig } from '../config/env.config';
+import { PARKS_DEMO_EMAIL } from '../metadata/parks-demo-users.constants';
 import {
   type ComiteAutorizacion,
   type ComiteConfig,
@@ -27,23 +28,23 @@ export const DEFAULT_COMITE_MEMBERS: Array<
   {
     memberId: 'comite-m1',
     seatIndex: 1,
-    nombre: 'Héctor Montelongo',
+    nombre: 'Director Comercial',
     rolEtiqueta: 'Director Comercial',
-    email: 'phil.schiler@apple.dev',
+    email: PARKS_DEMO_EMAIL.directorComercial,
   },
   {
     memberId: 'comite-m2',
     seatIndex: 2,
-    nombre: 'Laura Fernández',
+    nombre: 'Director Financiero',
     rolEtiqueta: 'Director Financiero',
-    email: 'director.financiero@parksindustrial.com',
+    email: PARKS_DEMO_EMAIL.cfo,
   },
   {
     memberId: 'comite-m3',
     seatIndex: 3,
-    nombre: 'Ricardo Campos',
+    nombre: 'Director de Operaciones',
     rolEtiqueta: 'Director de Operaciones',
-    email: 'director.operaciones@parksindustrial.com',
+    email: PARKS_DEMO_EMAIL.directorOperaciones,
   },
 ];
 

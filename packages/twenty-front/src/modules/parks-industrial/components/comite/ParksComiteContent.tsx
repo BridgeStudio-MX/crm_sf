@@ -32,8 +32,12 @@ import { ParksComitePlanoModal } from '@/parks-industrial/components/comite/Park
 import {
   StyledParksTextarea,
 } from '@/parks-industrial/components/ui/parks-form-control.styles';
-import { PARKS_LEGAL_PIPELINE_PATH } from '@/parks-industrial/constants/parks-routes.constants';
+import {
+  PARKS_DEMO_EMAIL,
+  resolveParksDemoCanonicalEmail,
+} from '@/parks-industrial/constants/parks-demo-logins.constants';
 import { ParksRoleLabel } from '@/parks-industrial/constants/parks-role-access.constants';
+import { PARKS_LEGAL_PIPELINE_PATH } from '@/parks-industrial/constants/parks-routes.constants';
 import {
   type ParksVisualAccent,
   PARKS_BRAND,
@@ -797,7 +801,7 @@ export const ParksComiteContent = () => {
   // Email fallback: workspace role labels can lag behind demo login mapping
   const isCeo =
     parksRoleLabels.includes(ParksRoleLabel.CEO) ||
-    viewerEmail === 'jony.ive@apple.dev';
+    resolveParksDemoCanonicalEmail(viewerEmail) === PARKS_DEMO_EMAIL.ceo;
   const [loading, setLoading] = useState(true);
   const [comites, setComites] = useState<ComiteAutorizacion[]>([]);
   const [summary, setSummary] = useState<ComiteListSummary | null>(null);

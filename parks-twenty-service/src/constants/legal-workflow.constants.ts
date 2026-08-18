@@ -1,3 +1,5 @@
+import { PARKS_DEMO_EMAIL } from '../metadata/parks-demo-users.constants';
+
 export const LEGAL_PIPELINE_STAGES = [
   { id: 'nuevo', label: 'Nuevo', estatus: 'Nuevo', responsable: 'Catalina' },
   {
@@ -78,7 +80,8 @@ export const LEGAL_LAWYER_DIRECTORY: ReadonlyArray<{
   name: string;
   email: string;
 }> = [
-  { name: 'Miguel Soto', email: 'miguel.soto@apple.dev' },
+  { name: 'Miguel Soto', email: PARKS_DEMO_EMAIL.abogadoAsignado },
+  { name: 'Abogado asignado', email: PARKS_DEMO_EMAIL.abogadoAsignado },
 ] as const;
 
 export const resolveLegalLawyerEmail = (lawyerName: string): string | null => {

@@ -47,10 +47,11 @@ const resolveParksPageTitle = (pathname: string): string | null => {
     return t`Aprobación legal`;
   }
 
-  if (
-    pathname.startsWith(AppPath.ParksStackingPlanIndex) ||
-    pathname.includes('/parks/parque/')
-  ) {
+  if (pathname === AppPath.ParksStackingPlanIndex) {
+    return t`Parques`;
+  }
+
+  if (pathname.includes('/parks/parque/')) {
     return t`Stacking plan`;
   }
 

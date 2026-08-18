@@ -1,64 +1,63 @@
 # Usuarios demo — Parks Industrial CRM
 
-Credenciales para la demo. Fuente: `parks-twenty-service/src/metadata/parks-demo-users.constants.ts`.
+Credenciales para que cada área entre a **su** vista del demo.
 
-Todos los roles llevan el prefijo **"Parks — "** en el workspace (ej. *Parks — CEO*).
+Fuente: `parks-twenty-service/src/metadata/parks-demo-users.constants.ts`.
 
-## Reglas de contraseña
+## Contraseña (la misma para todos)
 
-- Usuarios `@apple.dev` → contraseña `tim@apple.dev`
-- Usuarios `@parksindustrial.com` → `Parks2026!` + número secuencial
+```
+parksindustrial2026!
+```
 
-## Usuarios @apple.dev (contraseña: `tim@apple.dev`)
+En Continuar con email: pega el correo del puesto → **Iniciar sesión** (no Registrarse) → esa contraseña.
 
-| Email | Contraseña | Persona | Rol |
-|---|---|---|---|
-| jony.ive@apple.dev | tim@apple.dev | Charles El Mann Metta (CEO) | Parks — CEO |
-| phil.schiler@apple.dev | tim@apple.dev | Héctor Montelongo (Director Comercial) | Parks — Director Comercial |
-| tim@apple.dev | tim@apple.dev | Leasing Officer (legacy) | Parks — Ejecutivo Comercial |
-| scott.forstall@apple.dev | tim@apple.dev | Gerente CxC (legacy) | Parks — CxC |
-| jane.austen@apple.dev | tim@apple.dev | Catalina Moreno (Admin Legal) | Parks — Admin Legal |
-| roberto.salinas@apple.dev | tim@apple.dev | Director Legal | Parks — Director Legal |
-| patricia.nunez@apple.dev | tim@apple.dev | Subdirector Legal | Parks — Subdirector Legal |
-| miguel.soto@apple.dev | tim@apple.dev | Abogado asignado | Parks — Abogado asignado |
+`tim@apple.dev` / `tim@apple.dev` sigue siendo solo el admin técnico de Twenty en local. No se lo pases a las áreas.
 
-## Usuarios @parksindustrial.com
+## Logins por puesto
 
-| Email | Contraseña | Persona | Rol |
-|---|---|---|---|
-| israel.ramirez@parksindustrial.com | Parks2026!01 | Israel Ramírez | Parks — LO AAA Senior |
-| uae@parksindustrial.com | Parks2026!02 | UAE | Parks — LO AAA Senior |
-| bruyel@parksindustrial.com | Parks2026!03 | Bruyel | Parks — LO Estándar |
-| director.financiero@parksindustrial.com | Parks2026!04 | Laura Fernández (CFO) | Parks — Miembro del Comité |
-| director.operaciones@parksindustrial.com | Parks2026!05 | Ricardo Campos (Dir. Operaciones) | Parks — Miembro del Comité |
-| claudia.rodriguez@parksindustrial.com | Parks2026!06 | Claudia Rodríguez | Parks — Gerente CxC |
-| ejecutivo.cxc1@parksindustrial.com | Parks2026!07 | Ejecutivo CxC 1 | Parks — Ejecutivo CxC |
-| ejecutivo.cxc2@parksindustrial.com | Parks2026!08 | Ejecutivo CxC 2 | Parks — Ejecutivo CxC |
-| ejecutivo.cxc3@parksindustrial.com | Parks2026!09 | Ejecutivo CxC 3 | Parks — Ejecutivo CxC |
-| jesus.gazon@parksindustrial.com | Parks2026!10 | Jesús Gazón | Parks — Contratos y Facturación |
-| lilibeth.lopez@parksindustrial.com | Parks2026!11 | Lilibeth López | Parks — Admin Sistema |
-| admin.parque.gdl@parksindustrial.com | Parks2026!12 | Admin Parque Guadalajara | Parks — Admin Parque |
+| Área | Email | Rol en el CRM |
+|---|---|---|
+| Dirección general | `ceo@prk.com.mx` | Parks — CEO |
+| Comercial | `directorcomercial@prk.com.mx` | Parks — Director Comercial |
+| Comercial | `ejecutivocomercial@prk.com.mx` | Parks — Ejecutivo Comercial |
+| Leasing | `leasingofficeraaa@prk.com.mx` | Parks — LO AAA Senior |
+| Leasing | `leasingofficeraaa2@prk.com.mx` | Parks — LO AAA Senior |
+| Leasing | `leasingofficer@prk.com.mx` | Parks — LO Estándar |
+| Legal | `adminlegal@prk.com.mx` | Parks — Admin Legal |
+| Legal | `directorlegal@prk.com.mx` | Parks — Director Legal |
+| Legal | `subdirectorlegal@prk.com.mx` | Parks — Subdirector Legal |
+| Legal | `abogado@prk.com.mx` | Parks — Abogado asignado |
+| Comité | `cfo@prk.com.mx` | Parks — Miembro del Comité |
+| Comité | `directoroperaciones@prk.com.mx` | Parks — Miembro del Comité |
+| CxC | `gerentecxc@prk.com.mx` | Parks — Gerente CxC |
+| CxC | `ejecutivocxc@prk.com.mx` | Parks — Ejecutivo CxC |
+| CxC | `ejecutivocxc2@prk.com.mx` | Parks — Ejecutivo CxC |
+| CxC | `ejecutivocxc3@prk.com.mx` | Parks — Ejecutivo CxC |
+| Operación | `contratos@prk.com.mx` | Parks — Contratos y Facturación |
+| Sistema | `adminsistema@prk.com.mx` | Parks — Admin Sistema |
+| Parque | `adminparque@prk.com.mx` | Parks — Admin Parque |
 
 ## Accesos rápidos para el pitch
 
 | Escenario | Usuario |
 |---|---|
-| Dashboard CEO / Asistente IA / Mis pendientes | jony.ive@apple.dev |
-| Comité — voto CEO (empate Samsung) | jony.ive@apple.dev |
-| Comité de Autorización (voto Dir. Comercial) / Asignación IA | phil.schiler@apple.dev |
-| Voto CFO en comité | director.financiero@parksindustrial.com |
-| Pipeline comercial (Leasing Officer) | tim@apple.dev |
-| Legal (casos, checklist, cotejo IA) | jane.austen@apple.dev |
-| CxC (dashboard, cartera) | claudia.rodriguez@parksindustrial.com |
+| Dashboard CEO / Asistente IA / Mis pendientes | `ceo@prk.com.mx` |
+| Comité — voto CEO (empate Samsung) | `ceo@prk.com.mx` |
+| Comité de Autorización (voto Dir. Comercial) / Asignación IA | `directorcomercial@prk.com.mx` |
+| Voto CFO en comité | `cfo@prk.com.mx` |
+| Pipeline comercial (Leasing Officer) | `leasingofficeraaa@prk.com.mx` |
+| Legal (casos, checklist, cotejo IA) | `adminlegal@prk.com.mx` |
+| CxC (dashboard, cartera) | `gerentecxc@prk.com.mx` |
 
 ## Miembros del Comité (votan en /parks/comite)
 
 **Trío (voto ordinario — Aprueba / Rechaza / Se abstiene):**
 
-1. Héctor Montelongo — Director Comercial — `phil.schiler@apple.dev`
-2. Laura Fernández — Director Financiero — `director.financiero@parksindustrial.com`
-3. Ricardo Campos — Director de Operaciones — `director.operaciones@parksindustrial.com`
+1. Director Comercial — `directorcomercial@prk.com.mx`
+2. Director Financiero (CFO) — `cfo@prk.com.mx`
+3. Director de Operaciones — `directoroperaciones@prk.com.mx`
 
-**Voto CEO (parte del flujo cuando hay empate 1–1–1):**
+**Voto CEO (cuando hay empate 1–1–1):**
 
-4. Charles El Mann Metta — CEO — `jony.ive@apple.dev` → **Aprobar / Rechazar** en el caso escalado (demo: Samsung)
+4. CEO — `ceo@prk.com.mx` → **Aprobar / Rechazar** en el caso escalado (demo: Samsung)

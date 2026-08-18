@@ -16,6 +16,10 @@ import {
   ParksNavigationUnreadBadge,
   ParksNavigationUnreadIconDot,
 } from '@/parks-industrial/components/navigation/ParksNavigationUnreadBadge';
+import {
+  PARKS_GUIDED_TOUR_NAV_SECTION_ID,
+  PARKS_GUIDED_TOUR_NAV_TARGET_PREFIX,
+} from '@/parks-industrial/constants/parks-guided-tour.constants';
 import { PARKS_NAVIGATION_ITEM_HELP } from '@/parks-industrial/constants/parks-navigation-help.constants';
 import {
   type ParksNavigationGroupKey,
@@ -32,7 +36,9 @@ import { useNavigationSection } from '@/ui/navigation/navigation-drawer/hooks/us
 import { isNavigationSectionOpenFamilyState } from '@/ui/navigation/navigation-drawer/states/isNavigationSectionOpenFamilyState';
 import { useAtomFamilyStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomFamilyStateValue';
 
-const PARKS_SECTION_ID = 'ParksIndustrial';
+const StyledTourAnchor = styled.div`
+  width: 100%;
+`;
 
 const StyledItemHelpRow = styled.div`
   align-items: center;
@@ -67,10 +73,12 @@ export const ParksNavigationSection = ({
   const { leads: unassignedLeads } = useParksUnassignedLeads();
   const unreadNotificationsCount = useParksNotificationsUnreadCount();
   const pendingLeadsCount = unassignedLeads.length;
-  const { toggleNavigationSection } = useNavigationSection(PARKS_SECTION_ID);
+  const { toggleNavigationSection } = useNavigationSection(
+    PARKS_GUIDED_TOUR_NAV_SECTION_ID,
+  );
   const isNavigationSectionOpen = useAtomFamilyStateValue(
     isNavigationSectionOpenFamilyState,
-    PARKS_SECTION_ID,
+    PARKS_GUIDED_TOUR_NAV_SECTION_ID,
   );
 
   const groupLabels: Record<ParksNavigationGroupKey, string> = {
@@ -83,7 +91,7 @@ export const ParksNavigationSection = ({
   const itemLabels: Record<ParksNavigationItemKey, string> = {
     dashboard: t`Dashboard`,
     dashboardComercial: t`Dashboard comercial`,
-    stackingPlan: t`Stacking Plan`,
+    stackingPlan: t`Parques`,
     pipeline: t`Pipeline`,
     leadsCem: t`Leads Director Comercial`,
     prospectos: t`Prospectos`,
@@ -170,38 +178,42 @@ export const ParksNavigationSection = ({
                 const itemLabel = itemLabels[itemKey];
 
                 return (
-                  <NavigationDrawerItem
+                  <StyledTourAnchor
                     key={definition.to}
-                    label={itemLabel}
-                    to={definition.to}
-                    Icon={
-                      isNotificaciones ? NotificacionesIcon : definition.Icon
-                    }
-                    iconColor={definition.iconColor}
-                    secondaryLabel={
-                      itemKey === 'leadsCem' && pendingLeadsCount > 0
-                        ? String(pendingLeadsCount)
-                        : undefined
-                    }
-                    rightOptions={
-                      <StyledItemHelpRow>
-                        <ParksNavigationItemInfo
-                          title={itemLabel}
-                          description={PARKS_NAVIGATION_ITEM_HELP[itemKey]}
-                        />
-                        {isNotificaciones && unreadNotificationsCount > 0 ? (
-                          <ParksNavigationUnreadBadge
-                            count={unreadNotificationsCount}
+                    data-parks-tour-target={`${PARKS_GUIDED_TOUR_NAV_TARGET_PREFIX}${itemKey}`}
+                  >
+                    <NavigationDrawerItem
+                      label={itemLabel}
+                      to={definition.to}
+                      Icon={
+                        isNotificaciones ? NotificacionesIcon : definition.Icon
+                      }
+                      iconColor={definition.iconColor}
+                      secondaryLabel={
+                        itemKey === 'leadsCem' && pendingLeadsCount > 0
+                          ? String(pendingLeadsCount)
+                          : undefined
+                      }
+                      rightOptions={
+                        <StyledItemHelpRow>
+                          <ParksNavigationItemInfo
+                            title={itemLabel}
+                            description={PARKS_NAVIGATION_ITEM_HELP[itemKey]}
                           />
-                        ) : null}
-                      </StyledItemHelpRow>
-                    }
-                    alwaysShowRightOptions
-                    active={isParksNavigationItemActive(
-                      pathname,
-                      definition.to,
-                    )}
-                  />
+                          {isNotificaciones && unreadNotificationsCount > 0 ? (
+                            <ParksNavigationUnreadBadge
+                              count={unreadNotificationsCount}
+                            />
+                          ) : null}
+                        </StyledItemHelpRow>
+                      }
+                      alwaysShowRightOptions
+                      active={isParksNavigationItemActive(
+                        pathname,
+                        definition.to,
+                      )}
+                    />
+                  </StyledTourAnchor>
                 );
               })}
             </ParksNavigationGroup>

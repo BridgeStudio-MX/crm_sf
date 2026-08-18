@@ -50,7 +50,7 @@ export const ParksDashboardHero = ({
       },
       {
         to: AppPath.ParksStackingPlanIndex,
-        label: t`Stacking Plan`,
+        label: t`Parques`,
         icon: IconBuildingSkyscraper,
       },
     ]}

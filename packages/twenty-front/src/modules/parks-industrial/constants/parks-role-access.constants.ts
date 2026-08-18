@@ -1,6 +1,10 @@
 import { AppPath } from 'twenty-shared/types';
 
 import {
+  PARKS_DEMO_EMAIL,
+  PARKS_DEMO_EMAIL_ALIASES,
+} from '@/parks-industrial/constants/parks-demo-logins.constants';
+import {
   PARKS_ASIGNACION_PATH,
   PARKS_BROKERS_PATH,
   PARKS_COMITE_PATH,
@@ -305,27 +309,38 @@ export const PARKS_ROLE_HOME_PATH: Partial<Record<string, string>> = {
   [ParksRoleLabel.AdminParque]: AppPath.ParksMapa,
 };
 
+const PARKS_DEMO_CANONICAL_EMAIL_TO_ROLE_LABEL: Record<string, string> = {
+  [PARKS_DEMO_EMAIL.ceo]: ParksRoleLabel.CEO,
+  [PARKS_DEMO_EMAIL.directorComercial]: ParksRoleLabel.DirectorComercial,
+  [PARKS_DEMO_EMAIL.adminLegal]: ParksRoleLabel.AdminLegal,
+  [PARKS_DEMO_EMAIL.directorLegal]: ParksRoleLabel.DirectorLegal,
+  [PARKS_DEMO_EMAIL.subdirectorLegal]: ParksRoleLabel.SubdirectorLegal,
+  [PARKS_DEMO_EMAIL.abogadoAsignado]: ParksRoleLabel.AbogadoAsignado,
+  [PARKS_DEMO_EMAIL.loAaaIsrael]: ParksRoleLabel.LoAaaSenior,
+  [PARKS_DEMO_EMAIL.loAaaUae]: ParksRoleLabel.LoAaaSenior,
+  [PARKS_DEMO_EMAIL.loEstandar]: ParksRoleLabel.LoEstandar,
+  [PARKS_DEMO_EMAIL.ejecutivoComercial]: ParksRoleLabel.EjecutivoComercial,
+  [PARKS_DEMO_EMAIL.cfo]: ParksRoleLabel.MiembroComite,
+  [PARKS_DEMO_EMAIL.directorOperaciones]: ParksRoleLabel.MiembroComite,
+  [PARKS_DEMO_EMAIL.gerenteCxc]: ParksRoleLabel.GerenteCxc,
+  [PARKS_DEMO_EMAIL.ejecutivoCxc1]: ParksRoleLabel.EjecutivoCxc,
+  [PARKS_DEMO_EMAIL.ejecutivoCxc2]: ParksRoleLabel.EjecutivoCxc,
+  [PARKS_DEMO_EMAIL.ejecutivoCxc3]: ParksRoleLabel.EjecutivoCxc,
+  [PARKS_DEMO_EMAIL.contratosFacturacion]: ParksRoleLabel.ContratosFacturacion,
+  [PARKS_DEMO_EMAIL.adminSistema]: ParksRoleLabel.AdminSistema,
+  [PARKS_DEMO_EMAIL.adminParque]: ParksRoleLabel.AdminParque,
+};
+
 export const PARKS_DEMO_EMAIL_TO_ROLE_LABEL: Record<string, string> = {
-  'jane.austen@apple.dev': ParksRoleLabel.AdminLegal,
-  'roberto.salinas@apple.dev': ParksRoleLabel.DirectorLegal,
-  'patricia.nunez@apple.dev': ParksRoleLabel.SubdirectorLegal,
-  'jony.ive@apple.dev': ParksRoleLabel.CEO,
-  'miguel.soto@apple.dev': ParksRoleLabel.AbogadoAsignado,
+  ...PARKS_DEMO_CANONICAL_EMAIL_TO_ROLE_LABEL,
+  ...Object.fromEntries(
+    Object.entries(PARKS_DEMO_EMAIL_ALIASES).flatMap(([alias, canonical]) => {
+      const roleLabel = PARKS_DEMO_CANONICAL_EMAIL_TO_ROLE_LABEL[canonical];
+
+      return roleLabel ? [[alias, roleLabel]] : [];
+    }),
+  ),
   'tim@apple.dev': ParksRoleLabel.EjecutivoComercial,
-  'scott.forstall@apple.dev': ParksRoleLabel.CxC,
-  'phil.schiler@apple.dev': ParksRoleLabel.DirectorComercial,
-  'israel.ramirez@parksindustrial.com': ParksRoleLabel.LoAaaSenior,
-  'uae@parksindustrial.com': ParksRoleLabel.LoAaaSenior,
-  'bruyel@parksindustrial.com': ParksRoleLabel.LoEstandar,
-  'director.financiero@parksindustrial.com': ParksRoleLabel.MiembroComite,
-  'director.operaciones@parksindustrial.com': ParksRoleLabel.MiembroComite,
-  'claudia.rodriguez@parksindustrial.com': ParksRoleLabel.GerenteCxc,
-  'ejecutivo.cxc1@parksindustrial.com': ParksRoleLabel.EjecutivoCxc,
-  'ejecutivo.cxc2@parksindustrial.com': ParksRoleLabel.EjecutivoCxc,
-  'ejecutivo.cxc3@parksindustrial.com': ParksRoleLabel.EjecutivoCxc,
-  'jesus.gazon@parksindustrial.com': ParksRoleLabel.ContratosFacturacion,
-  'lilibeth.lopez@parksindustrial.com': ParksRoleLabel.AdminSistema,
-  'admin.parque.gdl@parksindustrial.com': ParksRoleLabel.AdminParque,
 };
 
 export const formatParksRoleLabelForDisplay = (roleLabel: string): string =>

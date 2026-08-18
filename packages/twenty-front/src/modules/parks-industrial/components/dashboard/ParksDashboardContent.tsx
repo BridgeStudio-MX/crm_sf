@@ -15,6 +15,7 @@ import { MOBILE_VIEWPORT, themeCssVariables } from 'twenty-ui/theme-constants';
 import { ParksAiQuickActions } from '@/parks-industrial/components/ai/ParksAiQuickActions';
 import { ParksCemDirectorDashboard } from '@/parks-industrial/components/dashboard/ParksCemDirectorDashboard';
 import { ParksCemQueueSection } from '@/parks-industrial/components/dashboard/ParksCemQueueSection';
+import { ParksPortfolioByParkSection } from '@/parks-industrial/components/portfolio/ParksPortfolioByParkSection';
 import { ParksCeoCommandCenter } from '@/parks-industrial/components/dashboard/ParksCeoCommandCenter';
 import { ParksDashboardAlertCard } from '@/parks-industrial/components/dashboard/ParksDashboardAlertCard';
 import { ParksDashboardDealCard } from '@/parks-industrial/components/dashboard/ParksDashboardDealCard';
@@ -165,6 +166,8 @@ export const ParksCommercialDashboardContent = () => {
       </ParksDashboardFeaturedMetrics>
 
       <ParksAiQuickActions actions={buildParksDashboardQuickActions()} />
+
+      <ParksPortfolioByParkSection />
 
       <ParksCemQueueSection />
       <ParksCemDirectorDashboard />
