@@ -4,6 +4,7 @@ import { styled } from '@linaria/react';
 import { getParksPipelineStageColor } from '@/parks-industrial/constants/parks-industrial.constants';
 import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRecords';
 import { ParksPipelineDealCardView } from '@/parks-industrial/components/pipeline/ParksPipelineDealCard';
+import { type ParksComitePipelineMarker } from '@/parks-industrial/utils/parks-comite-pipeline.util';
 import { getParksPipelineStageTheme } from '@/parks-industrial/utils/parks-format.util';
 
 import { type ProspectScoreResult } from '@/parks-industrial/types/parks-commercial.types';
@@ -16,12 +17,14 @@ const StyledOverlay = styled.div`
 type ParksPipelineDragOverlayProps = {
   dealsById: Map<string, ParksOpportunityRecord>;
   prospectScoresById: Record<string, ProspectScoreResult>;
+  comiteMarkersByDealId?: Record<string, ParksComitePipelineMarker>;
   viewerName?: string | null;
 };
 
 export const ParksPipelineDragOverlay = ({
   dealsById,
   prospectScoresById,
+  comiteMarkersByDealId,
   viewerName,
 }: ParksPipelineDragOverlayProps) => {
   const { source } = useDragOperation();
@@ -42,6 +45,7 @@ export const ParksPipelineDragOverlay = ({
             isOverlayPreview
             viewerName={viewerName}
             prospectScore={prospectScoresById[deal.id]}
+            comiteMarker={comiteMarkersByDealId?.[deal.id]}
           />
         </StyledOverlay>
       ) : null}

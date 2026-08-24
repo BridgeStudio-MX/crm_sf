@@ -9,6 +9,7 @@ import { type ParksPipelineStageColor } from '@/parks-industrial/constants/parks
 import { type ProspectScoreResult } from '@/parks-industrial/types/parks-commercial.types';
 import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRecords';
 import { ParksPipelineDealCard } from '@/parks-industrial/components/pipeline/ParksPipelineDealCard';
+import { type ParksComitePipelineMarker } from '@/parks-industrial/utils/parks-comite-pipeline.util';
 import {
   formatParksUsd,
   getParksAmountFromMicros,
@@ -108,6 +109,7 @@ type ParksPipelineColumnProps = {
   selectedDealId: string | null;
   draggingDealId: string | null;
   prospectScoresById: Record<string, ProspectScoreResult>;
+  comiteMarkersByDealId?: Record<string, ParksComitePipelineMarker>;
   viewerName?: string | null;
   onSelectDeal: (dealId: string) => void;
   onOpenRecord: (dealId: string) => void;
@@ -119,6 +121,7 @@ export const ParksPipelineColumn = ({
   selectedDealId,
   draggingDealId,
   prospectScoresById,
+  comiteMarkersByDealId,
   viewerName,
   onSelectDeal,
   onOpenRecord,
@@ -175,6 +178,7 @@ export const ParksPipelineColumn = ({
               isOverlayPreview={false}
               viewerName={viewerName}
               prospectScore={prospectScoresById[deal.id]}
+              comiteMarker={comiteMarkersByDealId?.[deal.id]}
               onSelect={onSelectDeal}
               onOpenRecord={onOpenRecord}
             />

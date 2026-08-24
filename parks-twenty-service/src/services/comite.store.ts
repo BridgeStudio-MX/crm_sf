@@ -11,9 +11,30 @@ import {
 } from '../types/comite.types';
 
 export const COMITE_MIN_GLA_M2 = 20_000;
+export const COMITE_ESTATUS_AJUSTES_PEDIDOS =
+  'Ajustes pedidos — espera comercial' as const;
 
 export const requiresComiteByGla = (glaM2: number): boolean =>
   glaM2 > COMITE_MIN_GLA_M2;
+
+export const isComiteStillOnAgenda = (comite: {
+  estatus: string;
+  resolucion: string;
+}): boolean => {
+  if (
+    comite.estatus.startsWith('Resuelto') ||
+    comite.estatus.startsWith('Cancelado')
+  ) {
+    return false;
+  }
+
+  return (
+    comite.estatus.startsWith('Abierto') ||
+    comite.estatus === COMITE_ESTATUS_AJUSTES_PEDIDOS ||
+    comite.resolucion === 'Pendiente' ||
+    comite.resolucion === 'Empate — escalar'
+  );
+};
 
 export const DEFAULT_COMITE_CONFIG: ComiteConfig = {
   slaHorasHabiles: envConfig.parksComiteSlaHoras,

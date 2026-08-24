@@ -22,6 +22,24 @@ comiteRouter.get('/config', (_request, response) => {
   response.json(comiteService.getConfig());
 });
 
+comiteRouter.get('/by-opportunity/:opportunityId', (request, response) => {
+  try {
+    const comite = comiteService.getByOpportunityId(
+      request.params.opportunityId,
+    );
+
+    if (!comite) {
+      response.status(404).json({ error: 'Comité not found' });
+      return;
+    }
+
+    response.json(comite);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    response.status(500).json({ error: message });
+  }
+});
+
 comiteRouter.patch('/config', (request, response) => {
   try {
     const body = request.body as Partial<{
@@ -88,7 +106,8 @@ comiteRouter.post('/:comiteId/vote', async (request, response) => {
       : message.includes('Debes explicar') ||
           message.includes('permanent') ||
           message.includes('already resolved') ||
-          message.includes('No puedes votar')
+          message.includes('No puedes votar') ||
+          message.includes('espera ajustes')
         ? 400
         : 500;
     response.status(status).json({ error: message });
@@ -122,12 +141,57 @@ comiteRouter.post('/:comiteId/ceo-decision', async (request, response) => {
     const message = error instanceof Error ? error.message : 'Unknown error';
     const status = message.includes('not found')
       ? 404
-      : message.includes('Solo el CEO') || message.includes('Debes explicar')
+      : message.includes('sesión de comité') ||
+          message.includes('Debes explicar')
         ? 400
         : 500;
     response.status(status).json({ error: message });
   }
 });
+
+comiteRouter.post('/:comiteId/session-adjustments', (request, response) => {
+  try {
+    const body = request.body as {
+      texto?: string;
+      viewerNombre?: string;
+    };
+
+    if (!body.texto?.trim()) {
+      response.status(400).json({ error: 'texto is required' });
+      return;
+    }
+
+    const comite = comiteService.requestSessionAdjustments({
+      comiteId: request.params.comiteId,
+      texto: body.texto,
+      viewerNombre: body.viewerNombre,
+    });
+
+    response.json(comite);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    response.status(message.includes('not found') ? 404 : 400).json({
+      error: message,
+    });
+  }
+});
+
+comiteRouter.post(
+  '/:comiteId/resubmit-after-adjustments',
+  (request, response) => {
+    try {
+      const comite = comiteService.resubmitAfterAdjustments({
+        comiteId: request.params.comiteId,
+      });
+      response.json(comite);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      response.status(message.includes('not found') ? 404 : 400).json({
+        error: message,
+      });
+    }
+  },
+);
 
 comiteRouter.post('/:comiteId/questions', (request, response) => {
   try {

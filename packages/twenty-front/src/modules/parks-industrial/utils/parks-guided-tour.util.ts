@@ -4,7 +4,12 @@ import {
   PARKS_GUIDED_TOUR_NAV_TARGET_PREFIX,
   PARKS_GUIDED_TOUR_ROLE_INTRO,
   PARKS_GUIDED_TOUR_WELCOME_TARGET,
+  PARKS_INVENTORY_TOUR_TARGETS,
 } from '@/parks-industrial/constants/parks-guided-tour.constants';
+import {
+  PARKS_INVENTORY_TOUR_PAGE_COPY,
+  PARKS_INVENTORY_TOUR_PATH,
+} from '@/parks-industrial/constants/parks-inventory-tour.constants';
 import {
   type ParksNavigationGroupKey,
   type ParksNavigationItemKey,
@@ -16,11 +21,13 @@ import { type ParksRouteAccessKey } from '@/parks-industrial/constants/parks-rol
 export type ParksGuidedTourStep = {
   id: string;
   target: string;
-  kind: 'welcome' | 'tool';
+  kind: 'welcome' | 'tool' | 'page';
   groupKey: ParksNavigationGroupKey | null;
   itemKey: ParksNavigationItemKey | null;
   title: string;
   body: string;
+  path?: string;
+  inventoryFocus?: (typeof PARKS_INVENTORY_TOUR_TARGETS)[keyof typeof PARKS_INVENTORY_TOUR_TARGETS];
 };
 
 export const listVisibleParksTourItemKeys = (
@@ -67,10 +74,31 @@ export const buildParksGuidedTourSteps = ({
     }.`,
   };
 
-  const toolSteps = itemKeys.map((itemKey): ParksGuidedTourStep => {
-    const copy = PARKS_GUIDED_TOUR_ITEM_COPY[itemKey];
+  const inventoryGroupKey = resolveParksTourGroupKey('stackingPlan');
+  const inventoryPageSteps: ParksGuidedTourStep[] = [
+    PARKS_INVENTORY_TOUR_TARGETS.parks,
+    PARKS_INVENTORY_TOUR_TARGETS.parkPipeline,
+    PARKS_INVENTORY_TOUR_TARGETS.naves,
+    PARKS_INVENTORY_TOUR_TARGETS.nave,
+  ].map((inventoryFocus) => {
+    const copy = PARKS_INVENTORY_TOUR_PAGE_COPY[inventoryFocus];
 
     return {
+      id: inventoryFocus,
+      target: inventoryFocus,
+      kind: 'page',
+      groupKey: inventoryGroupKey,
+      itemKey: 'stackingPlan',
+      title: copy.title,
+      body: copy.body,
+      path: PARKS_INVENTORY_TOUR_PATH,
+      inventoryFocus,
+    };
+  });
+
+  const toolSteps = itemKeys.flatMap((itemKey): ParksGuidedTourStep[] => {
+    const copy = PARKS_GUIDED_TOUR_ITEM_COPY[itemKey];
+    const toolStep: ParksGuidedTourStep = {
       id: itemKey,
       target: `${PARKS_GUIDED_TOUR_NAV_TARGET_PREFIX}${itemKey}`,
       kind: 'tool',
@@ -79,6 +107,12 @@ export const buildParksGuidedTourSteps = ({
       title: copy.title,
       body: copy.body,
     };
+
+    if (itemKey !== 'stackingPlan') {
+      return [toolStep];
+    }
+
+    return [toolStep, ...inventoryPageSteps];
   });
 
   return [welcomeStep, ...toolSteps];

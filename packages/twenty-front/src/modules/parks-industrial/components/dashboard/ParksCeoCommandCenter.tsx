@@ -5,12 +5,13 @@ import { IconRefresh } from 'twenty-ui/icon';
 import { Button } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
+import { ParksCeoAttentionBoard } from '@/parks-industrial/components/dashboard/ParksCeoAttentionBoard';
 import { ParksCeoBoardView } from '@/parks-industrial/components/dashboard/ParksCeoBoardView';
 import { ParksCeoComisionesSnapshot } from '@/parks-industrial/components/dashboard/ParksCeoComisionesSnapshot';
-import { ParksCeoDailyView } from '@/parks-industrial/components/dashboard/ParksCeoDailyView';
+import { ParksCeoCommandHero } from '@/parks-industrial/components/dashboard/ParksCeoCommandHero';
 import { ParksCeoExecutiveIndicatorsView } from '@/parks-industrial/components/dashboard/ParksCeoExecutiveIndicatorsView';
-import { ParksCeoKpiCatalog } from '@/parks-industrial/components/dashboard/ParksCeoKpiCatalog';
-import { ParksPortfolioByParkSection } from '@/parks-industrial/components/portfolio/ParksPortfolioByParkSection';
+import { ParksCeoHoyCharts } from '@/parks-industrial/components/dashboard/ParksCeoHoyCharts';
+import { ParksCeoParkCards } from '@/parks-industrial/components/portfolio/ParksCeoParkCards';
 import { ParksEmptyState } from '@/parks-industrial/components/ui/ParksEmptyState';
 import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
 import { StyledParksPageStack } from '@/parks-industrial/components/ui/ParksSectionCard';
@@ -19,11 +20,8 @@ import { ParksStatusBadge } from '@/parks-industrial/components/ui/ParksStatusBa
 import {
   StyledParksSelect,
 } from '@/parks-industrial/components/ui/parks-form-control.styles';
-import {
-  PARKS_PORTFOLIO_SEGMENTS,
-  type ParksPortfolioSegment,
-} from '@/parks-industrial/constants/parks-executive.constants';
 import { PARKS_MIS_PENDIENTES_PATH } from '@/parks-industrial/constants/parks-routes.constants';
+import { useParksCeoCommandMetrics } from '@/parks-industrial/hooks/useParksCeoCommandMetrics';
 import { useParksCeoExecutiveDashboard } from '@/parks-industrial/hooks/useParksCeoExecutiveDashboard';
 import { type ParksCeoDashboardView } from '@/parks-industrial/types/parks-ceo-dashboard.types';
 
@@ -106,10 +104,14 @@ export const ParksCeoCommandCenter = () => {
     setYear,
     month,
     setMonth,
-    segmento,
-    setSegmento,
     refresh,
   } = useParksCeoExecutiveDashboard();
+  const {
+    command,
+    legalCases,
+    cxcPriorityAccounts,
+    refreshSideMetrics,
+  } = useParksCeoCommandMetrics();
 
   if (loading && !data) {
     return <ParksLoadingSkeleton variant="dashboard" />;
@@ -125,7 +127,10 @@ export const ParksCeoCommandCenter = () => {
             variant="secondary"
             Icon={IconRefresh}
             title={t`Reintentar`}
-            onClick={() => void refresh()}
+            onClick={() => {
+              void refresh();
+              void refreshSideMetrics();
+            }}
           />
         }
       />
@@ -133,9 +138,10 @@ export const ParksCeoCommandCenter = () => {
   }
 
   const viewOptions = [
-    { id: 'ejecutivo' as const, label: t`Panel ejecutivo` },
-    { id: 'diario' as const, label: t`Dashboard diario` },
-    { id: 'consejo' as const, label: t`Vista de consejo` },
+    { id: 'hoy' as const, label: t`Hoy` },
+    { id: 'portafolio' as const, label: t`Portafolio` },
+    { id: 'finanzas' as const, label: t`Finanzas` },
+    { id: 'tiempos' as const, label: t`Tiempos y carga` },
   ];
 
   const yearOptions = Array.from(
@@ -151,9 +157,9 @@ export const ParksCeoCommandCenter = () => {
     <StyledParksPageStack>
       <StyledToolbar>
         <StyledToolbarCopy>
-          <StyledToolbarTitle>{t`Panel Ejecutivo CEO`}</StyledToolbarTitle>
+          <StyledToolbarTitle>{t`Command Center CEO`}</StyledToolbarTitle>
           <StyledToolbarHint>
-            {t`Indicadores consolidados · Comercial / Legal / CxC`}
+            {t`Una pantalla por área: inventario, dinero, tiempos y lo que pide decisión hoy.`}
           </StyledToolbarHint>
         </StyledToolbarCopy>
         <StyledToolbarActions>
@@ -176,69 +182,81 @@ export const ParksCeoCommandCenter = () => {
             variant="secondary"
             Icon={IconRefresh}
             title={t`Actualizar`}
-            onClick={() => void refresh()}
+            onClick={() => {
+              void refresh();
+              void refreshSideMetrics();
+            }}
           />
         </StyledToolbarActions>
       </StyledToolbar>
 
-      <StyledFilters>
-        <StyledFilterSelect
-          value={String(year)}
-          onChange={(event) => setYear(Number(event.target.value))}
-          aria-label={t`Año`}
-        >
-          {yearOptions.map((yearOption) => (
-            <option key={yearOption} value={yearOption}>
-              {yearOption}
-            </option>
-          ))}
-        </StyledFilterSelect>
-        <StyledFilterSelect
-          value={String(month)}
-          onChange={(event) => setMonth(Number(event.target.value))}
-          aria-label={t`Mes`}
-        >
-          {MONTH_OPTIONS.map((monthOption) => (
-            <option key={monthOption.value} value={monthOption.value}>
-              {monthOption.label}
-            </option>
-          ))}
-        </StyledFilterSelect>
-        <ParksSegmentedControl
-          options={PARKS_PORTFOLIO_SEGMENTS.map((segment) => ({
-            id: segment,
-            label: segment,
-          }))}
-          value={segmento}
-          onChange={(next) => setSegmento(next as ParksPortfolioSegment)}
-        />
-      </StyledFilters>
+      {view !== 'hoy' ? (
+        <StyledFilters>
+          <StyledFilterSelect
+            value={String(year)}
+            onChange={(event) => setYear(Number(event.target.value))}
+            aria-label={t`Año`}
+          >
+            {yearOptions.map((yearOption) => (
+              <option key={yearOption} value={yearOption}>
+                {yearOption}
+              </option>
+            ))}
+          </StyledFilterSelect>
+          <StyledFilterSelect
+            value={String(month)}
+            onChange={(event) => setMonth(Number(event.target.value))}
+            aria-label={t`Mes`}
+          >
+            {MONTH_OPTIONS.map((monthOption) => (
+              <option key={monthOption.value} value={monthOption.value}>
+                {monthOption.label}
+              </option>
+            ))}
+          </StyledFilterSelect>
+        </StyledFilters>
+      ) : null}
 
       {error ? <StyledError>{error}</StyledError> : null}
 
-      <ParksPortfolioByParkSection />
-
-      {view === 'ejecutivo' ? (
-        <ParksCeoExecutiveIndicatorsView
-          indicators={data.indicators}
-          pendingActions={data.inbox.total}
-        />
+      {view === 'hoy' ? (
+        <>
+          <ParksCeoCommandHero command={command} />
+          <ParksCeoHoyCharts board={data.board} daily={data.daily} />
+          <ParksCeoAttentionBoard
+            command={command}
+            legalCases={legalCases}
+            cxcPriorityAccounts={cxcPriorityAccounts}
+          />
+        </>
       ) : null}
 
-      {view === 'diario' ? (
-        <ParksCeoDailyView
-          daily={data.daily}
-          asOfDate={data.asOfDate}
-          pendingActions={data.inbox.total}
-        />
+      {view === 'portafolio' ? (
+        <>
+          <ParksCeoParkCards />
+          <ParksCeoBoardView board={data.board} sections={['portafolio']} />
+        </>
       ) : null}
 
-      {view === 'consejo' ? <ParksCeoBoardView board={data.board} /> : null}
+      {view === 'finanzas' ? (
+        <>
+          <ParksCeoBoardView
+            board={data.board}
+            sections={['ingresos', 'cobranza']}
+          />
+          <ParksCeoExecutiveIndicatorsView
+            indicators={data.indicators}
+            pendingActions={data.inbox.total}
+          />
+          <ParksCeoComisionesSnapshot />
+        </>
+      ) : null}
 
-      <ParksCeoComisionesSnapshot />
-
-      {view !== 'ejecutivo' ? (
-        <ParksCeoKpiCatalog items={data.kpisCatalog} />
+      {view === 'tiempos' ? (
+        <ParksCeoBoardView
+          board={data.board}
+          sections={['retencion', 'operacion']}
+        />
       ) : null}
     </StyledParksPageStack>
   );

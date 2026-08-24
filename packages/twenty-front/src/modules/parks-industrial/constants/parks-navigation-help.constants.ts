@@ -6,11 +6,11 @@ export const PARKS_NAVIGATION_ITEM_HELP: Record<
   string
 > = {
   dashboard:
-    'Centro de mando del CEO y dirección: KPIs del día, vista de consejo, alertas y acceso rápido a pendientes.',
+    'Centro de mando: para el CEO, pulso por áreas; para el CFO, forecast y cobranza. Entra cuando quieras una foto antes de bajar al detalle.',
   dashboardComercial:
     'Tablero comercial con ocupación, pipeline, ingresos y riesgos de vencimiento para priorizar al equipo.',
   stackingPlan:
-    'Todos los parques: naves disponibles y leads del pipeline en cada uno. Entra a un parque para ver el plano de ocupación.',
+    'Inventario por niveles: parque → pipeline o naves → pipeline de cada nave. Incluye naves en construcción para pre-renta antes de la entrega.',
   pipeline:
     'Embudo de deals comerciales (lead → cotización → hoja → legal). Aquí vive el trabajo diario del LO y el Director Comercial.',
   leadsCem:
@@ -31,7 +31,7 @@ export const PARKS_NAVIGATION_ITEM_HELP: Record<
   cxcCartera:
     'Pipeline Legal → Cobranza: del contrato firmado al seguimiento de pagos, expediente y calendario.',
   comite:
-    'Comité de Autorización: tres votos (Aprueba / Rechaza / Abstiene) sobre condiciones comerciales antes de Legal. Incluye flags IA y bitácora.',
+    'Sesión o consulta de autorización comercial. Los deals entran por monto, descuento o tipo de cliente.',
   asignacion:
     'Asignación inteligente de leads a LOs con scoring IA / reglas y regeneración de escenarios demo.',
   loCampo:

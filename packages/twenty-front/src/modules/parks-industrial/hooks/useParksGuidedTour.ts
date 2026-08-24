@@ -1,11 +1,7 @@
 import { useCallback, useMemo } from 'react';
-import { isDefined } from 'twenty-shared/utils';
+import { useNavigate } from 'react-router-dom';
 
 import { PARKS_GUIDED_TOUR_NAV_SECTION_ID } from '@/parks-industrial/constants/parks-guided-tour.constants';
-import {
-  PARKS_ROUTE_ACCESS_BY_KEY,
-  type ParksRouteAccessKey,
-} from '@/parks-industrial/constants/parks-role-access.constants';
 import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
 import {
   parksGuidedTourActiveState,
@@ -14,7 +10,6 @@ import {
 } from '@/parks-industrial/states/parks-guided-tour.state';
 import { parksNavigationInfoOpenIdState } from '@/parks-industrial/states/parks-navigation-info-open-id.state';
 import { buildParksGuidedTourSteps } from '@/parks-industrial/utils/parks-guided-tour.util';
-import { hasAnyParksRoleLabel } from '@/parks-industrial/utils/parks-role-access.util';
 import { useNavigationSection } from '@/ui/navigation/navigation-drawer/hooks/useNavigationSection';
 import { isNavigationDrawerExpandedState } from '@/ui/navigation/states/isNavigationDrawerExpanded';
 import { useAtomState } from '@/ui/utilities/state/jotai/hooks/useAtomState';
@@ -25,8 +20,7 @@ export const useParksGuidedTour = () => {
     primaryParksRoleLabel,
     userEmail,
     hasAnyParksNavAccess,
-    hasFullParksAccess,
-    parksRoleLabels,
+    canSeeNavItem,
   } = useParksAccess();
   const [isActive, setIsActive] = useAtomState(parksGuidedTourActiveState);
   const [stepIndex, setStepIndex] = useAtomState(parksGuidedTourStepIndexState);
@@ -37,29 +31,22 @@ export const useParksGuidedTour = () => {
     isNavigationDrawerExpandedState,
   );
   const setOpenInfoId = useSetAtomState(parksNavigationInfoOpenIdState);
+  const navigate = useNavigate();
   const { openNavigationSection } = useNavigationSection(
     PARKS_GUIDED_TOUR_NAV_SECTION_ID,
   );
 
   const steps = useMemo(() => {
-    const canAccessRoute = (accessKey: ParksRouteAccessKey): boolean => {
-      if (hasFullParksAccess) {
-        return true;
-      }
-
-      return hasAnyParksRoleLabel(
-        parksRoleLabels,
-        PARKS_ROUTE_ACCESS_BY_KEY[accessKey],
-      );
-    };
-
     return buildParksGuidedTourSteps({
-      canAccessRoute,
+      canAccessRoute: canSeeNavItem,
       roleLabel: primaryParksRoleLabel,
     });
-  }, [hasFullParksAccess, parksRoleLabels, primaryParksRoleLabel]);
+  }, [canSeeNavItem, primaryParksRoleLabel]);
 
-  const currentStep = steps[stepIndex] ?? steps[0] ?? null;
+  const currentStep = useMemo(
+    () => steps[stepIndex] ?? steps[0] ?? null,
+    [stepIndex, steps],
+  );
   const isLastStep = stepIndex >= steps.length - 1;
   const normalizedEmail = userEmail?.trim().toLowerCase() ?? '';
   const hasCompletedTour =
@@ -119,33 +106,35 @@ export const useParksGuidedTour = () => {
     stopTour({ persistCompletion: true });
   }, [stopTour]);
 
+  const goToStep = useCallback(
+    (nextIndex: number) => {
+      const nextStep = steps[nextIndex];
+
+      prepareWorkspaceForTour();
+
+      if (nextStep?.path) {
+        navigate(nextStep.path);
+      }
+
+      setStepIndex(nextIndex);
+    },
+    [navigate, prepareWorkspaceForTour, setStepIndex, steps],
+  );
+
   const goToNextStep = useCallback(() => {
     if (isLastStep) {
       completeTour();
       return;
     }
 
-    prepareWorkspaceForTour();
-    setStepIndex((current) => Math.min(current + 1, steps.length - 1));
-  }, [
-    completeTour,
-    isLastStep,
-    prepareWorkspaceForTour,
-    setStepIndex,
-    steps.length,
-  ]);
+    goToStep(Math.min(stepIndex + 1, steps.length - 1));
+  }, [completeTour, goToStep, isLastStep, stepIndex, steps.length]);
 
   const goToPreviousStep = useCallback(() => {
-    prepareWorkspaceForTour();
-    setStepIndex((current) => Math.max(current - 1, 0));
-  }, [prepareWorkspaceForTour, setStepIndex]);
+    goToStep(Math.max(stepIndex - 1, 0));
+  }, [goToStep, stepIndex]);
 
-  const shouldAutoStart =
-    hasAnyParksNavAccess &&
-    isDefined(userEmail) &&
-    !hasCompletedTour &&
-    !isActive &&
-    steps.length > 1;
+  const shouldAutoStart = false;
 
   return {
     isActive,

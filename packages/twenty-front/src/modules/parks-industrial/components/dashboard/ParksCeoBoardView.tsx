@@ -13,9 +13,25 @@ import {
 import { type ParksCeoBoardSection } from '@/parks-industrial/types/parks-ceo-dashboard.types';
 import { formatParksNumber } from '@/parks-industrial/utils/parks-format.util';
 
+type ParksCeoBoardViewSection =
+  | 'portafolio'
+  | 'ingresos'
+  | 'retencion'
+  | 'cobranza'
+  | 'operacion';
+
 type ParksCeoBoardViewProps = {
   board: ParksCeoBoardSection;
+  sections?: ParksCeoBoardViewSection[];
 };
+
+const ALL_BOARD_SECTIONS: ParksCeoBoardViewSection[] = [
+  'portafolio',
+  'ingresos',
+  'retencion',
+  'cobranza',
+  'operacion',
+];
 
 const StyledStack = styled.div`
   display: flex;
@@ -76,7 +92,10 @@ const formatMxnCompact = (value: number): string => {
   return `$${formatParksNumber(value)}`;
 };
 
-export const ParksCeoBoardView = ({ board }: ParksCeoBoardViewProps) => {
+export const ParksCeoBoardView = ({
+  board,
+  sections = ALL_BOARD_SECTIONS,
+}: ParksCeoBoardViewProps) => {
   const ocupacionItems = board.ocupacionTrend.map((point) => ({
     id: point.mesAnio,
     label: point.label,
@@ -139,8 +158,16 @@ export const ParksCeoBoardView = ({ board }: ParksCeoBoardViewProps) => {
     ][index] ?? themeCssVariables.color.gray,
   }));
 
+  const showPortafolio = sections.includes('portafolio');
+  const showIngresos = sections.includes('ingresos');
+  const showRetencion = sections.includes('retencion');
+  const showCobranza = sections.includes('cobranza');
+  const showOperacion = sections.includes('operacion');
+
   return (
     <StyledStack>
+      {showPortafolio ? (
+        <>
       <StyledSectionTitle>{t`1 · Portafolio`}</StyledSectionTitle>
       <StyledParksTwoColumnGrid>
         <ParksSectionCard title={t`% Ocupación — 6 meses`} accent="green">
@@ -173,6 +200,11 @@ export const ParksCeoBoardView = ({ board }: ParksCeoBoardViewProps) => {
         </StyledTable>
       </ParksSectionCard>
 
+        </>
+      ) : null}
+
+      {showIngresos ? (
+        <>
       <StyledSectionTitle>{t`2 · Ingresos`}</StyledSectionTitle>
       <ParksSectionCard
         title={t`MRR 6 meses + forecast 3 meses`}
@@ -201,6 +233,11 @@ export const ParksCeoBoardView = ({ board }: ParksCeoBoardViewProps) => {
         />
       </StyledMetricsGrid>
 
+        </>
+      ) : null}
+
+      {showRetencion ? (
+        <>
       <StyledSectionTitle>{t`3 · Renovaciones y retención`}</StyledSectionTitle>
       <StyledMetricsGrid>
         <ParksMetricCard
@@ -239,6 +276,11 @@ export const ParksCeoBoardView = ({ board }: ParksCeoBoardViewProps) => {
         </ParksSectionCard>
       </StyledParksTwoColumnGrid>
 
+        </>
+      ) : null}
+
+      {showCobranza ? (
+        <>
       <StyledSectionTitle>{t`4 · Cobranza y riesgo`}</StyledSectionTitle>
       <StyledMetricsGrid>
         <ParksMetricCard
@@ -272,6 +314,11 @@ export const ParksCeoBoardView = ({ board }: ParksCeoBoardViewProps) => {
         />
       </ParksSectionCard>
 
+        </>
+      ) : null}
+
+      {showOperacion ? (
+        <>
       <StyledSectionTitle>{t`5 · Eficiencia operativa`}</StyledSectionTitle>
       <StyledMetricsGrid>
         <ParksMetricCard
@@ -306,6 +353,8 @@ export const ParksCeoBoardView = ({ board }: ParksCeoBoardViewProps) => {
           )}
         />
       </ParksSectionCard>
+        </>
+      ) : null}
     </StyledStack>
   );
 };

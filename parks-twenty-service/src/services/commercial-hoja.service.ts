@@ -12,7 +12,12 @@ import { toSelectValue } from '../utils/select-value.util';
 import { brokerNotificationStore } from './broker-notification.store';
 import { comiteService } from './comite.service';
 import { commercialLegalHandoffService } from './commercial-legal-handoff.service';
-import { COMITE_MIN_GLA_M2, requiresComiteByGla } from './comite.store';
+import {
+  COMITE_ESTATUS_AJUSTES_PEDIDOS,
+  COMITE_MIN_GLA_M2,
+  comiteStore,
+  requiresComiteByGla,
+} from './comite.store';
 import { twentyClient } from './twenty.client';
 import { twentyDataService } from './twenty-data.service';
 import {
@@ -94,6 +99,14 @@ const resolveEsquemaComision = (brokerClasificacion?: string): string => {
 };
 
 const assertDraftEditable = (hoja: HojaDeAcuerdosRecord): void => {
+  const waitingComiteAdjustments =
+    comiteStore.getByHojaId(hoja.id)?.estatus ===
+    COMITE_ESTATUS_AJUSTES_PEDIDOS;
+
+  if (waitingComiteAdjustments) {
+    return;
+  }
+
   if (hoja.firmadaPorCliente && hoja.firmadaPorCem) {
     throw new Error('No se puede editar una Hoja ya firmada');
   }
@@ -458,6 +471,8 @@ export const commercialHojaService = {
     if (!updated) {
       throw new Error('Hoja de Acuerdos not found after update');
     }
+
+    comiteService.syncOpenComiteFromHoja(updated);
 
     return updated;
   },

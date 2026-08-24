@@ -16,16 +16,22 @@ export const ParksDashboardPage = () => {
   const title =
     audience === 'ceo'
       ? t`Command Center CEO`
-      : t`Centro de mando comercial`;
+      : audience === 'cfo'
+        ? t`Tablero financiero`
+        : t`Centro de mando comercial`;
 
   const subtitle =
     audience === 'ceo'
       ? getParksIndustrialPageSubtitle(
           t`Pulso del grupo: ocupación, ingresos, legal, CxC y renovaciones`,
         )
-      : getParksIndustrialPageSubtitle(
-          t`Pipeline, ocupación, ingresos y cola Director Comercial — vista operativa`,
-        );
+      : audience === 'cfo'
+        ? getParksIndustrialPageSubtitle(
+            t`Forecast, cobranza, mora y cartera — lo que el CFO debe ver primero`,
+          )
+        : getParksIndustrialPageSubtitle(
+            t`Pipeline, ocupación, ingresos y cola Director Comercial — vista operativa`,
+          );
 
   return (
     <ParksPageShell

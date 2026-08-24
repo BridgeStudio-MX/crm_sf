@@ -41,6 +41,8 @@ import { isParksLeasingOfficerRole } from '@/parks-industrial/utils/parks-role-a
 import { parseParksTourNavesMostradas } from '@/parks-industrial/utils/parks-tour-naves.util';
 import { StyledParksPageStack } from '@/parks-industrial/components/ui/ParksSectionCard';
 import { validateParksStageGate } from '@/parks-industrial/services/parks-commercial.client';
+import { fetchParksComiteList } from '@/parks-industrial/services/parks-comite.client';
+import { type ComiteAutorizacion } from '@/parks-industrial/types/parks-comite.types';
 import {
   PARKS_FLUJO_SECTION_IDS,
   type ParksDealGuideTab,
@@ -51,6 +53,10 @@ import {
   type ParksStageGateResult,
   validateParksStageTransition,
 } from '@/parks-industrial/utils/parksStageGateUtil';
+import {
+  resolveParksComitePipelineMarker,
+  type ParksComitePipelineMarker,
+} from '@/parks-industrial/utils/parks-comite-pipeline.util';
 import {
   buildOptimisticOpportunityRecord,
   type ParksLeadCreatedPayload,
@@ -225,6 +231,7 @@ export const ParksPipelineBoard = ({
   const prospectScoresById = useParksProspectScores(items);
   const { updateOneRecord } = useUpdateOneRecord();
   const { openRecordInSidePanel } = useOpenRecordInSidePanel();
+  const [comites, setComites] = useState<ComiteAutorizacion[]>([]);
 
   const parqueFilterContext = useMemo((): ParksPipelineParqueFilterContext => {
     const parqueIdByNaveId = new Map<string, string>();
@@ -271,6 +278,60 @@ export const ParksPipelineBoard = ({
 
     setItems(safeOpportunities);
   }, [safeOpportunities]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const loadComites = async () => {
+      try {
+        const result = await fetchParksComiteList();
+
+        if (!isCancelled) {
+          setComites(result.comites);
+        }
+      } catch {
+        if (!isCancelled) {
+          setComites([]);
+        }
+      }
+    };
+
+    void loadComites();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
+  const comiteByOpportunityId = useMemo(() => {
+    const next: Record<string, ComiteAutorizacion> = {};
+
+    for (const comite of comites) {
+      if (comite.opportunityId) {
+        next[comite.opportunityId] = comite;
+      }
+    }
+
+    return next;
+  }, [comites]);
+
+  const comiteMarkersByDealId = useMemo(() => {
+    const markers: Record<string, ParksComitePipelineMarker> = {};
+
+    for (const deal of items) {
+      const marker = resolveParksComitePipelineMarker({
+        glaM2: deal.m2Ofertados ?? deal.m2Requeridos ?? 0,
+        stage: deal.stage,
+        comite: comiteByOpportunityId[deal.id],
+      });
+
+      if (marker) {
+        markers[deal.id] = marker;
+      }
+    }
+
+    return markers;
+  }, [comiteByOpportunityId, items]);
 
   useEffect(() => {
     const dealIdFromQuery = searchParams.get('dealId');
@@ -614,6 +675,7 @@ export const ParksPipelineBoard = ({
                   selectedDealId={selectedDealId}
                   draggingDealId={draggingDealId}
                   prospectScoresById={prospectScoresById}
+                  comiteMarkersByDealId={comiteMarkersByDealId}
                   viewerName={displayName}
                   onSelectDeal={setSelectedDealId}
                   onOpenRecord={handleOpenRecord}
@@ -651,6 +713,7 @@ export const ParksPipelineBoard = ({
           <ParksPipelineDragOverlay
             dealsById={dealsById}
             prospectScoresById={prospectScoresById}
+            comiteMarkersByDealId={comiteMarkersByDealId}
             viewerName={displayName}
           />
         </DragDropProvider>

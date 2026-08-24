@@ -13,7 +13,10 @@ import {
   isParksMapOpenLead,
   resolveParksMapLeadRegionId,
 } from '@/parks-industrial/utils/parks-map-leads.util';
-import { isParksNaveDisponible } from '@/parks-industrial/utils/parks-portfolio-metrics.util';
+import {
+  resolveParksNaveInventoryKind,
+  type ParksNaveInventoryKind,
+} from '@/parks-industrial/utils/parks-portfolio-metrics.util';
 import { parseParksTourNavesMostradas } from '@/parks-industrial/utils/parks-tour-naves.util';
 
 export type ParksPortfolioLeadMatchReason = 'nave' | 'tour' | 'ubicacion';
@@ -23,6 +26,12 @@ export type ParksPortfolioNaveItem = {
   identificador: string;
   m2: number;
   precioBaseUsd: number;
+  daysVacant: number | null;
+  interestCount: number;
+  estatus: string;
+  kind: ParksNaveInventoryKind;
+  entregaEstimada: string | null;
+  leads: ParksPortfolioLeadItem[];
 };
 
 export type ParksPortfolioLeadItem = {
@@ -32,8 +41,10 @@ export type ParksPortfolioLeadItem = {
   m2Requeridos: number;
   pipelineValueUsd: number;
   leasingOfficer: string | null;
+  naveId: string | null;
   naveIdentificador: string | null;
   matchReason: ParksPortfolioLeadMatchReason;
+  updatedAt: string | null;
 };
 
 export type ParksPortfolioParkRow = {
@@ -44,7 +55,14 @@ export type ParksPortfolioParkRow = {
   m2Totales: number;
   m2Rentados: number;
   m2Disponibles: number;
+  occupiedNaveCount: number;
+  constructionNaveCount: number;
+  constructionM2: number;
+  totalNaveCount: number;
   availableNaves: ParksPortfolioNaveItem[];
+  allNaves: ParksPortfolioNaveItem[];
+  oldestVacantNave: ParksPortfolioNaveItem | null;
+  daysSinceLastInterest: number | null;
   leads: ParksPortfolioLeadItem[];
   pipelineValueUsd: number;
 };
@@ -55,6 +73,7 @@ export type ParksPortfolioByParkResult = {
   parqueCount: number;
   availableNaveCount: number;
   availableM2: number;
+  constructionNaveCount: number;
   leadCount: number;
   pipelineValueUsd: number;
 };
@@ -65,6 +84,7 @@ const EMPTY_PORTFOLIO: ParksPortfolioByParkResult = {
   parqueCount: 0,
   availableNaveCount: 0,
   availableM2: 0,
+  constructionNaveCount: 0,
   leadCount: 0,
   pipelineValueUsd: 0,
 };
@@ -75,6 +95,22 @@ const normalizeMatchText = (value?: string | null): string =>
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
+
+const MS_PER_DAY = 86_400_000;
+
+const getDaysSince = (isoDate?: string | null): number | null => {
+  if (!isoDate) {
+    return null;
+  }
+
+  const parsed = Date.parse(isoDate);
+
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  return Math.max(0, Math.floor((Date.now() - parsed) / MS_PER_DAY));
+};
 
 const getLeadOfficerName = (
   opportunity: ParksOpportunityRecord,
@@ -118,11 +154,13 @@ const toLeadItem = (
       opportunity.amount?.amountMicros,
     ),
     leasingOfficer: getLeadOfficerName(opportunity),
+    naveId: linkedNaveId ?? linkedNave?.id ?? null,
     naveIdentificador:
       opportunity.naveVinculada?.identificador ??
       linkedNave?.identificador ??
       null,
     matchReason,
+    updatedAt: opportunity.updatedAt ?? opportunity.createdAt ?? null,
   };
 };
 
@@ -234,12 +272,46 @@ const resolveLeadParkAssignment = (
   return null;
 };
 
-const toAvailableNaveItem = (nave: ParksNaveRecord): ParksPortfolioNaveItem => ({
-  id: nave.id,
-  identificador: nave.identificador?.trim() || nave.id,
-  m2: nave.m2 ?? 0,
-  precioBaseUsd: nave.precioBaseUsd ?? 0,
-});
+const PARKS_CONSTRUCTION_ENTREGA_BY_IDENTIFICADOR: Record<string, string> = {
+  'Nave XC-01': 'Q1 2027',
+  'Nave BT-GDL-A': 'Mar 2027',
+  'Nave XL-MTY-1': 'Q2 2027',
+  'Nave TOL-P1': 'Nov 2026',
+};
+
+const toNaveItem = (
+  nave: ParksNaveRecord,
+  leads: ParksPortfolioLeadItem[],
+): ParksPortfolioNaveItem => {
+  const kind = resolveParksNaveInventoryKind(nave.estatus);
+  const identificador = nave.identificador?.trim() || nave.id;
+
+  return {
+    id: nave.id,
+    identificador,
+    m2: nave.m2 ?? 0,
+    precioBaseUsd: nave.precioBaseUsd ?? 0,
+    daysVacant:
+      kind === 'disponible'
+        ? getDaysSince(nave.updatedAt ?? nave.createdAt)
+        : null,
+    interestCount: leads.length,
+    estatus: nave.estatus?.trim() || 'Disponible',
+    kind,
+    entregaEstimada:
+      kind === 'construccion'
+        ? (PARKS_CONSTRUCTION_ENTREGA_BY_IDENTIFICADOR[identificador] ??
+          'Por confirmar')
+        : null,
+    leads,
+  };
+};
+
+export const isParksParkUnderConstruction = (
+  park: ParksPortfolioParkRow,
+): boolean =>
+  park.totalNaveCount > 0 &&
+  park.constructionNaveCount === park.totalNaveCount;
 
 const compareParkRows = (
   left: ParksPortfolioParkRow,
@@ -321,17 +393,66 @@ export const buildParksPortfolioByPark = ({
 
   const parks = parques
     .map((parque): ParksPortfolioParkRow => {
+      const parkNaves = navesByParqueId.get(parque.id) ?? [];
       const m2Totales = parque.m2Totales ?? 0;
       const m2Rentados = parque.m2Rentados ?? 0;
-      const availableNaves = (navesByParqueId.get(parque.id) ?? [])
-        .filter((nave) => isParksNaveDisponible(nave.estatus))
-        .map(toAvailableNaveItem)
-        .sort((left, right) =>
-          left.identificador.localeCompare(right.identificador, 'es'),
-        );
       const leads = (leadsByParqueId.get(parque.id) ?? []).sort(
         compareLeadItems,
       );
+      const leadsByNaveId = new Map<string, ParksPortfolioLeadItem[]>();
+
+      for (const lead of leads) {
+        if (!lead.naveId) {
+          continue;
+        }
+
+        const naveLeads = leadsByNaveId.get(lead.naveId) ?? [];
+        naveLeads.push(lead);
+        leadsByNaveId.set(lead.naveId, naveLeads);
+      }
+
+      const allNaves = parkNaves
+        .map((nave) => toNaveItem(nave, leadsByNaveId.get(nave.id) ?? []))
+        .sort((left, right) => {
+          if (left.kind !== right.kind) {
+            const kindOrder: Record<typeof left.kind, number> = {
+              construccion: 0,
+              disponible: 1,
+              negociacion: 2,
+              ocupada: 3,
+            };
+
+            return kindOrder[left.kind] - kindOrder[right.kind];
+          }
+
+          return (right.daysVacant ?? 0) - (left.daysVacant ?? 0);
+        });
+      const availableNaves = allNaves.filter(
+        (nave) => nave.kind === 'disponible',
+      );
+      const constructionNaves = allNaves.filter(
+        (nave) => nave.kind === 'construccion',
+      );
+      const occupiedNaveCount = allNaves.filter(
+        (nave) => nave.kind === 'ocupada',
+      ).length;
+      const oldestVacantNave = availableNaves[0] ?? null;
+      const latestLeadTimestamp = leads.reduce((latest, lead) => {
+        const parsed = lead.updatedAt ? Date.parse(lead.updatedAt) : NaN;
+
+        if (!Number.isFinite(parsed)) {
+          return latest;
+        }
+
+        return parsed > latest ? parsed : latest;
+      }, 0);
+      const daysSinceLastInterest =
+        latestLeadTimestamp > 0
+          ? Math.max(
+              0,
+              Math.floor((Date.now() - latestLeadTimestamp) / MS_PER_DAY),
+            )
+          : (oldestVacantNave?.daysVacant ?? null);
 
       return {
         parqueId: parque.id,
@@ -342,7 +463,17 @@ export const buildParksPortfolioByPark = ({
         m2Totales,
         m2Rentados,
         m2Disponibles: getParksParqueM2Disponibles(m2Totales, m2Rentados),
+        occupiedNaveCount,
+        constructionNaveCount: constructionNaves.length,
+        constructionM2: constructionNaves.reduce(
+          (total, nave) => total + nave.m2,
+          0,
+        ),
+        totalNaveCount: parkNaves.length,
         availableNaves,
+        allNaves,
+        oldestVacantNave,
+        daysSinceLastInterest,
         leads,
         pipelineValueUsd: leads.reduce(
           (total, lead) => total + lead.pipelineValueUsd,
@@ -362,6 +493,10 @@ export const buildParksPortfolioByPark = ({
       park.availableNaves.reduce((parkTotal, nave) => parkTotal + nave.m2, 0),
     0,
   );
+  const constructionNaveCount = parks.reduce(
+    (total, park) => total + park.constructionNaveCount,
+    0,
+  );
   const assignedLeadCount = parks.reduce(
     (total, park) => total + park.leads.length,
     0,
@@ -376,6 +511,7 @@ export const buildParksPortfolioByPark = ({
     parqueCount: parks.length,
     availableNaveCount,
     availableM2,
+    constructionNaveCount,
     leadCount: assignedLeadCount + unmatchedLeads.length,
     pipelineValueUsd,
   };

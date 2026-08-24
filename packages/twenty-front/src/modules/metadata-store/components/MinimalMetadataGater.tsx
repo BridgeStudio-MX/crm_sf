@@ -15,6 +15,7 @@ export const MinimalMetadataGater = ({ children }: React.PropsWithChildren) => {
 
   const { dateFormat, timeFormat, timeZone } = useDateTimeFormat();
 
+  const isOnParksPath = location.pathname.startsWith('/parks');
   const isOnExcludedPath =
     isMatchingLocation(location, AppPath.Verify) ||
     isMatchingLocation(location, AppPath.VerifyEmail) ||
@@ -24,7 +25,9 @@ export const MinimalMetadataGater = ({ children }: React.PropsWithChildren) => {
     isMatchingLocation(location, AppPath.WorkspaceActivation) ||
     isMatchingLocation(location, AppPath.PlanRequired) ||
     isMatchingLocation(location, AppPath.PlanRequiredSuccess) ||
-    isMatchingLocation(location, AppPath.Authorize);
+    isMatchingLocation(location, AppPath.Authorize) ||
+    isMatchingLocation(location, AppPath.Index) ||
+    isOnParksPath;
 
   const shouldShowLoader = !isMinimalMetadataReady && !isOnExcludedPath;
 

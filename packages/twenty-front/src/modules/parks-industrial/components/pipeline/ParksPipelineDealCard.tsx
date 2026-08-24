@@ -6,6 +6,7 @@ import { themeCssVariables } from 'twenty-ui/theme-constants';
 
 import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRecords';
 import { ParksStatusBadge } from '@/parks-industrial/components/ui/ParksStatusBadge';
+import { type ParksComitePipelineMarker } from '@/parks-industrial/utils/parks-comite-pipeline.util';
 import {
   formatParksNumber,
   formatParksUsd,
@@ -162,6 +163,7 @@ export type ParksPipelineDealCardViewProps = {
   isOverlayPreview: boolean;
   viewerName?: string | null;
   prospectScore?: ProspectScoreResult;
+  comiteMarker?: ParksComitePipelineMarker | null;
   onSelect?: (dealId: string) => void;
   onOpenRecord?: (dealId: string) => void;
 };
@@ -174,6 +176,7 @@ export const ParksPipelineDealCardView = ({
   isOverlayPreview,
   viewerName,
   prospectScore,
+  comiteMarker,
   onSelect,
   onOpenRecord,
 }: ParksPipelineDealCardViewProps) => {
@@ -266,6 +269,12 @@ export const ParksPipelineDealCardView = ({
               label={t`${prospectScore.fitScore} · ${formatParksProspectUrgencyLabel(prospectScore.urgency)}`}
             />
           ) : null}
+          {comiteMarker ? (
+            <ParksStatusBadge
+              color={comiteMarker.color}
+              label={comiteMarker.label}
+            />
+          ) : null}
           <ParksStatusBadge
             color={daysColor}
             label={t`${daysInStage}d en etapa`}
@@ -284,6 +293,7 @@ type ParksPipelineDealCardProps = {
   isOverlayPreview: boolean;
   viewerName?: string | null;
   prospectScore?: ProspectScoreResult;
+  comiteMarker?: ParksComitePipelineMarker | null;
   onSelect?: (dealId: string) => void;
   onOpenRecord?: (dealId: string) => void;
 };
@@ -295,6 +305,7 @@ export const ParksPipelineDealCard = ({
   isOverlayPreview,
   viewerName,
   prospectScore,
+  comiteMarker,
   onSelect,
   onOpenRecord,
 }: ParksPipelineDealCardProps) => {
@@ -318,6 +329,7 @@ export const ParksPipelineDealCard = ({
         isOverlayPreview={isOverlayPreview}
         viewerName={viewerName}
         prospectScore={prospectScore}
+        comiteMarker={comiteMarker}
         onSelect={onSelect}
         onOpenRecord={onOpenRecord}
       />

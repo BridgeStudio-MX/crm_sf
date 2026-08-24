@@ -87,7 +87,7 @@ export const ParksLegalPipelineBoard = ({
     return (
       <ParksEmptyState
         title={t`Sin casos legales activos`}
-        description={t`Los casos aparecen cuando el comercial envía contratos a Legal. Si estás en local de demo, ejecuta: cd parks-twenty-service && npm run seed:demo`}
+        description={t`Legal no ve deals en comité. Los casos aparecen cuando el CEO aprueba, o cuando la Hoja firmada tiene 20,000 m² o menos y va directo a Legal.`}
       />
     );
   }
@@ -103,7 +103,7 @@ export const ParksLegalPipelineBoard = ({
 
       <StyledBoardLayout>
         <StyledDragHint>
-          {t`Haz clic en un caso para abrir el flujo de aprobación y gestionar versiones, firmas y SLA.`}
+          {t`Comité es comercial: un deal en sesión no aparece aquí hasta que el CEO apruebe. Haz clic en un caso para abrir el flujo de aprobación.`}
         </StyledDragHint>
 
         {filteredCasosLegales.length === 0 ? (

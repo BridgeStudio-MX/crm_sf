@@ -4,13 +4,20 @@ import { envConfig } from '../config/env.config';
 import { brokerNotificationStore } from './broker-notification.store';
 import { commercialLegalHandoffService } from './commercial-legal-handoff.service';
 import {
+  COMITE_ESTATUS_AJUSTES_PEDIDOS,
   COMITE_MIN_GLA_M2,
   comiteStore,
   computeComiteIaFlags,
   DEFAULT_COMITE_MEMBERS,
   hydrateDealSnapshot,
+  isComiteStillOnAgenda,
   requiresComiteByGla,
 } from './comite.store';
+import {
+  PARKS_NOTIFICATION_CEO_ROLES,
+  PARKS_NOTIFICATION_COMMERCIAL_ROLES,
+} from './notification-audience.util';
+import { buildPipelineDealActionPath } from '../utils/notification-action-path.util';
 import { twentyDataService } from './twenty-data.service';
 import {
   type ComiteAutorizacion,
@@ -336,10 +343,29 @@ export const comiteService = {
       );
     }
 
-    const existing = comiteStore.getByHojaId(input.hojaDeAcuerdosId);
+    const existing =
+      comiteStore.getByHojaId(input.hojaDeAcuerdosId) ??
+      comiteStore.getByOpportunityId(input.opportunityId);
 
-    if (existing && existing.estatus === 'Abierto — en deliberación') {
-      return existing;
+    if (existing && isComiteStillOnAgenda(existing)) {
+      const config = comiteStore.getConfig();
+      const deal = hydrateDealSnapshot(
+        { ...existing.deal, ...input.deal },
+        config,
+      );
+
+      return comiteStore.upsert({
+        ...existing,
+        deal,
+        hojaDeAcuerdosId: input.hojaDeAcuerdosId,
+        estatus: 'Abierto — en deliberación',
+        auditoria: appendAudit(
+          existing,
+          existing.estatus === COMITE_ESTATUS_AJUSTES_PEDIDOS
+            ? 'Comercial reenvió términos ajustados — vuelve a sesión'
+            : 'Términos de Hoja actualizados — sigue en deliberación',
+        ),
+      });
     }
 
     const config = comiteStore.getConfig();
@@ -426,6 +452,12 @@ export const comiteService = {
 
     if (!comite) {
       throw new Error('Comité not found');
+    }
+
+    if (comite.estatus === COMITE_ESTATUS_AJUSTES_PEDIDOS) {
+      throw new Error(
+        'El comité espera ajustes de comercial; no se puede votar todavía',
+      );
     }
 
     if (comite.estatus !== 'Abierto — en deliberación') {
@@ -596,7 +628,68 @@ export const comiteService = {
     });
   },
 
-  // CEO breaks ties after committee empate — not a regular vote seat.
+  requestSessionAdjustments: ({
+    comiteId,
+    texto,
+    viewerNombre,
+  }: {
+    comiteId: string;
+    texto: string;
+    viewerNombre?: string;
+  }): ComiteAutorizacion => {
+    const comite = comiteStore.getById(comiteId);
+
+    if (!comite) {
+      throw new Error('Comité not found');
+    }
+
+    if (comite.estatus.startsWith('Resuelto')) {
+      throw new Error('Este deal ya no está en sesión de comité');
+    }
+
+    const nota = texto.trim();
+
+    if (!nota) {
+      throw new Error('Describe el ajuste que pide la sesión');
+    }
+
+    const registradoPor = viewerNombre?.trim() || 'Sesión de comité';
+    const fecha = new Date().toISOString();
+    const saved = comiteStore.upsert({
+      ...comite,
+      estatus: COMITE_ESTATUS_AJUSTES_PEDIDOS,
+      ajustesSesion: [
+        ...(comite.ajustesSesion ?? []),
+        { texto: nota, fecha, registradoPor },
+      ],
+      auditoria: appendAudit(
+        comite,
+        `Sesión en vivo — ajuste pedido por ${registradoPor}: "${nota}"`,
+      ),
+    });
+
+    brokerNotificationStore.add({
+      type: 'alert',
+      priority: 'high',
+      title: `↩️ Comité pidió ajustes — ${saved.deal.clienteRazonSocial}`,
+      body: nota,
+      area: 'Comercial',
+      opportunityId: saved.opportunityId,
+      actionPath: saved.opportunityId
+        ? buildPipelineDealActionPath(saved.opportunityId, { tab: 'hoja' })
+        : `/parks/comite/${saved.id}`,
+      actionLabel: 'Ajustar Hoja',
+      audienceRoleLabels: [...PARKS_NOTIFICATION_COMMERCIAL_ROLES],
+      audienceNames: [
+        saved.leasingOfficerNombre,
+        saved.cemQueFirmoNombre,
+      ].filter(Boolean),
+    });
+
+    return saved;
+  },
+
+  // Live session (or leftover empate): CEO records the room decision.
   ceoDecision: async ({
     comiteId,
     decision,
@@ -616,10 +709,10 @@ export const comiteService = {
       throw new Error('Comité not found');
     }
 
-    if (comite.resolucion !== 'Empate — escalar') {
-      throw new Error(
-        'Solo el CEO puede decidir cuando hay empate escalado',
-      );
+    const isStillOnAgenda = isComiteStillOnAgenda(comite);
+
+    if (!isStillOnAgenda || comite.estatus.startsWith('Resuelto')) {
+      throw new Error('Este deal ya no está en sesión de comité');
     }
 
     const ceoNombre = viewerNombre?.trim() || 'CEO / Director General';
@@ -639,7 +732,7 @@ export const comiteService = {
         estatus: 'Resuelto — Aprobado',
         auditoria: appendAudit(
           comite,
-          `${ceoNombre}${viewerEmail ? ` <${viewerEmail}>` : ''} decidió: Aprueba${nota ? ` — "${nota}"` : ''}`,
+          `${ceoNombre}${viewerEmail ? ` <${viewerEmail}>` : ''} — sesión en vivo: Aprueba${nota ? ` — "${nota}"` : ''}`,
         ),
       };
 
@@ -652,10 +745,10 @@ export const comiteService = {
       resolucion: 'Rechazado — decisión CEO',
       fechaResolucion: new Date().toISOString(),
       estatus: 'Resuelto — Rechazado',
-      resumenRazonesRechazo: `${ceoNombre} (CEO):\n"${nota}"`,
+      resumenRazonesRechazo: `${ceoNombre} (sesión de comité):\n"${nota}"`,
       auditoria: appendAudit(
         comite,
-        `${ceoNombre}${viewerEmail ? ` <${viewerEmail}>` : ''} decidió: Rechaza — "${nota}"`,
+        `${ceoNombre}${viewerEmail ? ` <${viewerEmail}>` : ''} — sesión en vivo: Rechaza — "${nota}"`,
       ),
     };
 
@@ -663,10 +756,126 @@ export const comiteService = {
     return comiteStore.upsert(next);
   },
 
+  resubmitAfterAdjustments: ({
+    comiteId,
+    hojaDeAcuerdosId,
+  }: {
+    comiteId?: string;
+    hojaDeAcuerdosId?: string;
+  }): ComiteAutorizacion => {
+    const comite = comiteId
+      ? comiteStore.getById(comiteId)
+      : hojaDeAcuerdosId
+        ? comiteStore.getByHojaId(hojaDeAcuerdosId)
+        : undefined;
+
+    if (!comite) {
+      throw new Error('Comité not found');
+    }
+
+    if (comite.estatus !== COMITE_ESTATUS_AJUSTES_PEDIDOS) {
+      return comite;
+    }
+
+    const saved = comiteStore.upsert({
+      ...comite,
+      estatus: 'Abierto — en deliberación',
+      auditoria: appendAudit(
+        comite,
+        'Comercial reenvió términos ajustados — vuelve a sesión',
+      ),
+    });
+
+    brokerNotificationStore.add({
+      type: 'alert',
+      priority: 'high',
+      title: `⚖️ Términos ajustados — ${saved.deal.clienteRazonSocial}`,
+      body: 'Comercial actualizó la Hoja. El deal vuelve a la mesa de comité.',
+      area: 'Comercial',
+      opportunityId: saved.opportunityId,
+      actionPath: `/parks/comite/${saved.id}`,
+      actionLabel: 'Ver sesión',
+      audienceRoleLabels: [...PARKS_NOTIFICATION_CEO_ROLES],
+    });
+
+    return saved;
+  },
+
+  syncOpenComiteFromHoja: (
+    hoja: {
+      id: string;
+      m2Acordados?: number | null;
+      precioUsdM2?: number | null;
+      plazoMeses?: number | null;
+      periodoGraciaMeses?: number | null;
+      depositoMeses?: number | null;
+      condicionesEspeciales?: string | null;
+      nave?: { identificador?: string | null } | null;
+    },
+  ): ComiteAutorizacion | undefined => {
+    const comite = comiteStore.getByHojaId(hoja.id);
+
+    if (!comite || !isComiteStillOnAgenda(comite)) {
+      return undefined;
+    }
+
+    const deal = hydrateDealSnapshot({
+      ...comite.deal,
+      glaM2: hoja.m2Acordados ?? comite.deal.glaM2,
+      precioAcordadoM2: hoja.precioUsdM2 ?? comite.deal.precioAcordadoM2,
+      plazoMeses: hoja.plazoMeses ?? comite.deal.plazoMeses,
+      periodoGraciaMeses:
+        hoja.periodoGraciaMeses ?? comite.deal.periodoGraciaMeses,
+      depositosGarantiaMeses:
+        hoja.depositoMeses ?? comite.deal.depositosGarantiaMeses,
+      condicionesEspeciales:
+        hoja.condicionesEspeciales ?? comite.deal.condicionesEspeciales,
+      naveNomenclatura:
+        hoja.nave?.identificador ?? comite.deal.naveNomenclatura,
+    });
+    const wasWaitingAdjustments =
+      comite.estatus === COMITE_ESTATUS_AJUSTES_PEDIDOS;
+
+    const saved = comiteStore.upsert({
+      ...comite,
+      deal,
+      estatus: wasWaitingAdjustments
+        ? 'Abierto — en deliberación'
+        : comite.estatus,
+      auditoria: wasWaitingAdjustments
+        ? appendAudit(
+            comite,
+            'Comercial reenvió términos ajustados — vuelve a sesión',
+          )
+        : comite.auditoria,
+    });
+
+    if (wasWaitingAdjustments) {
+      brokerNotificationStore.add({
+        type: 'alert',
+        priority: 'high',
+        title: `⚖️ Términos ajustados — ${saved.deal.clienteRazonSocial}`,
+        body: 'Comercial actualizó la Hoja. El deal vuelve a la mesa de comité.',
+        area: 'Comercial',
+        opportunityId: saved.opportunityId,
+        actionPath: `/parks/comite/${saved.id}`,
+        actionLabel: 'Ver sesión',
+        audienceRoleLabels: [...PARKS_NOTIFICATION_CEO_ROLES],
+      });
+    }
+
+    return saved;
+  },
+
+  getByOpportunityId: (
+    opportunityId: string,
+  ): ComiteAutorizacion | undefined =>
+    comiteStore.getByOpportunityId(opportunityId),
+
   cancelForLostOpportunity: (opportunityId: string): void => {
     const comite = comiteStore.getByOpportunityId(opportunityId);
 
-    if (!comite || comite.estatus !== 'Abierto — en deliberación') {
+    if (!comite || !isComiteStillOnAgenda(comite)) {
       return;
     }
 

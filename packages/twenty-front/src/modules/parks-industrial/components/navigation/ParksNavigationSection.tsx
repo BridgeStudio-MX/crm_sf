@@ -27,9 +27,11 @@ import {
   PARKS_NAVIGATION_GROUPS,
   PARKS_NAVIGATION_ITEMS,
 } from '@/parks-industrial/constants/parks-navigation.constants';
+import { ParksRoleLabel } from '@/parks-industrial/constants/parks-role-access.constants';
 import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
 import { useParksNotificationsUnreadCount } from '@/parks-industrial/hooks/useParksNotificationsUnreadCount';
 import { useParksUnassignedLeads } from '@/parks-industrial/hooks/useParksUnassignedLeads';
+import { hasAnyParksRoleLabel } from '@/parks-industrial/utils/parks-role-access.util';
 import { NavigationDrawerAnimatedCollapseWrapper } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerAnimatedCollapseWrapper';
 import { NavigationDrawerItem } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerItem';
 import { useNavigationSection } from '@/ui/navigation/navigation-drawer/hooks/useNavigationSection';
@@ -69,10 +71,14 @@ export const ParksNavigationSection = ({
 }: ParksNavigationSectionProps) => {
   const { t } = useLingui();
   const { pathname } = useLocation();
-  const { canAccessRoute, hasAnyParksNavAccess } = useParksAccess();
+  const { canSeeNavItem, hasAnyParksNavAccess, parksRoleLabels } =
+    useParksAccess();
   const { leads: unassignedLeads } = useParksUnassignedLeads();
   const unreadNotificationsCount = useParksNotificationsUnreadCount();
   const pendingLeadsCount = unassignedLeads.length;
+  const isCeoLiveSession = hasAnyParksRoleLabel(parksRoleLabels, [
+    ParksRoleLabel.CEO,
+  ]);
   const { toggleNavigationSection } = useNavigationSection(
     PARKS_GUIDED_TOUR_NAV_SECTION_ID,
   );
@@ -91,7 +97,7 @@ export const ParksNavigationSection = ({
   const itemLabels: Record<ParksNavigationItemKey, string> = {
     dashboard: t`Dashboard`,
     dashboardComercial: t`Dashboard comercial`,
-    stackingPlan: t`Parques`,
+    stackingPlan: isCeoLiveSession ? t`Inventario` : t`Parques`,
     pipeline: t`Pipeline`,
     leadsCem: t`Leads Director Comercial`,
     prospectos: t`Prospectos`,
@@ -102,7 +108,7 @@ export const ParksNavigationSection = ({
     legalDashboard: t`Dashboard legal`,
     cxc: t`CxC`,
     cxcCartera: t`Cartera CxC`,
-    comite: t`Comité`,
+    comite: isCeoLiveSession ? t`Sesión de comité` : t`Comité`,
     asignacion: t`Asignación`,
     loCampo: t`Campo LO`,
     renovaciones: t`Renovaciones`,
@@ -135,7 +141,7 @@ export const ParksNavigationSection = ({
         itemKey,
         definition: PARKS_NAVIGATION_ITEMS[itemKey],
       }))
-      .filter(({ definition }) => canAccessRoute(definition.accessKey));
+      .filter(({ definition }) => canSeeNavItem(definition.accessKey));
 
     return {
       ...navigationGroup,
@@ -190,7 +196,7 @@ export const ParksNavigationSection = ({
                       }
                       iconColor={definition.iconColor}
                       secondaryLabel={
-                        itemKey === 'leadsCem' && pendingLeadsCount > 0
+                        itemKey === 'asignacion' && pendingLeadsCount > 0
                           ? String(pendingLeadsCount)
                           : undefined
                       }
@@ -198,7 +204,11 @@ export const ParksNavigationSection = ({
                         <StyledItemHelpRow>
                           <ParksNavigationItemInfo
                             title={itemLabel}
-                            description={PARKS_NAVIGATION_ITEM_HELP[itemKey]}
+                            description={
+                              itemKey === 'comite' && isCeoLiveSession
+                                ? t`Sesión en vivo: proyectas los deals que piden autorización (monto o tipo de cliente), pides ajustes y se aprueban o niegan en la sala.`
+                                : PARKS_NAVIGATION_ITEM_HELP[itemKey]
+                            }
                           />
                           {isNotificaciones && unreadNotificationsCount > 0 ? (
                             <ParksNavigationUnreadBadge

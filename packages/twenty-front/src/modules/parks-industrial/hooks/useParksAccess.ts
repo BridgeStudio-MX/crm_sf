@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { currentUserState } from '@/auth/states/currentUserState';
 import { currentWorkspaceMemberState } from '@/auth/states/currentWorkspaceMemberState';
@@ -6,6 +6,7 @@ import {
   PARKS_DEMO_EMAIL_TO_ROLE_LABEL,
   PARKS_LEGAL_ASSIGN_LAWYER_ROLE_LABELS,
   PARKS_LEGAL_EDITOR_ROLE_LABELS,
+  PARKS_NAV_ACCESS_BY_KEY,
   PARKS_NAV_ROUTE_ACCESS,
   PARKS_ROLE_HOME_PATH,
   PARKS_ROUTE_ACCESS_BY_KEY,
@@ -104,31 +105,55 @@ export const useParksAccess = () => {
 
   const isAssignedLawyerOnly = isParksAssignedLawyerRole(parksRoleLabels);
 
-  const canAccessRoute = (accessKey: ParksRouteAccessKey): boolean => {
-    if (hasFullParksAccess) {
-      return true;
-    }
+  const canAccessRoute = useCallback(
+    (accessKey: ParksRouteAccessKey): boolean => {
+      if (hasFullParksAccess) {
+        return true;
+      }
 
-    if (!hasParksRole) {
-      return false;
-    }
+      if (!hasParksRole) {
+        return false;
+      }
 
-    return hasAnyParksRoleLabel(
-      parksRoleLabels,
-      PARKS_ROUTE_ACCESS_BY_KEY[accessKey],
-    );
-  };
+      return hasAnyParksRoleLabel(
+        parksRoleLabels,
+        PARKS_ROUTE_ACCESS_BY_KEY[accessKey],
+      );
+    },
+    [hasFullParksAccess, hasParksRole, parksRoleLabels],
+  );
 
-  const canAccessPath = (pathname: string): boolean => {
-    const accessKey = resolveParksRouteAccessKey(pathname);
+  const canSeeNavItem = useCallback(
+    (accessKey: ParksRouteAccessKey): boolean => {
+      if (hasFullParksAccess) {
+        return true;
+      }
 
-    // Non-Parks routes (e.g. /settings/*) are outside Parks ACL.
-    if (!isDefined(accessKey)) {
-      return true;
-    }
+      if (!hasParksRole) {
+        return false;
+      }
 
-    return canAccessRoute(accessKey);
-  };
+      return hasAnyParksRoleLabel(
+        parksRoleLabels,
+        PARKS_NAV_ACCESS_BY_KEY[accessKey],
+      );
+    },
+    [hasFullParksAccess, hasParksRole, parksRoleLabels],
+  );
+
+  const canAccessPath = useCallback(
+    (pathname: string): boolean => {
+      const accessKey = resolveParksRouteAccessKey(pathname);
+
+      // Non-Parks routes (e.g. /settings/*) are outside Parks ACL.
+      if (!isDefined(accessKey)) {
+        return true;
+      }
+
+      return canAccessRoute(accessKey);
+    },
+    [canAccessRoute],
+  );
 
   const accessibleNavRoutes = useMemo(() => {
     if (hasFullParksAccess) {
@@ -142,7 +167,7 @@ export const useParksAccess = () => {
     return PARKS_NAV_ROUTE_ACCESS.filter((routeAccess) =>
       hasAnyParksRoleLabel(
         parksRoleLabels,
-        PARKS_ROUTE_ACCESS_BY_KEY[routeAccess.accessKey],
+        PARKS_NAV_ACCESS_BY_KEY[routeAccess.accessKey],
       ),
     );
   }, [hasFullParksAccess, hasParksRole, parksRoleLabels]);
@@ -188,6 +213,7 @@ export const useParksAccess = () => {
     assignedLawyerMatchNames,
     isAssignedLawyerOnly,
     canAccessRoute,
+    canSeeNavItem,
     canAccessPath,
     accessibleNavRoutes,
     defaultAccessiblePath,

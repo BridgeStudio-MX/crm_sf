@@ -21,6 +21,7 @@ import {
   ParksFormField,
   StyledParksFieldGrid,
 } from '@/parks-industrial/components/ui/ParksFormField';
+import { ParksComiteGateLegend } from '@/parks-industrial/components/comite/ParksComiteGateLegend';
 import { ParksStatusBadge } from '@/parks-industrial/components/ui/ParksStatusBadge';
 import { ParksToolSection } from '@/parks-industrial/components/ui/ParksToolSection';
 import { ParksRoleLabel } from '@/parks-industrial/constants/parks-role-access.constants';
@@ -45,6 +46,9 @@ import {
   type ParksQuotationAdjacentCost,
   type ParksQuotationHistoryEntry,
 } from '@/parks-industrial/services/parks-commercial.client';
+import { fetchParksComiteByOpportunity } from '@/parks-industrial/services/parks-comite.client';
+import { type ComiteAutorizacion } from '@/parks-industrial/types/parks-comite.types';
+import { isParksComiteAwaitingAdjustments } from '@/parks-industrial/utils/parks-comite-pipeline.util';
 import {
   fetchParksCommissionRates,
   type ParksCommissionRateMatrix,
@@ -502,6 +506,8 @@ export const ParksCommercialWorkflowPanel = ({
     null,
   );
   const [hojaForm, setHojaForm] = useState<HojaFormState | null>(null);
+  const [comiteForDeal, setComiteForDeal] =
+    useState<ComiteAutorizacion | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
@@ -661,6 +667,18 @@ export const ParksCommercialWorkflowPanel = ({
       } catch {
         // Sin hoja previa: el usuario puede generar una nueva
       }
+
+      try {
+        const comite = await fetchParksComiteByOpportunity(opportunity.id);
+
+        if (!cancelled) {
+          setComiteForDeal(comite);
+        }
+      } catch {
+        if (!cancelled) {
+          setComiteForDeal(null);
+        }
+      }
     };
 
     void loadExistingHoja();
@@ -716,9 +734,18 @@ export const ParksCommercialWorkflowPanel = ({
   const hojaIsSigned = isHojaSigned(hojaDraft);
   const hojaFirmadaPorCem = Boolean(hojaDraft?.firmadaPorCem);
   const hojaFirmadaPorCliente = Boolean(hojaDraft?.firmadaPorCliente);
+  const waitingComiteAdjustments =
+    isParksComiteAwaitingAdjustments(comiteForDeal);
+  const latestComiteAdjustment =
+    comiteForDeal?.ajustesSesion?.[
+      (comiteForDeal.ajustesSesion?.length ?? 0) - 1
+    ];
+  const isHojaTermsLocked =
+    (hojaIsSigned && !waitingComiteAdjustments) ||
+    (!hojaIsSigned && hojaFirmadaPorCem);
 
   const persistHojaDraft = async () => {
-    if (!hojaId || !hojaForm || hojaIsSigned || hojaFirmadaPorCem) {
+    if (!hojaId || !hojaForm || isHojaTermsLocked) {
       return;
     }
 
@@ -738,6 +765,10 @@ export const ParksCommercialWorkflowPanel = ({
       brokerComisionPct: hojaForm.brokerComisionPct,
     });
     hydrateHoja(updated);
+    const refreshedComite = await fetchParksComiteByOpportunity(
+      opportunity.id,
+    );
+    setComiteForDeal(refreshedComite);
   };
 
   const applySignResult = (result: {
@@ -761,6 +792,12 @@ export const ParksCommercialWorkflowPanel = ({
           }
         : current,
     );
+
+    void fetchParksComiteByOpportunity(opportunity.id)
+      .then(setComiteForDeal)
+      .catch(() => {
+        setComiteForDeal(null);
+      });
 
     if (!result.readyForLegal) {
       return;
@@ -1027,6 +1064,7 @@ export const ParksCommercialWorkflowPanel = ({
                   />
                 </ParksFormField>
               </StyledParksFieldGrid>
+              <ParksComiteGateLegend glaM2={m2Ofertados} />
 
               <ParksFormField
                 label={t`Costos aledaños`}
@@ -1308,12 +1346,20 @@ export const ParksCommercialWorkflowPanel = ({
                   </StyledPreviewValue>
                 ) : null}
               </StyledNaveCard>
+              {waitingComiteAdjustments ? (
+                <StyledResultBanner>
+                  {t`El comité pidió ajustes y devolvió el deal a comercial. Cambia los términos de la Hoja y guarda: vuelve a sesión. Legal sigue sin verlo.`}
+                  {latestComiteAdjustment
+                    ? ` ${latestComiteAdjustment.texto}`
+                    : ''}
+                </StyledResultBanner>
+              ) : null}
 
               <StyledParksFieldGrid>
                 <ParksFormField label={t`Tipo de contrato`} htmlFor="hoja-tipo">
                   <StyledParksSelect
                     id="hoja-tipo"
-                    disabled={isBusy || hojaIsSigned || hojaFirmadaPorCem}
+                    disabled={isBusy || isHojaTermsLocked}
                     value={hojaForm.tipoContrato}
                     onChange={(event) => {
                       const nextTipoContrato = event.target.value;
@@ -1355,7 +1401,7 @@ export const ParksCommercialWorkflowPanel = ({
                 >
                   <StyledParksSelect
                     id="hoja-esquema"
-                    disabled={isBusy || hojaIsSigned || hojaFirmadaPorCem}
+                    disabled={isBusy || isHojaTermsLocked}
                     value={hojaForm.esquemaComision}
                     onChange={(event) => {
                       const nextEsquema = event.target.value;
@@ -1402,7 +1448,7 @@ export const ParksCommercialWorkflowPanel = ({
                 >
                   <StyledParksSelect
                     id="hoja-broker"
-                    disabled={isBusy || hojaIsSigned || hojaFirmadaPorCem}
+                    disabled={isBusy || isHojaTermsLocked}
                     value={hojaForm.brokerId}
                     onChange={(event) => {
                       const selectedBrokerId = event.target.value;
@@ -1464,7 +1510,7 @@ export const ParksCommercialWorkflowPanel = ({
                       step="0.1"
                       min={0}
                       max={100}
-                      disabled={isBusy || hojaIsSigned || hojaFirmadaPorCem}
+                      disabled={isBusy || isHojaTermsLocked}
                       value={hojaForm.brokerComisionPct}
                       onChange={(event) =>
                         setHojaForm((current) =>
@@ -1484,7 +1530,7 @@ export const ParksCommercialWorkflowPanel = ({
                     id="hoja-m2"
                     type="number"
                     min={0}
-                    disabled={isBusy || hojaIsSigned || hojaFirmadaPorCem}
+                    disabled={isBusy || isHojaTermsLocked}
                     value={hojaForm.m2Acordados}
                     onChange={(event) =>
                       setHojaForm((current) =>
@@ -1504,7 +1550,7 @@ export const ParksCommercialWorkflowPanel = ({
                     type="number"
                     step="0.01"
                     min={0}
-                    disabled={isBusy || hojaIsSigned || hojaFirmadaPorCem}
+                    disabled={isBusy || isHojaTermsLocked}
                     value={hojaForm.precioUsdM2}
                     onChange={(event) =>
                       setHojaForm((current) =>
@@ -1523,7 +1569,7 @@ export const ParksCommercialWorkflowPanel = ({
                     id="hoja-plazo"
                     type="number"
                     min={1}
-                    disabled={isBusy || hojaIsSigned || hojaFirmadaPorCem}
+                    disabled={isBusy || isHojaTermsLocked}
                     value={hojaForm.plazoMeses}
                     onChange={(event) =>
                       setHojaForm((current) =>
@@ -1544,7 +1590,7 @@ export const ParksCommercialWorkflowPanel = ({
                   <StyledParksInput
                     id="hoja-inicio"
                     type="date"
-                    disabled={isBusy || hojaIsSigned || hojaFirmadaPorCem}
+                    disabled={isBusy || isHojaTermsLocked}
                     value={hojaForm.fechaInicio}
                     onChange={(event) =>
                       setHojaForm((current) =>
@@ -1563,7 +1609,7 @@ export const ParksCommercialWorkflowPanel = ({
                     id="hoja-gracia"
                     type="number"
                     min={0}
-                    disabled={isBusy || hojaIsSigned || hojaFirmadaPorCem}
+                    disabled={isBusy || isHojaTermsLocked}
                     value={hojaForm.periodoGraciaMeses}
                     onChange={(event) =>
                       setHojaForm((current) =>
@@ -1585,7 +1631,7 @@ export const ParksCommercialWorkflowPanel = ({
                     id="hoja-deposito"
                     type="number"
                     min={0}
-                    disabled={isBusy || hojaIsSigned || hojaFirmadaPorCem}
+                    disabled={isBusy || isHojaTermsLocked}
                     value={hojaForm.depositoMeses}
                     onChange={(event) =>
                       setHojaForm((current) =>
@@ -1608,7 +1654,7 @@ export const ParksCommercialWorkflowPanel = ({
                     type="number"
                     step="0.1"
                     min={0}
-                    disabled={isBusy || hojaIsSigned || hojaFirmadaPorCem}
+                    disabled={isBusy || isHojaTermsLocked}
                     value={hojaForm.escalacionAnualPct}
                     onChange={(event) =>
                       setHojaForm((current) =>
@@ -1628,7 +1674,7 @@ export const ParksCommercialWorkflowPanel = ({
                 >
                   <StyledParksInput
                     id="hoja-ejecutivo"
-                    disabled={isBusy || hojaIsSigned || hojaFirmadaPorCem}
+                    disabled={isBusy || isHojaTermsLocked}
                     value={hojaForm.ejecutivoAsignado}
                     onChange={(event) =>
                       setHojaForm((current) =>
@@ -1649,7 +1695,7 @@ export const ParksCommercialWorkflowPanel = ({
                 >
                   <StyledParksTextarea
                     id="hoja-condiciones"
-                    disabled={isBusy || hojaIsSigned || hojaFirmadaPorCem}
+                    disabled={isBusy || isHojaTermsLocked}
                     placeholder={t`Descuentos, mejoras, cláusulas acordadas...`}
                     value={hojaForm.condicionesEspeciales}
                     onChange={(event) =>
@@ -1665,11 +1711,16 @@ export const ParksCommercialWorkflowPanel = ({
                   />
                 </ParksFormField>
               </StyledParksFieldGrid>
+              <ParksComiteGateLegend glaM2={hojaForm.m2Acordados} />
 
               <StyledActionsRow>
-                {!hojaIsSigned ? (
+                {!hojaIsSigned || waitingComiteAdjustments ? (
                   <ParksActionButton
-                    title={t`Guardar cambios`}
+                    title={
+                      waitingComiteAdjustments
+                        ? t`Guardar y reenviar a comité`
+                        : t`Guardar cambios`
+                    }
                     size="sm"
                     variant="secondary"
                     disabled={isBusy || !hojaId}
@@ -1678,7 +1729,9 @@ export const ParksCommercialWorkflowPanel = ({
                         async () => {
                           await persistHojaDraft();
                         },
-                        t`Borrador actualizado`,
+                        waitingComiteAdjustments
+                          ? t`Términos reenviados a sesión de comité`
+                          : t`Borrador actualizado`,
                       );
                     }}
                   />
@@ -1714,7 +1767,7 @@ export const ParksCommercialWorkflowPanel = ({
               </StyledActionsRow>
 
               <StyledHint>
-                {t`Firmas: el Director Comercial firma primero; luego el LO registra la firma del cliente. Con ambas, el deal entra al Comité de Autorización (mayoría 2 de 3) antes de Legal.`}
+                {t`Comité es un candado comercial, no legal. Firmas CEM + cliente: si GLA > 20,000 m² el deal entra a sesión de comité y Legal no lo ve hasta que el CEO apruebe. Si GLA es menor, va directo a Legal. Pedir ajustes lo regresa a esta Hoja; rechazar lo manda a negociación.`}
               </StyledHint>
 
               <StyledSignatureGrid>

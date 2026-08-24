@@ -1,6 +1,7 @@
 import { useHasAccessTokenPair } from '@/auth/hooks/useHasAccessTokenPair';
 import { currentUserState } from '@/auth/states/currentUserState';
 import { currentWorkspaceState } from '@/auth/states/currentWorkspaceState';
+import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
 import { isMinimalMetadataReadyState } from '@/metadata-store/states/isMinimalMetadataReadyState';
 import { metadataStoreState } from '@/metadata-store/states/metadataStoreState';
 import { useAtomFamilyStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomFamilyStateValue';
@@ -14,6 +15,7 @@ export const IsMinimalMetadataReadyEffect = () => {
   const hasAccessTokenPair = useHasAccessTokenPair();
   const currentUser = useAtomStateValue(currentUserState);
   const currentWorkspace = useAtomStateValue(currentWorkspaceState);
+  const { hasAnyParksNavAccess } = useParksAccess();
   const metadataStoreObjectMetadataItems = useAtomFamilyStateValue(
     metadataStoreState,
     'objectMetadataItems',
@@ -40,6 +42,11 @@ export const IsMinimalMetadataReadyEffect = () => {
       return;
     }
 
+    if (hasAnyParksNavAccess && isDefined(currentUser)) {
+      setIsMinimalMetadataReady(true);
+      return;
+    }
+
     const hasActiveWorkspace = isWorkspaceActiveOrSuspended(currentWorkspace);
 
     const areObjectsLoaded =
@@ -62,6 +69,7 @@ export const IsMinimalMetadataReadyEffect = () => {
     }
   }, [
     hasAccessTokenPair,
+    hasAnyParksNavAccess,
     currentUser,
     currentWorkspace,
     metadataStoreObjectMetadataItems.status,

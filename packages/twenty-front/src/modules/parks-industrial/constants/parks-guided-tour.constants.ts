@@ -6,6 +6,16 @@ export const PARKS_GUIDED_TOUR_NAV_TARGET_PREFIX = 'nav-';
 
 export const PARKS_GUIDED_TOUR_NAV_SECTION_ID = 'ParksIndustrial';
 
+export const PARKS_INVENTORY_TOUR_TARGETS = {
+  parks: 'inventory-parks',
+  parkPipeline: 'inventory-park-pipeline',
+  naves: 'inventory-naves',
+  nave: 'inventory-nave',
+} as const;
+
+export type ParksInventoryTourFocus =
+  (typeof PARKS_INVENTORY_TOUR_TARGETS)[keyof typeof PARKS_INVENTORY_TOUR_TARGETS];
+
 export type ParksGuidedTourItemCopy = {
   title: string;
   body: string;
@@ -29,8 +39,8 @@ export const PARKS_GUIDED_TOUR_ITEM_COPY: Record<
     body: 'Ocupación, pipeline, ingreso y vencimientos. Sirve para priorizar al equipo: qué deals empujar y dónde hay riesgo de vacancia.',
   },
   stackingPlan: {
-    title: 'Parques',
-    body: 'Inventario por parque: naves disponibles y leads ligados a cada uno. Entra a un parque para ver el stacking plan (plano de ocupación).',
+    title: 'Parques / inventario',
+    body: 'De lo general a lo específico: parques → pipeline del parque o tarjetas de naves → pipeline de cada nave. Incluye naves y parques en construcción para pre-renta. Los siguientes pasos te lo muestran en pantalla.',
   },
   pipeline: {
     title: 'Pipeline',
@@ -74,7 +84,7 @@ export const PARKS_GUIDED_TOUR_ITEM_COPY: Record<
   },
   comite: {
     title: 'Comité',
-    body: 'Autorización de condiciones especiales (descuento, plazo, m² grandes). El trío vota; el CEO entra si hay empate. LO puede consultar.',
+    body: 'Autorización de condiciones especiales. En Dirección Comercial y miembros es consulta; el CEO proyecta la sesión en vivo y resuelve en sala.',
   },
   asignacion: {
     title: 'Asignación',
@@ -115,27 +125,27 @@ export const PARKS_GUIDED_TOUR_ROLE_INTRO: Partial<
 > = {
   [ParksRoleLabel.CEO]: {
     title: 'Tu vista de CEO',
-    body: 'Este demo es el centro de mando: tablero, pendientes, parques, pipeline, comité y cobranza. No asignas LOs — eso es del Director Comercial. Recorremos cada módulo que ves a la izquierda.',
+    body: 'Este demo es el centro de mando: tablero por áreas, pendientes, inventario por niveles (parque → naves → pipeline, con pre-renta en construcción) y la sesión de comité. El detalle de legal o CxC se abre desde el tablero. Recorremos lo que ves a la izquierda.',
   },
   [ParksRoleLabel.DirectorComercial]: {
     title: 'Tu operación comercial',
-    body: 'Desde aquí corres el equipo: asignar leads, pipeline, comité, parques, brokers y comisiones. El menú izquierdo es tu mapa de trabajo. Te mostramos cada herramienta.',
+    body: 'Desde aquí corres el equipo: tablero, pipeline, asignación, comité y parques por niveles (incluido lo que aún está en obra). El menú izquierdo es tu mapa de trabajo.',
   },
   [ParksRoleLabel.EjecutivoComercial]: {
     title: 'Tu escritorio comercial',
-    body: 'Pipeline, parques, campo y tu desempeño. Tomas el lead asignado y lo llevas hasta hoja de acuerdos. Legal y CxC los verás en lectura cuando el deal avance.',
+    body: 'Pipeline, parques, campo, reservas y tu desempeño. Tomas el lead asignado y lo llevas hasta hoja de acuerdos. Si un deal escala a comité, lo consultas aquí.',
   },
   [ParksRoleLabel.LoAaaSenior]: {
     title: 'Tu escritorio de Leasing Officer AAA',
-    body: 'Pipeline, stacking, mapa, campo y desempeño. Los deals AAA viven aquí: tour, cotización y hoja. El Director Comercial te asigna; tú ejecutas.',
+    body: 'Pipeline, stacking, campo, reservas y desempeño. Los deals AAA viven aquí: tour, cotización y hoja. El Director Comercial te asigna; tú ejecutas.',
   },
   [ParksRoleLabel.LoEstandar]: {
     title: 'Tu escritorio de Leasing Officer',
-    body: 'Pipeline, parques, mapa y modo campo. Calificas, visitas, cotizas y generas la hoja. Si un deal escala a comité, lo consultas — no votas.',
+    body: 'Pipeline, parques, campo y reservas. Calificas, visitas, cotizas y generas la hoja. Si un deal escala a comité, lo consultas — no votas.',
   },
   [ParksRoleLabel.AdminLegal]: {
     title: 'Tu mesa de Legal (admin)',
-    body: 'Dashboard legal, pipeline, contratos y cotejo. Recibes el deal de comercial, asignas abogado y cierras el expediente. CxC no es tu módulo.',
+    body: 'Dashboard legal, pipeline, contratos y cotejo. Recibes el deal de comercial, asignas abogado y cierras el expediente.',
   },
   [ParksRoleLabel.DirectorLegal]: {
     title: 'Tu vista de Director Legal',
@@ -143,7 +153,7 @@ export const PARKS_GUIDED_TOUR_ROLE_INTRO: Partial<
   },
   [ParksRoleLabel.SubdirectorLegal]: {
     title: 'Tu vista de Subdirector Legal',
-    body: 'Pipeline, contratos y firmas internas. Entras cuando el caso necesita un OK de Legal antes de cotejo o firma final.',
+    body: 'Dashboard legal, pipeline, contratos y firmas internas. Entras cuando el caso necesita un OK de Legal antes de cotejo o firma final.',
   },
   [ParksRoleLabel.AbogadoAsignado]: {
     title: 'Tu mesa de abogado',
@@ -153,13 +163,17 @@ export const PARKS_GUIDED_TOUR_ROLE_INTRO: Partial<
     title: 'Tu asiento en Comité',
     body: 'Votas condiciones comerciales (Aprueba / Rechaza / Abstiene) junto con Dirección Comercial y el otro miembro. El CEO solo entra si hay empate.',
   },
+  [ParksRoleLabel.Cfo]: {
+    title: 'Tu mesa de CFO',
+    body: 'Tablero financiero, CxC, forecast de cobranza y comité. Entras para ver caja, mora y votar deals grandes; el día a día de tickets vive en Cartera CxC.',
+  },
   [ParksRoleLabel.GerenteCxc]: {
     title: 'Tu mesa de CxC',
-    body: 'Cartera, forecast y el handoff cuando Legal cierra el contrato. Comercial lo ves en consulta; el día a día es cobranza.',
+    body: 'Dashboard de cartera, forecast y renovaciones. Entras cuando Legal cierra el contrato. El día a día de cobranza vive en Cartera CxC.',
   },
   [ParksRoleLabel.CxC]: {
     title: 'Tu mesa de CxC',
-    body: 'Cartera y seguimiento de pagos. Entras cuando el contrato ya está firmado. El pipeline comercial no es tu herramienta principal.',
+    body: 'Cartera, forecast y seguimiento de pagos. Entras cuando el contrato ya está firmado.',
   },
   [ParksRoleLabel.EjecutivoCxc]: {
     title: 'Tu cartera de ejecutivo CxC',
@@ -167,15 +181,15 @@ export const PARKS_GUIDED_TOUR_ROLE_INTRO: Partial<
   },
   [ParksRoleLabel.ContratosFacturacion]: {
     title: 'Contratos y facturación',
-    body: 'Puente entre el contrato cerrado y la facturación / CxC. Consultas expedientes y notificaciones; no armas el deal comercial.',
+    body: 'Puente entre el contrato cerrado y la facturación. Consultas expedientes y notificaciones; no armas el deal comercial.',
   },
   [ParksRoleLabel.AdminSistema]: {
     title: 'Acceso de Admin Sistema',
-    body: 'En este demo ves todas las herramientas Parks. El recorrido es largo a propósito: es el mapa completo de lo que cada área usa.',
+    body: 'En este demo ves el mapa técnico de Parks. No es un puesto de negocio — úsalo para configurar, no para el pitch de un área.',
   },
   [ParksRoleLabel.AdminParque]: {
     title: 'Tu vista de Admin Parque',
-    body: 'Mapa, stacking y consulta de contratos del parque. No corres pipeline ni comité: tu foco es inventario y ocupación en sitio.',
+    body: 'Mapa y stacking del parque. Tu foco es inventario y ocupación en sitio.',
   },
 };
 

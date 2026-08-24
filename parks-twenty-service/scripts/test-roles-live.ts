@@ -20,6 +20,7 @@ const ROLE = {
   AdminLegal: 'Parks — Admin Legal',
   DirLegal: 'Parks — Director Legal',
   Miembro: 'Parks — Miembro del Comité',
+  Cfo: 'Parks — CFO',
   CxC: 'Parks — CxC',
   GerenteCxc: 'Parks — Gerente CxC',
   Facturacion: 'Parks — Contratos y Facturación',
@@ -43,6 +44,7 @@ const ROUTE_ACCESS: Record<RouteKey, readonly string[]> = {
   comite: [
     ROLE.CEM,
     ROLE.Miembro,
+    ROLE.Cfo,
     ROLE.CEO,
     ROLE.LO,
     ROLE.LO_AAA,
@@ -52,9 +54,8 @@ const ROUTE_ACCESS: Record<RouteKey, readonly string[]> = {
   cxc: [
     ROLE.CxC,
     ROLE.GerenteCxc,
-    'Parks — Ejecutivo CxC',
     ROLE.CEO,
-    ROLE.CEM,
+    ROLE.Cfo,
     ROLE.AdminSistema,
   ],
   pipeline: [
@@ -62,7 +63,6 @@ const ROUTE_ACCESS: Record<RouteKey, readonly string[]> = {
     ROLE.LO_AAA,
     'Parks — LO Estándar',
     ROLE.CEM,
-    ROLE.CEO,
     ROLE.AdminSistema,
   ],
   valorAgregado: [],
@@ -87,8 +87,13 @@ const EMAIL_TO_ROLE = Object.fromEntries(
   PARKS_DEMO_USERS.map((demoUser) => [demoUser.email, demoUser.roleLabel]),
 );
 
+const FRONTEND_ROLE: Record<string, string> = {
+  ...EMAIL_TO_ROLE,
+  [PARKS_DEMO_EMAIL.cfo]: ROLE.Cfo,
+};
+
 const canAccess = (email: string, routeKey: RouteKey): boolean => {
-  const roleLabel = EMAIL_TO_ROLE[email];
+  const roleLabel = FRONTEND_ROLE[email];
   assert.ok(roleLabel, `Unknown email ${email}`);
   return ROUTE_ACCESS[routeKey].includes(roleLabel);
 };
@@ -161,8 +166,8 @@ const CASES: CaseExpectation[] = [
     email: PARKS_DEMO_EMAIL.ceo,
     password: demoPassword(PARKS_DEMO_EMAIL.ceo),
     expectedRole: ROLE.CEO,
-    allow: ['comite', 'pipeline', 'cxc', 'notificaciones'],
-    deny: ['asignacion', 'leadsCem', 'legalPipeline', 'valorAgregado'],
+    allow: ['comite', 'cxc', 'notificaciones'],
+    deny: ['asignacion', 'leadsCem', 'legalPipeline', 'valorAgregado', 'pipeline'],
   },
   {
     email: PARKS_DEMO_EMAIL.directorComercial,
@@ -172,17 +177,16 @@ const CASES: CaseExpectation[] = [
       'asignacion',
       'comite',
       'pipeline',
-      'cxc',
       'leadsCem',
     ],
-    deny: ['legalPipeline', 'valorAgregado'],
+    deny: ['legalPipeline', 'valorAgregado', 'cxc'],
   },
   {
     email: PARKS_DEMO_EMAIL.cfo,
     password: demoPassword(PARKS_DEMO_EMAIL.cfo),
     expectedRole: ROLE.Miembro,
-    allow: ['comite', 'notificaciones'],
-    deny: ['pipeline', 'cxc', 'asignacion', 'legalPipeline', 'valorAgregado'],
+    allow: ['comite', 'notificaciones', 'cxc'],
+    deny: ['pipeline', 'asignacion', 'legalPipeline', 'valorAgregado'],
   },
   {
     email: PARKS_DEMO_EMAIL.directorLegal,

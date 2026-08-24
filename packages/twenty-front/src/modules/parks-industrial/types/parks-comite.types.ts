@@ -6,6 +6,7 @@ export type ComiteVotoValor =
 
 export type ComiteEstatus =
   | 'Abierto — en deliberación'
+  | 'Ajustes pedidos — espera comercial'
   | 'Resuelto — Aprobado'
   | 'Resuelto — Aprobado con voto disidente'
   | 'Resuelto — Rechazado'
@@ -44,6 +45,12 @@ export type ComiteMiembroSeat = {
   voto: ComiteVotoValor;
   fechaVoto?: string;
   comentario?: string;
+};
+
+export type ComiteAjusteSesion = {
+  texto: string;
+  fecha: string;
+  registradoPor: string;
 };
 
 export type ComitePregunta = {
@@ -120,6 +127,7 @@ export type ComiteAutorizacion = {
   preguntas: ComitePregunta[];
   casoLegalId?: string;
   flagsIaAtipicas: ComiteIaFlag[];
+  ajustesSesion?: ComiteAjusteSesion[];
   auditoria: string[];
   createdAt: string;
   updatedAt: string;

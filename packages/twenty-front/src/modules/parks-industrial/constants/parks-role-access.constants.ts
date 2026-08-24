@@ -34,6 +34,7 @@ export const ParksRoleLabel = {
   EjecutivoCxc: `${PARKS_ROLE_LABEL_PREFIX}Ejecutivo CxC`,
   DirectorComercial: `${PARKS_ROLE_LABEL_PREFIX}Director Comercial`,
   MiembroComite: `${PARKS_ROLE_LABEL_PREFIX}Miembro del Comité`,
+  Cfo: `${PARKS_ROLE_LABEL_PREFIX}CFO`,
   ContratosFacturacion: `${PARKS_ROLE_LABEL_PREFIX}Contratos y Facturación`,
   AdminSistema: `${PARKS_ROLE_LABEL_PREFIX}Admin Sistema`,
   AdminParque: `${PARKS_ROLE_LABEL_PREFIX}Admin Parque`,
@@ -81,6 +82,11 @@ export const PARKS_CXC_ROLE_LABELS = [
   ParksRoleLabel.EjecutivoCxc,
 ] as const;
 
+export const PARKS_CXC_MANAGER_ROLE_LABELS = [
+  ParksRoleLabel.CxC,
+  ParksRoleLabel.GerenteCxc,
+] as const;
+
 export const PARKS_LEGAL_EDITOR_ROLE_LABELS = [
   ParksRoleLabel.AdminLegal,
   ParksRoleLabel.DirectorLegal,
@@ -99,16 +105,14 @@ const withAdminSistema = (roleLabels: readonly string[]): string[] => [
   ParksRoleLabel.AdminSistema,
 ];
 
+// Who can open the URL. Pages stay in the app — restore access by adding
+// the role here. CEO keeps drill-downs from the command center even when
+// those items are hidden from the sidebar.
 export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
   ParksRouteAccessKey,
   readonly string[]
 > = {
-  dashboard: withAdminSistema([
-    ParksRoleLabel.DirectorComercial,
-    ParksRoleLabel.CEO,
-    ParksRoleLabel.AdminLegal,
-    ParksRoleLabel.DirectorLegal,
-  ]),
+  dashboard: withAdminSistema([ParksRoleLabel.CEO, ParksRoleLabel.Cfo]),
   dashboardComercial: withAdminSistema([
     ParksRoleLabel.CEO,
     ParksRoleLabel.DirectorComercial,
@@ -117,32 +121,20 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
     ParksRoleLabel.DirectorComercial,
     ParksRoleLabel.CEO,
-    ParksRoleLabel.AdminLegal,
-    ParksRoleLabel.DirectorLegal,
-    ParksRoleLabel.SubdirectorLegal,
-    ParksRoleLabel.AbogadoAsignado,
     ParksRoleLabel.AdminParque,
   ]),
   stackingPlan: withAdminSistema([
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
     ParksRoleLabel.DirectorComercial,
     ParksRoleLabel.CEO,
-    ParksRoleLabel.AdminLegal,
-    ParksRoleLabel.DirectorLegal,
-    ParksRoleLabel.SubdirectorLegal,
-    ParksRoleLabel.AbogadoAsignado,
     ParksRoleLabel.AdminParque,
   ]),
   pipeline: withAdminSistema([
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
     ParksRoleLabel.DirectorComercial,
-    ParksRoleLabel.CEO,
   ]),
   leadsCem: withAdminSistema([ParksRoleLabel.DirectorComercial]),
-  prospectos: withAdminSistema([
-    ...PARKS_LEASING_OFFICER_ROLE_LABELS,
-    ParksRoleLabel.DirectorComercial,
-  ]),
+  prospectos: withAdminSistema([]),
   notificaciones: ALL_PARKS_ROLES,
   misPendientes: withAdminSistema([
     ParksRoleLabel.CEO,
@@ -151,17 +143,14 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
     ParksRoleLabel.AdminLegal,
     ParksRoleLabel.SubdirectorLegal,
     ParksRoleLabel.MiembroComite,
+    ParksRoleLabel.Cfo,
   ]),
   contratos: withAdminSistema([
     ParksRoleLabel.AdminLegal,
     ParksRoleLabel.DirectorLegal,
     ParksRoleLabel.SubdirectorLegal,
     ParksRoleLabel.AbogadoAsignado,
-    ParksRoleLabel.DirectorComercial,
-    ...PARKS_LEASING_OFFICER_ROLE_LABELS,
-    ...PARKS_CXC_ROLE_LABELS,
     ParksRoleLabel.ContratosFacturacion,
-    ParksRoleLabel.AdminParque,
     ParksRoleLabel.CEO,
   ]),
   contratoAprobacion: withAdminSistema([
@@ -170,8 +159,6 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
     ParksRoleLabel.SubdirectorLegal,
     ParksRoleLabel.AbogadoAsignado,
     ParksRoleLabel.DirectorComercial,
-    ...PARKS_LEASING_OFFICER_ROLE_LABELS,
-    ...PARKS_CXC_ROLE_LABELS,
     ParksRoleLabel.CEO,
   ]),
   legalPipeline: withAdminSistema([
@@ -187,55 +174,39 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
     ParksRoleLabel.CEO,
   ]),
   cxc: withAdminSistema([
-    ...PARKS_CXC_ROLE_LABELS,
+    ...PARKS_CXC_MANAGER_ROLE_LABELS,
     ParksRoleLabel.CEO,
-    ParksRoleLabel.DirectorComercial,
+    ParksRoleLabel.Cfo,
   ]),
   cxcCartera: withAdminSistema([
     ...PARKS_CXC_ROLE_LABELS,
-    ParksRoleLabel.CEO,
-    ParksRoleLabel.DirectorComercial,
+    ParksRoleLabel.Cfo,
   ]),
   comite: withAdminSistema([
     ParksRoleLabel.DirectorComercial,
     ParksRoleLabel.MiembroComite,
+    ParksRoleLabel.Cfo,
     ParksRoleLabel.CEO,
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
   ]),
-  // Hidden from all sessions — menu removed from Parks nav
   valorAgregado: [],
   asignacion: withAdminSistema([ParksRoleLabel.DirectorComercial]),
-  loCampo: withAdminSistema([
-    ...PARKS_LEASING_OFFICER_ROLE_LABELS,
-    ParksRoleLabel.DirectorComercial,
-  ]),
+  loCampo: withAdminSistema([...PARKS_LEASING_OFFICER_ROLE_LABELS]),
   renovaciones: withAdminSistema([
-    ...PARKS_LEASING_OFFICER_ROLE_LABELS,
     ParksRoleLabel.DirectorComercial,
-    ParksRoleLabel.AdminLegal,
-    ParksRoleLabel.DirectorLegal,
-    ParksRoleLabel.SubdirectorLegal,
-    ParksRoleLabel.AbogadoAsignado,
-    ...PARKS_CXC_ROLE_LABELS,
+    ...PARKS_CXC_MANAGER_ROLE_LABELS,
     ParksRoleLabel.CEO,
+    ParksRoleLabel.Cfo,
   ]),
   reservas: withAdminSistema([
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
     ParksRoleLabel.DirectorComercial,
-    ParksRoleLabel.AdminLegal,
-    ParksRoleLabel.DirectorLegal,
   ]),
   comisiones: withAdminSistema([
     ParksRoleLabel.DirectorComercial,
     ParksRoleLabel.CEO,
-    ParksRoleLabel.AdminSistema,
   ]),
-  // Brokers directory is used by CEM and commercial ops when assigning deals
-  brokers: withAdminSistema([
-    ParksRoleLabel.DirectorComercial,
-    ParksRoleLabel.CEO,
-    ...PARKS_LEASING_OFFICER_ROLE_LABELS,
-  ]),
+  brokers: withAdminSistema([ParksRoleLabel.DirectorComercial]),
   miDesempeno: withAdminSistema([...PARKS_LEASING_OFFICER_ROLE_LABELS]),
   inquilino360: withAdminSistema([
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
@@ -245,16 +216,95 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
     ParksRoleLabel.AdminParque,
     ...PARKS_CXC_ROLE_LABELS,
     ParksRoleLabel.CEO,
+    ParksRoleLabel.Cfo,
   ]),
-  mapa: withAdminSistema([
+  mapa: withAdminSistema([ParksRoleLabel.AdminParque]),
+};
+
+// Who sees the item in the Parks sidebar and guided tour. Restore a menu
+// item by adding the role here (and to PARKS_ROUTE_ACCESS_BY_KEY if needed).
+export const PARKS_NAV_ACCESS_BY_KEY: Record<
+  ParksRouteAccessKey,
+  readonly string[]
+> = {
+  dashboard: withAdminSistema([ParksRoleLabel.CEO, ParksRoleLabel.Cfo]),
+  dashboardComercial: withAdminSistema([ParksRoleLabel.DirectorComercial]),
+  stackingPlanIndex: withAdminSistema([
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
     ParksRoleLabel.DirectorComercial,
     ParksRoleLabel.CEO,
-    ParksRoleLabel.AdminLegal,
-    ParksRoleLabel.DirectorLegal,
-    ParksRoleLabel.AbogadoAsignado,
     ParksRoleLabel.AdminParque,
   ]),
+  stackingPlan: withAdminSistema([
+    ...PARKS_LEASING_OFFICER_ROLE_LABELS,
+    ParksRoleLabel.DirectorComercial,
+    ParksRoleLabel.CEO,
+    ParksRoleLabel.AdminParque,
+  ]),
+  pipeline: withAdminSistema([
+    ...PARKS_LEASING_OFFICER_ROLE_LABELS,
+    ParksRoleLabel.DirectorComercial,
+  ]),
+  leadsCem: withAdminSistema([]),
+  prospectos: withAdminSistema([]),
+  notificaciones: ALL_PARKS_ROLES,
+  misPendientes: withAdminSistema([
+    ParksRoleLabel.CEO,
+    ParksRoleLabel.DirectorComercial,
+    ParksRoleLabel.DirectorLegal,
+    ParksRoleLabel.AdminLegal,
+    ParksRoleLabel.SubdirectorLegal,
+    ParksRoleLabel.MiembroComite,
+    ParksRoleLabel.Cfo,
+  ]),
+  contratos: withAdminSistema([
+    ParksRoleLabel.AdminLegal,
+    ParksRoleLabel.DirectorLegal,
+    ParksRoleLabel.SubdirectorLegal,
+    ParksRoleLabel.AbogadoAsignado,
+    ParksRoleLabel.ContratosFacturacion,
+  ]),
+  contratoAprobacion: [],
+  legalPipeline: withAdminSistema([
+    ParksRoleLabel.AdminLegal,
+    ParksRoleLabel.DirectorLegal,
+    ParksRoleLabel.SubdirectorLegal,
+    ParksRoleLabel.AbogadoAsignado,
+  ]),
+  legalDashboard: withAdminSistema([
+    ParksRoleLabel.AdminLegal,
+    ParksRoleLabel.DirectorLegal,
+    ParksRoleLabel.SubdirectorLegal,
+  ]),
+  cxc: withAdminSistema([
+    ...PARKS_CXC_MANAGER_ROLE_LABELS,
+    ParksRoleLabel.Cfo,
+  ]),
+  cxcCartera: withAdminSistema([
+    ...PARKS_CXC_ROLE_LABELS,
+    ParksRoleLabel.Cfo,
+  ]),
+  comite: withAdminSistema([
+    ParksRoleLabel.DirectorComercial,
+    ParksRoleLabel.MiembroComite,
+    ParksRoleLabel.Cfo,
+    ParksRoleLabel.CEO,
+    ...PARKS_LEASING_OFFICER_ROLE_LABELS,
+  ]),
+  valorAgregado: [],
+  asignacion: withAdminSistema([ParksRoleLabel.DirectorComercial]),
+  loCampo: withAdminSistema([...PARKS_LEASING_OFFICER_ROLE_LABELS]),
+  renovaciones: withAdminSistema([
+    ParksRoleLabel.DirectorComercial,
+    ...PARKS_CXC_MANAGER_ROLE_LABELS,
+    ParksRoleLabel.Cfo,
+  ]),
+  reservas: withAdminSistema([...PARKS_LEASING_OFFICER_ROLE_LABELS]),
+  comisiones: withAdminSistema([ParksRoleLabel.DirectorComercial]),
+  brokers: withAdminSistema([ParksRoleLabel.DirectorComercial]),
+  miDesempeno: withAdminSistema([...PARKS_LEASING_OFFICER_ROLE_LABELS]),
+  inquilino360: [],
+  mapa: withAdminSistema([ParksRoleLabel.AdminParque]),
 };
 
 export const PARKS_NAV_ROUTE_ACCESS: Array<{
@@ -292,20 +342,21 @@ export const PARKS_NAV_ROUTE_ACCESS: Array<{
 // Preferred first screen for demos — not the generic nav order.
 export const PARKS_ROLE_HOME_PATH: Partial<Record<string, string>> = {
   [ParksRoleLabel.CEO]: AppPath.ParksDashboard,
-  [ParksRoleLabel.DirectorComercial]: AppPath.ParksDashboard,
+  [ParksRoleLabel.DirectorComercial]: PARKS_DASHBOARD_COMERCIAL_PATH,
   [ParksRoleLabel.EjecutivoComercial]: AppPath.ParksPipeline,
   [ParksRoleLabel.LoAaaSenior]: AppPath.ParksPipeline,
   [ParksRoleLabel.LoEstandar]: AppPath.ParksPipeline,
   [ParksRoleLabel.CxC]: PARKS_CXC_PATH,
   [ParksRoleLabel.GerenteCxc]: PARKS_CXC_PATH,
-  [ParksRoleLabel.EjecutivoCxc]: PARKS_CXC_PATH,
+  [ParksRoleLabel.EjecutivoCxc]: PARKS_CXC_CARTERA_PATH,
   [ParksRoleLabel.AdminLegal]: PARKS_LEGAL_DASHBOARD_PATH,
   [ParksRoleLabel.DirectorLegal]: PARKS_LEGAL_DASHBOARD_PATH,
   [ParksRoleLabel.SubdirectorLegal]: PARKS_LEGAL_DASHBOARD_PATH,
   [ParksRoleLabel.AbogadoAsignado]: PARKS_LEGAL_PIPELINE_PATH,
+  [ParksRoleLabel.Cfo]: AppPath.ParksDashboard,
   [ParksRoleLabel.MiembroComite]: PARKS_COMITE_PATH,
   [ParksRoleLabel.AdminSistema]: AppPath.ParksDashboard,
-  [ParksRoleLabel.ContratosFacturacion]: PARKS_CXC_PATH,
+  [ParksRoleLabel.ContratosFacturacion]: AppPath.ParksContratos,
   [ParksRoleLabel.AdminParque]: AppPath.ParksMapa,
 };
 
@@ -320,7 +371,7 @@ const PARKS_DEMO_CANONICAL_EMAIL_TO_ROLE_LABEL: Record<string, string> = {
   [PARKS_DEMO_EMAIL.loAaaUae]: ParksRoleLabel.LoAaaSenior,
   [PARKS_DEMO_EMAIL.loEstandar]: ParksRoleLabel.LoEstandar,
   [PARKS_DEMO_EMAIL.ejecutivoComercial]: ParksRoleLabel.EjecutivoComercial,
-  [PARKS_DEMO_EMAIL.cfo]: ParksRoleLabel.MiembroComite,
+  [PARKS_DEMO_EMAIL.cfo]: ParksRoleLabel.Cfo,
   [PARKS_DEMO_EMAIL.directorOperaciones]: ParksRoleLabel.MiembroComite,
   [PARKS_DEMO_EMAIL.gerenteCxc]: ParksRoleLabel.GerenteCxc,
   [PARKS_DEMO_EMAIL.ejecutivoCxc1]: ParksRoleLabel.EjecutivoCxc,

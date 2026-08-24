@@ -138,7 +138,12 @@ export const ParksGuidedTourCard = ({
       <StyledCardHeader>
         <div>
           <StyledEyebrow>
-            {groupLabel ?? (step.kind === 'welcome' ? t`Tu área` : t`Herramienta`)}
+            {groupLabel ??
+              (step.kind === 'welcome'
+                ? t`Tu área`
+                : step.kind === 'page'
+                  ? t`En pantalla`
+                  : t`Herramienta`)}
           </StyledEyebrow>
           <StyledTitle id="parks-guided-tour-title">{step.title}</StyledTitle>
         </div>

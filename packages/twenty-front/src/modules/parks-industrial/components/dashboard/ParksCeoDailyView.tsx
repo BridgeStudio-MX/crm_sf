@@ -160,8 +160,8 @@ export const ParksCeoDailyView = ({
                 : t`Mis pendientes`,
           },
           {
-            to: AppPath.ParksDashboardComercial,
-            label: t`Dashboard comercial`,
+            to: AppPath.ParksStackingPlanIndex,
+            label: t`Inventario por parque`,
           },
           {
             to: AppPath.ParksLegalDashboard,

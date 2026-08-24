@@ -11,6 +11,7 @@ import {
   IconReportMoney,
   IconShield,
   IconTarget,
+  IconUsers,
 } from 'twenty-ui/icon';
 import { MOBILE_VIEWPORT, themeCssVariables } from 'twenty-ui/theme-constants';
 
@@ -343,6 +344,16 @@ export const ParksCeoCommandHero = ({ command }: ParksCeoCommandHeroProps) => {
       </StyledKpiGrid>
 
       <StyledLinks>
+        <StyledLink to={AppPath.ParksComite}>
+          <IconUsers size={14} />
+          {t`Sesión de comité`}
+          <IconArrowRight size={14} />
+        </StyledLink>
+        <StyledLink to={AppPath.ParksStackingPlanIndex}>
+          <IconBuildingSkyscraper size={14} />
+          {t`Inventario`}
+          <IconArrowRight size={14} />
+        </StyledLink>
         <StyledLink to={AppPath.ParksLegalDashboard}>
           <IconFileCheck size={14} />
           {t`Legal`}

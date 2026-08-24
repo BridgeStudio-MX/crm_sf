@@ -64,11 +64,27 @@ const StyledTooltipWrap = styled.div`
   z-index: 12002;
 `;
 
+const holesMatch = (
+  left: SpotlightRect | null,
+  right: SpotlightRect | null,
+): boolean => {
+  if (!left || !right) {
+    return left === right;
+  }
+
+  return (
+    left.top === right.top &&
+    left.left === right.left &&
+    left.width === right.width &&
+    left.height === right.height
+  );
+};
+
 const resolveTooltipCoords = (
   hole: SpotlightRect,
-  kind: 'welcome' | 'tool',
+  kind: 'welcome' | 'tool' | 'page',
 ): TooltipCoords => {
-  if (kind === 'welcome') {
+  if (kind === 'welcome' || kind === 'page') {
     return {
       top: Math.min(
         hole.top + hole.height + TOOLTIP_GAP_PX,
@@ -162,13 +178,15 @@ export const ParksGuidedTourOverlay = () => {
       const nextHole = measureTarget(currentStep.target, true);
 
       if (nextHole) {
-        setHole(nextHole);
+        setHole((currentHole) =>
+          holesMatch(currentHole, nextHole) ? currentHole : nextHole,
+        );
         return;
       }
 
       attemptCount += 1;
 
-      if (attemptCount < 40) {
+      if (attemptCount < 90) {
         animationFrame = window.requestAnimationFrame(syncHole);
       }
     };
@@ -179,7 +197,9 @@ export const ParksGuidedTourOverlay = () => {
       const nextHole = measureTarget(currentStep.target, false);
 
       if (nextHole) {
-        setHole(nextHole);
+        setHole((currentHole) =>
+          holesMatch(currentHole, nextHole) ? currentHole : nextHole,
+        );
       }
     };
 
@@ -236,11 +256,13 @@ export const ParksGuidedTourOverlay = () => {
     operations: t`Operaciones`,
   };
   const groupLabel =
-    currentStep.kind === 'tool'
-      ? currentStep.groupKey
-        ? groupLabels[currentStep.groupKey]
-        : t`Resumen`
-      : undefined;
+    currentStep.kind === 'page'
+      ? t`Inventario`
+      : currentStep.kind === 'tool'
+        ? currentStep.groupKey
+          ? groupLabels[currentStep.groupKey]
+          : t`Resumen`
+        : undefined;
   const tooltipCoords = isDefined(hole)
     ? resolveTooltipCoords(hole, currentStep.kind)
     : { top: 96, left: 96 };

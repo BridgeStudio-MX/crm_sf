@@ -43,6 +43,24 @@ export const fetchParksComiteById = async (
   return (await response.json()) as ComiteAutorizacion;
 };
 
+export const fetchParksComiteByOpportunity = async (
+  opportunityId: string,
+): Promise<ComiteAutorizacion | null> => {
+  const response = await fetch(
+    `${PARKS_COMITE_ENDPOINT}/by-opportunity/${opportunityId}`,
+  );
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  return (await response.json()) as ComiteAutorizacion;
+};
+
 export const voteParksComite = async ({
   comiteId,
   memberId,
@@ -94,6 +112,46 @@ export const decideParksComiteAsCeo = async ({
         viewerNombre,
       }),
     },
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  return (await response.json()) as ComiteAutorizacion;
+};
+
+export const requestParksComiteSessionAdjustments = async ({
+  comiteId,
+  texto,
+  viewerNombre,
+}: {
+  comiteId: string;
+  texto: string;
+  viewerNombre?: string;
+}): Promise<ComiteAutorizacion> => {
+  const response = await fetch(
+    `${PARKS_COMITE_ENDPOINT}/${comiteId}/session-adjustments`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texto, viewerNombre }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  return (await response.json()) as ComiteAutorizacion;
+};
+
+export const resubmitParksComiteAfterAdjustments = async (
+  comiteId: string,
+): Promise<ComiteAutorizacion> => {
+  const response = await fetch(
+    `${PARKS_COMITE_ENDPOINT}/${comiteId}/resubmit-after-adjustments`,
+    { method: 'POST' },
   );
 
   if (!response.ok) {

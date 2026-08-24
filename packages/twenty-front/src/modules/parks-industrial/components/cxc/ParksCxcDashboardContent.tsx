@@ -204,7 +204,13 @@ const StyledActionsRow = styled.div`
   gap: ${themeCssVariables.spacing[2]};
 `;
 
-export const ParksCxcDashboardContent = () => {
+type ParksCxcDashboardContentProps = {
+  variant?: 'cxc' | 'cfo';
+};
+
+export const ParksCxcDashboardContent = ({
+  variant = 'cxc',
+}: ParksCxcDashboardContentProps) => {
   const [dashboard, setDashboard] = useState<CxcDashboardResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -289,9 +295,17 @@ export const ParksCxcDashboardContent = () => {
   return (
     <StyledStack>
       <ParksPageHero
-        eyebrow={t`Cuentas por cobrar`}
-        title={t`Dashboard CxC`}
-        subtitle={t`KPIs, forecast y anomalías. El trabajo diario (pipeline, OC, holdovers) está en Cartera.`}
+        eyebrow={
+          variant === 'cfo' ? t`Finanzas · Cobranza` : t`Cuentas por cobrar`
+        }
+        title={
+          variant === 'cfo' ? t`Forecast y cartera` : t`Dashboard CxC`
+        }
+        subtitle={
+          variant === 'cfo'
+            ? t`Cobros esperados a 7 / 30 / 90 días, mora y anomalías. Baja a Cartera para el trabajo diario.`
+            : t`KPIs, forecast y anomalías. El trabajo diario (pipeline, OC, holdovers) está en Cartera.`
+        }
         stats={[
           {
             label: t`Cartera`,

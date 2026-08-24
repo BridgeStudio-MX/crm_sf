@@ -14,6 +14,7 @@ import { type ParksParqueRecord } from '@/parks-industrial/hooks/useParksParques
 import {
   buildParksRegionalMetricSummaries,
   isParksNaveDisponible,
+  isParksNaveEnConstruccion,
 } from '@/parks-industrial/utils/parks-portfolio-metrics.util';
 import {
   getParksAmountFromMicros,
@@ -66,6 +67,10 @@ const normalizeNaveStatusKey = (estatus?: string | null): string => {
 
   const normalizedEstatus = estatus.trim().toUpperCase();
 
+  if (isParksNaveEnConstruccion(normalizedEstatus)) {
+    return 'construccion';
+  }
+
   if (isParksNaveDisponible(normalizedEstatus)) {
     return 'disponible';
   }
@@ -87,6 +92,7 @@ const normalizeNaveStatusKey = (estatus?: string | null): string => {
 const NAVE_STATUS_COLORS: Record<string, string> = {
   disponible: themeCssVariables.color.green,
   rentada: themeCssVariables.color.blue,
+  construccion: themeCssVariables.color.orange,
   hold: themeCssVariables.color.orange,
   otro: themeCssVariables.color.gray,
 };
@@ -94,6 +100,7 @@ const NAVE_STATUS_COLORS: Record<string, string> = {
 const NAVE_STATUS_LABELS: Record<string, string> = {
   disponible: t`Disponible`,
   rentada: t`Rentada`,
+  construccion: t`En construcción`,
   hold: t`Hold / mantenimiento`,
   otro: t`Otro`,
 };
@@ -126,7 +133,7 @@ export const buildParksDashboardNaveStatusSlices = (
     counts.set(statusKey, (counts.get(statusKey) ?? 0) + 1);
   }
 
-  return ['disponible', 'rentada', 'hold', 'otro']
+  return ['disponible', 'rentada', 'construccion', 'hold', 'otro']
     .map((statusKey) => ({
       id: statusKey,
       label: NAVE_STATUS_LABELS[statusKey],

@@ -1767,6 +1767,22 @@ export const ParksComiteContent = () => {
               </ParksSectionCard>
             ) : null}
 
+            {(selected.ajustesSesion ?? []).length > 0 ? (
+              <ParksSectionCard
+                title={t`Ajustes pedidos en sala`}
+                accent="orange"
+              >
+                {selected.ajustesSesion?.map((adjustment) => (
+                  <StyledMeta
+                    key={`${adjustment.fecha}-${adjustment.texto}`}
+                    style={{ margin: 0, whiteSpace: 'pre-wrap' }}
+                  >
+                    {adjustment.registradoPor}: {adjustment.texto}
+                  </StyledMeta>
+                ))}
+              </ParksSectionCard>
+            ) : null}
+
             <ParksSectionCard
               title={t`Bitácora del comité (${selected.auditoria.length})`}
               accent="gray"

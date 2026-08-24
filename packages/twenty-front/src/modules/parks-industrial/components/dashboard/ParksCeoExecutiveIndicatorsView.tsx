@@ -138,8 +138,8 @@ export const ParksCeoExecutiveIndicatorsView = ({
             label: t`Parques y naves`,
           },
           {
-            to: AppPath.ParksDashboardComercial,
-            label: t`Panel Comercial`,
+            to: AppPath.ParksStackingPlanIndex,
+            label: t`Inventario por parque`,
           },
           {
             to: AppPath.ParksLegalDashboard,

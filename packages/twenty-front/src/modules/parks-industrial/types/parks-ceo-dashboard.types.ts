@@ -240,7 +240,11 @@ export type ParksCeoExecutiveIndicators = {
   ultimaActualizacionLabel: string;
 };
 
-export type ParksCeoDashboardView = 'ejecutivo' | 'diario' | 'consejo';
+export type ParksCeoDashboardView =
+  | 'hoy'
+  | 'portafolio'
+  | 'finanzas'
+  | 'tiempos';
 
 export type ParksCeoExecutiveDashboardResult = {
   generatedAt: string;

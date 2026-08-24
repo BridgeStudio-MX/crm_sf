@@ -4,13 +4,17 @@ import { ParksRoleLabel } from '@/parks-industrial/constants/parks-role-access.c
 import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
 import { hasAnyParksRoleLabel } from '@/parks-industrial/utils/parks-role-access.util';
 
-export type ParksDashboardAudience = 'ceo' | 'commercial';
+export type ParksDashboardAudience = 'ceo' | 'cfo' | 'commercial';
 
 export const useParksDashboardAudience = (): ParksDashboardAudience => {
   const { parksRoleLabels, primaryParksRoleLabel, hasFullParksAccess } =
     useParksAccess();
 
   return useMemo((): ParksDashboardAudience => {
+    if (primaryParksRoleLabel === ParksRoleLabel.Cfo) {
+      return 'cfo';
+    }
+
     if (primaryParksRoleLabel === ParksRoleLabel.DirectorComercial) {
       return 'commercial';
     }
@@ -29,6 +33,10 @@ export const useParksDashboardAudience = (): ParksDashboardAudience => {
       hasAnyParksRoleLabel(parksRoleLabels, [ParksRoleLabel.CEO])
     ) {
       return 'ceo';
+    }
+
+    if (hasAnyParksRoleLabel(parksRoleLabels, [ParksRoleLabel.Cfo])) {
+      return 'cfo';
     }
 
     return 'commercial';

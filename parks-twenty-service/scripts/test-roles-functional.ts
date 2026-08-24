@@ -37,6 +37,7 @@ const ROLE = {
   AdminLegal: 'Parks — Admin Legal',
   DirLegal: 'Parks — Director Legal',
   Miembro: 'Parks — Miembro del Comité',
+  Cfo: 'Parks — CFO',
   CxC: 'Parks — CxC',
   GerenteCxc: 'Parks — Gerente CxC',
   EjecutivoCxc: 'Parks — Ejecutivo CxC',
@@ -60,6 +61,7 @@ const ROUTE_ACCESS: Record<RouteKey, readonly string[]> = {
   comite: [
     ROLE.CEM,
     ROLE.Miembro,
+    ROLE.Cfo,
     ROLE.CEO,
     ROLE.LO,
     ROLE.LO_AAA,
@@ -69,12 +71,11 @@ const ROUTE_ACCESS: Record<RouteKey, readonly string[]> = {
   cxc: [
     ROLE.CxC,
     ROLE.GerenteCxc,
-    ROLE.EjecutivoCxc,
     ROLE.CEO,
-    ROLE.CEM,
+    ROLE.Cfo,
     ROLE.AdminSistema,
   ],
-  pipeline: [ROLE.LO, ROLE.LO_AAA, ROLE.LO_STD, ROLE.CEM, ROLE.CEO, ROLE.AdminSistema],
+  pipeline: [ROLE.LO, ROLE.LO_AAA, ROLE.LO_STD, ROLE.CEM, ROLE.AdminSistema],
   valorAgregado: [],
   legalPipeline: [
     'Parks — Admin Legal',
@@ -89,18 +90,18 @@ const ROUTE_ACCESS: Record<RouteKey, readonly string[]> = {
     ROLE.LO_AAA,
     ROLE.LO_STD,
     ROLE.CEM,
-    'Parks — Admin Legal',
-    'Parks — Director Legal',
-    'Parks — Subdirector Legal',
-    'Parks — Abogado asignado',
+    ROLE.CEO,
     ROLE.AdminParque,
     ROLE.AdminSistema,
   ],
 };
 
-const EMAIL_TO_ROLE: Record<string, string> = Object.fromEntries(
-  PARKS_DEMO_USERS.map((demoUser) => [demoUser.email, demoUser.roleLabel]),
-);
+const EMAIL_TO_ROLE: Record<string, string> = {
+  ...Object.fromEntries(
+    PARKS_DEMO_USERS.map((demoUser) => [demoUser.email, demoUser.roleLabel]),
+  ),
+  [PARKS_DEMO_EMAIL.cfo]: ROLE.Cfo,
+};
 
 const canAccess = (email: string, routeKey: RouteKey): boolean => {
   const roleLabel = EMAIL_TO_ROLE[email];
@@ -255,6 +256,7 @@ const main = async (): Promise<void> => {
   assert.equal(canAccess(PARKS_DEMO_EMAIL.directorLegal, 'comite'), false);
   assert.equal(canAccess(PARKS_DEMO_EMAIL.cfo, 'comite'), true);
   assert.equal(canAccess(PARKS_DEMO_EMAIL.cfo, 'pipeline'), false);
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.cfo, 'cxc'), true);
 
   assert.equal(canAccess(PARKS_DEMO_EMAIL.adminLegal, 'cxc'), false);
   assert.equal(canAccess(PARKS_DEMO_EMAIL.gerenteCxc, 'cxc'), true);
@@ -265,6 +267,9 @@ const main = async (): Promise<void> => {
     false,
   );
   assert.equal(canAccess(PARKS_DEMO_EMAIL.ceo, 'valorAgregado'), false);
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.ceo, 'pipeline'), false);
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.directorComercial, 'cxc'), false);
+  assert.equal(canAccess(PARKS_DEMO_EMAIL.adminLegal, 'stackingPlanIndex'), false);
   assert.equal(canAccess(PARKS_DEMO_EMAIL.loAaaIsrael, 'pipeline'), true);
   assert.equal(canAccess(PARKS_DEMO_EMAIL.loAaaIsrael, 'comite'), true);
 

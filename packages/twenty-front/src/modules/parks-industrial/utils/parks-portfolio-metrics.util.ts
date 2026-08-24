@@ -40,17 +40,94 @@ export type ParksRegionalMetricSummary = {
   m2Disponibles: number;
 };
 
-export const isParksNaveDisponible = (estatus?: string | null): boolean => {
-  if (!estatus) {
-    return false;
-  }
+export type ParksNaveInventoryKind =
+  | 'disponible'
+  | 'ocupada'
+  | 'construccion'
+  | 'negociacion';
 
-  const normalizedEstatus = estatus.trim().toUpperCase();
+const normalizeNaveEstatus = (estatus?: string | null): string =>
+  (estatus ?? '').trim().toUpperCase();
+
+export const isParksNaveDisponible = (estatus?: string | null): boolean => {
+  const normalizedEstatus = normalizeNaveEstatus(estatus);
 
   return (
     normalizedEstatus === 'DISPONIBLE' ||
     normalizedEstatus.includes('DISPONIBLE')
   );
+};
+
+export const isParksNaveEnConstruccion = (estatus?: string | null): boolean => {
+  const normalizedEstatus = normalizeNaveEstatus(estatus);
+
+  return (
+    normalizedEstatus.includes('CONSTRUCCI') ||
+    normalizedEstatus.includes('CONSTRUCCION')
+  );
+};
+
+export const isParksNaveOcupada = (estatus?: string | null): boolean => {
+  const normalizedEstatus = normalizeNaveEstatus(estatus);
+
+  return (
+    normalizedEstatus.includes('RENT') ||
+    normalizedEstatus.includes('OCUPAD')
+  );
+};
+
+export const resolveParksNaveInventoryKind = (
+  estatus?: string | null,
+): ParksNaveInventoryKind => {
+  if (isParksNaveEnConstruccion(estatus)) {
+    return 'construccion';
+  }
+
+  if (isParksNaveDisponible(estatus)) {
+    return 'disponible';
+  }
+
+  if (isParksNaveOcupada(estatus)) {
+    return 'ocupada';
+  }
+
+  return 'negociacion';
+};
+
+export const getParksNaveKindLabel = (
+  kind: ParksNaveInventoryKind,
+): string => {
+  if (kind === 'construccion') {
+    return 'En construcción';
+  }
+
+  if (kind === 'ocupada') {
+    return 'Ocupada';
+  }
+
+  if (kind === 'negociacion') {
+    return 'En negociación';
+  }
+
+  return 'Disponible';
+};
+
+export const getParksNaveKindColor = (
+  kind: ParksNaveInventoryKind,
+): ParksMetricCardAccent => {
+  if (kind === 'construccion') {
+    return 'orange';
+  }
+
+  if (kind === 'ocupada') {
+    return 'blue';
+  }
+
+  if (kind === 'negociacion') {
+    return 'yellow';
+  }
+
+  return 'green';
 };
 
 export const buildParksPortfolioMetricsFromParques = (

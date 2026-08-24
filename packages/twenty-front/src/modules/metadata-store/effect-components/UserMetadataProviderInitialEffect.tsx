@@ -67,13 +67,14 @@ export const UserMetadataProviderInitialEffect = () => {
 
   const shouldSkipUserQuery = !hasAccessTokenPair;
 
-  const { data: userQueryData, loading: userQueryLoading } = useQuery(
-    GetCurrentUserDocument,
-    {
-      skip: shouldSkipUserQuery,
-      fetchPolicy: 'network-only',
-    },
-  );
+  const {
+    data: userQueryData,
+    loading: userQueryLoading,
+    error: userQueryError,
+  } = useQuery(GetCurrentUserDocument, {
+    skip: shouldSkipUserQuery,
+    fetchPolicy: 'network-only',
+  });
 
   useEffect(() => {
     if (isInitialized) {
@@ -81,6 +82,12 @@ export const UserMetadataProviderInitialEffect = () => {
     }
 
     if (!hasAccessTokenPair) {
+      setIsCurrentUserLoaded(true);
+      setIsInitialized(true);
+      return;
+    }
+
+    if (isDefined(userQueryError) && !userQueryLoading) {
       setIsCurrentUserLoaded(true);
       setIsInitialized(true);
       return;
@@ -173,6 +180,7 @@ export const UserMetadataProviderInitialEffect = () => {
     isInitialized,
     hasAccessTokenPair,
     userQueryLoading,
+    userQueryError,
     userQueryData?.currentUser,
     setCurrentUser,
     setCurrentUserWorkspace,

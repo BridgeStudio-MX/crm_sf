@@ -11,7 +11,7 @@ import {
   getParksStackingStatusColor,
 } from '@/parks-industrial/utils/parks-format.util';
 
-type ParksStatusBadgeColor =
+export type ParksStatusBadgeColor =
   | ParksStackingStatusColor
   | 'blue'
   | 'red'

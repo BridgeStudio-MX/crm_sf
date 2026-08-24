@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { type ParksPortfolioSegment } from '@/parks-industrial/constants/parks-executive.constants';
 import { fetchParksCeoExecutiveDashboard } from '@/parks-industrial/services/parks-ceo.client';
 import {
   type ParksCeoDashboardView,
@@ -14,10 +13,9 @@ export const useParksCeoExecutiveDashboard = () => {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [view, setView] = useState<ParksCeoDashboardView>('ejecutivo');
+  const [view, setView] = useState<ParksCeoDashboardView>('hoy');
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
-  const [segmento, setSegmento] = useState<ParksPortfolioSegment>('TOTAL');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -27,7 +25,7 @@ export const useParksCeoExecutiveDashboard = () => {
       const result = await fetchParksCeoExecutiveDashboard({
         year,
         month,
-        segmento,
+        segmento: 'TOTAL',
       });
       setData(result);
     } catch (loadError) {
@@ -39,7 +37,7 @@ export const useParksCeoExecutiveDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, [month, segmento, year]);
+  }, [month, year]);
 
   useEffect(() => {
     void load();
@@ -55,8 +53,6 @@ export const useParksCeoExecutiveDashboard = () => {
     setYear,
     month,
     setMonth,
-    segmento,
-    setSegmento,
     refresh: load,
   };
 };
