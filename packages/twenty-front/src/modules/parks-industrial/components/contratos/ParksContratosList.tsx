@@ -1,6 +1,7 @@
 import { styled } from '@linaria/react';
 import { t } from '@lingui/core/macro';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { AppPath } from 'twenty-shared/types';
 import { getAppPath } from 'twenty-shared/utils';
 import {
@@ -22,15 +23,21 @@ import {
   ParksSectionCard,
   StyledParksPageStack,
 } from '@/parks-industrial/components/ui/ParksSectionCard';
+import { ParksSegmentedControl } from '@/parks-industrial/components/ui/ParksSegmentedControl';
 import { ParksStatusBadge } from '@/parks-industrial/components/ui/ParksStatusBadge';
 import { getLegalEstatusLabel } from '@/parks-industrial/constants/parks-legal-workflow.constants';
-import { PARKS_BRAND } from '@/parks-industrial/constants/parks-theme.constants';
+import {
+  PARKS_BRAND,
+  PARKS_VIBE,
+} from '@/parks-industrial/constants/parks-theme.constants';
 import { type ParksCasoLegalRecord } from '@/parks-industrial/hooks/useParksRecords';
 import {
   getParksLegalLawyerInitials,
   getParksLegalSemaforoBadgeColor,
   getParksLegalSemaforoLabel,
 } from '@/parks-industrial/utils/parks-format.util';
+
+type ParksContratosLayout = 'tarjetas' | 'lista';
 
 const StyledCardGrid = styled.div`
   display: grid;
@@ -107,6 +114,62 @@ const StyledFooter = styled.div`
   padding-top: ${themeCssVariables.spacing[2]};
 `;
 
+const StyledTableShell = styled.div`
+  border: 1px solid ${themeCssVariables.border.color.medium};
+  border-radius: ${PARKS_VIBE.radiusMd};
+  overflow: hidden;
+`;
+
+const StyledTableScroll = styled.div`
+  overflow-x: auto;
+`;
+
+const StyledTable = styled.table`
+  border-collapse: collapse;
+  min-width: 760px;
+  width: 100%;
+`;
+
+const StyledTableHeadCell = styled.th`
+  background: ${themeCssVariables.background.tertiary};
+  border-bottom: 1px solid ${themeCssVariables.border.color.medium};
+  color: ${themeCssVariables.font.color.secondary};
+  font-size: ${themeCssVariables.font.size.xs};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  padding: ${themeCssVariables.spacing[2]} ${themeCssVariables.spacing[3]};
+  text-align: left;
+  white-space: nowrap;
+`;
+
+const StyledTableRow = styled.tr`
+  cursor: pointer;
+  transition: background 0.12s ease;
+
+  &:hover {
+    background: ${themeCssVariables.background.transparent.light};
+  }
+
+  &:not(:last-child) td {
+    border-bottom: 1px solid ${themeCssVariables.border.color.light};
+  }
+`;
+
+const StyledTableCell = styled.td`
+  color: ${themeCssVariables.font.color.primary};
+  font-size: ${themeCssVariables.font.size.sm};
+  padding: ${themeCssVariables.spacing[2]} ${themeCssVariables.spacing[3]};
+  vertical-align: middle;
+`;
+
+const StyledReferenciaLink = styled.span`
+  color: ${PARKS_BRAND.primary};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+`;
+
+const StyledSecondaryText = styled.span`
+  color: ${themeCssVariables.font.color.secondary};
+`;
+
 const getSemaforoAccent = (semaforo?: string | null): string => {
   if (semaforo === 'ROJO') {
     return themeCssVariables.color.red;
@@ -133,6 +196,9 @@ type ParksContratosListProps = {
 export const ParksContratosList = ({
   casosLegales,
 }: ParksContratosListProps) => {
+  const navigate = useNavigate();
+  const [layout, setLayout] = useState<ParksContratosLayout>('tarjetas');
+
   const sortedCasos = [...casosLegales].sort((left, right) => {
     if (left.semaforo === 'ROJO' && right.semaforo !== 'ROJO') {
       return -1;
@@ -218,12 +284,87 @@ export const ParksContratosList = ({
         />
       </ParksDashboardFeaturedMetrics>
 
-      <ParksSectionCard title={t`Expedientes`} accent="green">
+      <ParksSectionCard
+        title={t`Expedientes`}
+        accent="green"
+        action={
+          <ParksSegmentedControl
+            value={layout}
+            onChange={setLayout}
+            options={[
+              { id: 'tarjetas', label: t`Tarjetas` },
+              { id: 'lista', label: t`Lista` },
+            ]}
+          />
+        }
+      >
         {sortedCasos.length === 0 ? (
           <ParksEmptyState
             title={t`No hay contratos en aprobación`}
             description={t`Los casos legales aparecerán aquí cuando entren al flujo de revisión.`}
           />
+        ) : layout === 'lista' ? (
+          <StyledTableShell>
+            <StyledTableScroll>
+              <StyledTable>
+                <thead>
+                  <tr>
+                    <StyledTableHeadCell>{t`Referencia`}</StyledTableHeadCell>
+                    <StyledTableHeadCell>{t`Inquilino`}</StyledTableHeadCell>
+                    <StyledTableHeadCell>{t`Nave`}</StyledTableHeadCell>
+                    <StyledTableHeadCell>{t`Semáforo`}</StyledTableHeadCell>
+                    <StyledTableHeadCell>{t`Estatus`}</StyledTableHeadCell>
+                    <StyledTableHeadCell>{t`Abogado`}</StyledTableHeadCell>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedCasos.map((caso) => (
+                    <StyledTableRow
+                      key={caso.id}
+                      onClick={() =>
+                        navigate(
+                          getAppPath(AppPath.ParksContratoAprobacion, {
+                            contratoId: caso.id,
+                          }),
+                        )
+                      }
+                    >
+                      <StyledTableCell>
+                        <StyledReferenciaLink>
+                          {caso.referencia ?? t`Sin referencia`}
+                        </StyledReferenciaLink>
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        {caso.inquilino?.empresa ?? t`Sin inquilino`}
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        <StyledSecondaryText>
+                          {caso.nave?.identificador ?? t`Sin nave`}
+                        </StyledSecondaryText>
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        <ParksStatusBadge
+                          color={getParksLegalSemaforoBadgeColor(caso.semaforo)}
+                          label={getParksLegalSemaforoLabel(caso.semaforo)}
+                        />
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        <ParksStatusBadge
+                          color="blue"
+                          label={getLegalEstatusLabel(caso.estatus)}
+                        />
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        <StyledSecondaryText>
+                          {caso.abogadoAsignado?.trim() || t`Sin asignar`}
+                        </StyledSecondaryText>
+                      </StyledTableCell>
+                    </StyledTableRow>
+                  ))}
+                </tbody>
+              </StyledTable>
+            </StyledTableScroll>
+          </StyledTableShell>
         ) : (
           <StyledCardGrid>
             {sortedCasos.map((caso) => (

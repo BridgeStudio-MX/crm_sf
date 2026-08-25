@@ -183,7 +183,6 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
     ParksRoleLabel.Cfo,
   ]),
   comite: withAdminSistema([
-    ParksRoleLabel.DirectorComercial,
     ParksRoleLabel.MiembroComite,
     ParksRoleLabel.Cfo,
     ParksRoleLabel.CEO,
@@ -285,7 +284,6 @@ export const PARKS_NAV_ACCESS_BY_KEY: Record<
     ParksRoleLabel.Cfo,
   ]),
   comite: withAdminSistema([
-    ParksRoleLabel.DirectorComercial,
     ParksRoleLabel.MiembroComite,
     ParksRoleLabel.Cfo,
     ParksRoleLabel.CEO,
@@ -300,7 +298,10 @@ export const PARKS_NAV_ACCESS_BY_KEY: Record<
     ParksRoleLabel.Cfo,
   ]),
   reservas: withAdminSistema([...PARKS_LEASING_OFFICER_ROLE_LABELS]),
-  comisiones: withAdminSistema([ParksRoleLabel.DirectorComercial]),
+  comisiones: withAdminSistema([
+    ParksRoleLabel.DirectorComercial,
+    ParksRoleLabel.CEO,
+  ]),
   brokers: withAdminSistema([ParksRoleLabel.DirectorComercial]),
   miDesempeno: withAdminSistema([...PARKS_LEASING_OFFICER_ROLE_LABELS]),
   inquilino360: [],

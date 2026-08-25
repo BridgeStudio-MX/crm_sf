@@ -58,7 +58,7 @@ En Continuar con email: pega el correo del puesto → **Iniciar sesión** (no Re
 |---|---|
 | Dashboard CEO / Asistente IA / Mis pendientes | `ceo@prk.com.mx` |
 | Comité — voto CEO (empate Samsung) | `ceo@prk.com.mx` |
-| Comité de Autorización (voto Dir. Comercial) / Asignación IA | `directorcomercial@prk.com.mx` |
+| Asignación IA / cola comercial | `directorcomercial@prk.com.mx` |
 | Voto CFO en comité | `cfo@prk.com.mx` |
 | Pipeline comercial (Leasing Officer) | `leasingofficeraaa@prk.com.mx` |
 | Legal (casos, checklist, cotejo IA) | `adminlegal@prk.com.mx` |
@@ -66,12 +66,13 @@ En Continuar con email: pega el correo del puesto → **Iniciar sesión** (no Re
 
 ## Miembros del Comité (votan en /parks/comite)
 
-**Trío (voto ordinario — Aprueba / Rechaza / Se abstiene):**
+Dirección Comercial **no** entra a Comité (sin ítem en menú). El voto ordinario lo llevan CFO y Operaciones; el CEO entra en empate.
 
-1. Director Comercial — `directorcomercial@prk.com.mx`
-2. Director Financiero (CFO) — `cfo@prk.com.mx`
-3. Director de Operaciones — `directoroperaciones@prk.com.mx`
+**Trío / asientos demo (voto ordinario — Aprueba / Rechaza / Se abstiene):**
 
-**Voto CEO (cuando hay empate 1–1–1):**
+1. Director Financiero (CFO) — `cfo@prk.com.mx`
+2. Director de Operaciones — `directoroperaciones@prk.com.mx`
 
-4. CEO — `ceo@prk.com.mx` → **Aprobar / Rechazar** en el caso escalado (demo: Samsung)
+**Voto CEO (cuando hay empate):**
+
+3. CEO — `ceo@prk.com.mx` → **Aprobar / Rechazar** en el caso escalado (demo: Samsung)

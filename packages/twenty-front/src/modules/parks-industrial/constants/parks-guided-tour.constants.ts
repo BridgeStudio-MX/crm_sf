@@ -129,7 +129,7 @@ export const PARKS_GUIDED_TOUR_ROLE_INTRO: Partial<
   },
   [ParksRoleLabel.DirectorComercial]: {
     title: 'Tu operación comercial',
-    body: 'Desde aquí corres el equipo: tablero, pipeline, asignación, comité y parques por niveles (incluido lo que aún está en obra). El menú izquierdo es tu mapa de trabajo.',
+    body: 'Desde aquí corres el equipo: tablero, pipeline, asignación y parques por niveles (incluido lo que aún está en obra). El menú izquierdo es tu mapa de trabajo.',
   },
   [ParksRoleLabel.EjecutivoComercial]: {
     title: 'Tu escritorio comercial',
@@ -161,7 +161,7 @@ export const PARKS_GUIDED_TOUR_ROLE_INTRO: Partial<
   },
   [ParksRoleLabel.MiembroComite]: {
     title: 'Tu asiento en Comité',
-    body: 'Votas condiciones comerciales (Aprueba / Rechaza / Abstiene) junto con Dirección Comercial y el otro miembro. El CEO solo entra si hay empate.',
+    body: 'Votas condiciones comerciales (Aprueba / Rechaza / Abstiene) junto con el otro miembro del comité. El CEO solo entra si hay empate.',
   },
   [ParksRoleLabel.Cfo]: {
     title: 'Tu mesa de CFO',

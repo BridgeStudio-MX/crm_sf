@@ -6,6 +6,8 @@ import { AppPath } from 'twenty-shared/types';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
 import { ParksInventoryParkGrid } from '@/parks-industrial/components/portfolio/ParksInventoryParkGrid';
+import { ParksInventoryParkList } from '@/parks-industrial/components/portfolio/ParksInventoryParkList';
+import { ParksInventoryParkMap } from '@/parks-industrial/components/portfolio/ParksInventoryParkMap';
 import {
   ParksInventoryNaveWorkspace,
   ParksInventoryParkWorkspace,
@@ -15,6 +17,7 @@ import { ParksEmptyState } from '@/parks-industrial/components/ui/ParksEmptyStat
 import { ParksLoadingSkeleton } from '@/parks-industrial/components/ui/ParksLoadingSkeleton';
 import { ParksMetricCard } from '@/parks-industrial/components/ui/ParksMetricCard';
 import { ParksSectionCard } from '@/parks-industrial/components/ui/ParksSectionCard';
+import { ParksSegmentedControl } from '@/parks-industrial/components/ui/ParksSegmentedControl';
 import { PARKS_INVENTORY_TOUR_TARGETS } from '@/parks-industrial/constants/parks-guided-tour.constants';
 import { PARKS_BRAND } from '@/parks-industrial/constants/parks-theme.constants';
 import { useParksGuidedTour } from '@/parks-industrial/hooks/useParksGuidedTour';
@@ -30,6 +33,8 @@ type ParksInventoryExplorerProps = {
   showPipelineLink?: boolean;
 };
 
+type ParksInventoryLayout = 'parques' | 'lista' | 'mapa';
+
 const StyledMetricsGrid = styled.div`
   display: grid;
   gap: ${themeCssVariables.spacing[3]};
@@ -37,11 +42,22 @@ const StyledMetricsGrid = styled.div`
   margin-bottom: ${themeCssVariables.spacing[4]};
 `;
 
+const StyledToolbarRow = styled.div`
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${themeCssVariables.spacing[3]};
+  justify-content: space-between;
+  margin-bottom: ${themeCssVariables.spacing[3]};
+`;
+
 const StyledIntro = styled.p`
   color: ${themeCssVariables.font.color.secondary};
+  flex: 1;
   font-size: ${themeCssVariables.font.size.sm};
   line-height: 1.45;
-  margin: 0 0 ${themeCssVariables.spacing[3]} 0;
+  margin: 0;
+  min-width: 200px;
 `;
 
 const StyledCrumbRow = styled.div`
@@ -95,6 +111,8 @@ export const ParksInventoryExplorer = ({
   const [localNaveId, setLocalNaveId] = useState<string | null>(null);
   const [localParkView, setLocalParkView] =
     useState<ParksInventoryParkView>('pipeline');
+  const [localInventoryLayout, setLocalInventoryLayout] =
+    useState<ParksInventoryLayout>('parques');
   const tourSelection = resolveParksInventoryTourSelection(
     portfolio.parks,
     currentStep?.inventoryFocus,
@@ -107,6 +125,8 @@ export const ParksInventoryExplorer = ({
     ? tourSelection.selectedNaveId
     : localNaveId;
   const parkView = isTourDriving ? tourSelection.parkView : localParkView;
+  // Guided tour anchors the parks grid; keep Parques layout while the tour drives.
+  const inventoryLayout = isTourDriving ? 'parques' : localInventoryLayout;
 
   const selectedPark =
     portfolio.parks.find((park) => park.parqueId === selectedParkId) ?? null;
@@ -157,9 +177,20 @@ export const ParksInventoryExplorer = ({
     >
       {selectedPark === null ? (
         <>
-          <StyledIntro>
-            {t`Empieza por el parque. Entra al pipeline de ese parque o cambia a tarjetas de naves — incluidas las que aún están en construcción.`}
-          </StyledIntro>
+          <StyledToolbarRow>
+            <StyledIntro>
+              {t`Empieza por el parque. Entra al pipeline de ese parque o cambia a tarjetas de naves — incluidas las que aún están en construcción.`}
+            </StyledIntro>
+            <ParksSegmentedControl
+              value={inventoryLayout}
+              onChange={setLocalInventoryLayout}
+              options={[
+                { id: 'parques', label: t`Parques` },
+                { id: 'lista', label: t`Lista` },
+                { id: 'mapa', label: t`Mapa` },
+              ]}
+            />
+          </StyledToolbarRow>
           <StyledMetricsGrid>
             <ParksMetricCard
               label={t`Parques`}
@@ -187,10 +218,24 @@ export const ParksInventoryExplorer = ({
           <StyledTourAnchor
             data-parks-tour-target={PARKS_INVENTORY_TOUR_TARGETS.parks}
           >
-            <ParksInventoryParkGrid
-              parks={portfolio.parks}
-              onSelectPark={handleSelectPark}
-            />
+            {inventoryLayout === 'lista' ? (
+              <ParksInventoryParkList
+                parks={portfolio.parks}
+                onSelectPark={handleSelectPark}
+              />
+            ) : null}
+            {inventoryLayout === 'mapa' ? (
+              <ParksInventoryParkMap
+                parks={portfolio.parks}
+                onSelectPark={handleSelectPark}
+              />
+            ) : null}
+            {inventoryLayout === 'parques' ? (
+              <ParksInventoryParkGrid
+                parks={portfolio.parks}
+                onSelectPark={handleSelectPark}
+              />
+            ) : null}
           </StyledTourAnchor>
         </>
       ) : (
