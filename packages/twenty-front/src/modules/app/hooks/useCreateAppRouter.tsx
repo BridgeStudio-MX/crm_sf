@@ -19,6 +19,9 @@ import {
   PARKS_CXC_CARTERA_PATH,
   PARKS_CXC_PATH,
   PARKS_DASHBOARD_COMERCIAL_PATH,
+  PARKS_DASHBOARD_MARKETING_PATH,
+  PARKS_CAMPANAS_PATH,
+  PARKS_SECUENCIAS_PATH,
   PARKS_INQUILINO_360_PATH,
   PARKS_LEADS_CEM_PATH,
   PARKS_LEGAL_DASHBOARD_PATH,
@@ -245,6 +248,26 @@ const ParksDashboardComercialPage = lazy(() =>
       default: module.ParksDashboardComercialPage,
     }),
   ),
+);
+
+const ParksDashboardMarketingPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksDashboardMarketingPage').then(
+    (module) => ({
+      default: module.ParksDashboardMarketingPage,
+    }),
+  ),
+);
+
+const ParksCampanasPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksCampanasPage').then((module) => ({
+    default: module.ParksCampanasPage,
+  })),
+);
+
+const ParksSecuenciasPage = lazy(() =>
+  import('~/pages/parks-industrial/ParksSecuenciasPage').then((module) => ({
+    default: module.ParksSecuenciasPage,
+  })),
 );
 
 const ParksComisionesPage = lazy(() =>
@@ -499,6 +522,30 @@ export const useCreateAppRouter = (
               element={
                 <ParksLazyRoute>
                   <ParksDashboardComercialPage />
+                </ParksLazyRoute>
+              }
+            />
+            <Route
+              path={PARKS_DASHBOARD_MARKETING_PATH}
+              element={
+                <ParksLazyRoute>
+                  <ParksDashboardMarketingPage />
+                </ParksLazyRoute>
+              }
+            />
+            <Route
+              path={PARKS_CAMPANAS_PATH}
+              element={
+                <ParksLazyRoute>
+                  <ParksCampanasPage />
+                </ParksLazyRoute>
+              }
+            />
+            <Route
+              path={PARKS_SECUENCIAS_PATH}
+              element={
+                <ParksLazyRoute>
+                  <ParksSecuenciasPage />
                 </ParksLazyRoute>
               }
             />

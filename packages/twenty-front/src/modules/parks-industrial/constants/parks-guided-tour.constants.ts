@@ -36,7 +36,19 @@ export const PARKS_GUIDED_TOUR_ITEM_COPY: Record<
   },
   dashboardComercial: {
     title: 'Dashboard comercial',
-    body: 'Ocupación, pipeline, ingreso y vencimientos. Sirve para priorizar al equipo: qué deals empujar y dónde hay riesgo de vacancia.',
+    body: 'Tu centro de mando: ocupación, pipeline, producto disponible y cola de leads. Los siguientes pasos te muestran cada bloque en pantalla.',
+  },
+  dashboardMarketing: {
+    title: 'Dashboard marketing',
+    body: 'Cómo van las campañas: gasto, leads por canal, calificación IA y tours. Entra aquí para decidir dónde poner presupuesto.',
+  },
+  campanas: {
+    title: 'Campañas',
+    body: 'Lista de campañas activas, pausadas y cerradas con CPL, % calificados y m² prospectados.',
+  },
+  secuencias: {
+    title: 'Nutrición / secuencias',
+    body: 'Plantillas de correos de nutrición por canal. Puedes ver el contenido; editar aún no está habilitado en el demo.',
   },
   stackingPlan: {
     title: 'Parques / inventario',
@@ -129,7 +141,11 @@ export const PARKS_GUIDED_TOUR_ROLE_INTRO: Partial<
   },
   [ParksRoleLabel.DirectorComercial]: {
     title: 'Tu operación comercial',
-    body: 'Desde aquí corres el equipo: tablero, pipeline, asignación y parques por niveles (incluido lo que aún está en obra). El menú izquierdo es tu mapa de trabajo.',
+    body: 'Desde aquí corres el equipo: tablero, pipeline, asignación y parques por niveles (incluido lo que aún está en obra). El menú izquierdo es tu mapa de trabajo — al llegar al Dashboard comercial te mostramos cada bloque en pantalla.',
+  },
+  [ParksRoleLabel.Marketing]: {
+    title: 'Tu mesa de Marketing',
+    body: 'Mides demanda industrial: campañas, leads por canal, fit score y nutrición. Al llegar al Dashboard marketing te mostramos cada bloque en pantalla; después el menú te lleva a Campañas y Nutrición.',
   },
   [ParksRoleLabel.EjecutivoComercial]: {
     title: 'Tu escritorio comercial',

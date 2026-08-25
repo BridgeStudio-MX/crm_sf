@@ -9,6 +9,12 @@ export const PARKS_NAVIGATION_ITEM_HELP: Record<
     'Centro de mando: para el CEO, pulso por áreas; para el CFO, forecast y cobranza. Entra cuando quieras una foto antes de bajar al detalle.',
   dashboardComercial:
     'Tablero comercial con ocupación, pipeline, ingresos y riesgos de vencimiento para priorizar al equipo.',
+  dashboardMarketing:
+    'Tablero de marketing: campañas, leads por canal, fit score IA, CPL y conversión a tours.',
+  campanas:
+    'Campañas de demanda industrial: presupuesto, gasto, leads, calificación y tours por canal.',
+  secuencias:
+    'Correos de nutrición por canal. Hoy solo lectura; la edición llega en una siguiente versión.',
   stackingPlan:
     'Inventario por niveles: parque → pipeline o naves → pipeline de cada nave. Incluye naves en construcción para pre-renta antes de la entrega.',
   pipeline:

@@ -90,6 +90,7 @@ export const ParksNavigationSection = ({
   const groupLabels: Record<ParksNavigationGroupKey, string> = {
     overview: t`Resumen`,
     commercial: t`Comercial`,
+    marketing: t`Marketing`,
     legal: t`Legal`,
     operations: t`Operaciones`,
   };
@@ -97,6 +98,9 @@ export const ParksNavigationSection = ({
   const itemLabels: Record<ParksNavigationItemKey, string> = {
     dashboard: t`Dashboard`,
     dashboardComercial: t`Dashboard comercial`,
+    dashboardMarketing: t`Dashboard marketing`,
+    campanas: t`Campañas`,
+    secuencias: t`Nutrición`,
     stackingPlan: isCeoLiveSession ? t`Inventario` : t`Parques`,
     pipeline: t`Pipeline`,
     leadsCem: t`Leads Director Comercial`,

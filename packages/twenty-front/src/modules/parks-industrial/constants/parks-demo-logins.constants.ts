@@ -21,6 +21,7 @@ export const PARKS_DEMO_EMAIL = {
   contratosFacturacion: `contratos@${PARKS_DEMO_LOGIN_DOMAIN}`,
   adminSistema: `adminsistema@${PARKS_DEMO_LOGIN_DOMAIN}`,
   adminParque: `adminparque@${PARKS_DEMO_LOGIN_DOMAIN}`,
+  marketing: `marketing@${PARKS_DEMO_LOGIN_DOMAIN}`,
 } as const;
 
 export const PARKS_DEMO_EMAIL_ALIASES: Record<string, string> = {

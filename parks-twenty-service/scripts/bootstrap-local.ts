@@ -8,7 +8,11 @@ dotenv.config();
 // Applies the canonical Parks demo logins (@prk.com.mx) to the local Twenty DB.
 // Source of truth: src/metadata/parks-demo-users.constants.ts
 
-const STEPS = ['setup:demo-users', 'setup:assign-roles'] as const;
+const STEPS = [
+  'setup:roles',
+  'setup:demo-users',
+  'setup:assign-roles',
+] as const;
 
 const runStep = (stepName: (typeof STEPS)[number]): Promise<void> =>
   new Promise((resolve, reject) => {

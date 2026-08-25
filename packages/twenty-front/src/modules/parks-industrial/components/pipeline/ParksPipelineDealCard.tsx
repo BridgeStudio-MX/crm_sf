@@ -266,7 +266,7 @@ export const ParksPipelineDealCardView = ({
           {prospectScore ? (
             <ParksStatusBadge
               color={getParksProspectScoreBadgeColor(prospectScore.tier)}
-              label={t`${prospectScore.fitScore} · ${formatParksProspectUrgencyLabel(prospectScore.urgency)}`}
+              label={t`IA ${prospectScore.fitScore} · ${formatParksProspectUrgencyLabel(prospectScore.urgency)}`}
             />
           ) : null}
           {comiteMarker ? (

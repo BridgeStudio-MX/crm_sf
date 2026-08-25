@@ -7,7 +7,6 @@ import {
   IconBox,
   IconBuildingSkyscraper,
   IconChartBar,
-  IconCurrencyDollar,
   IconTarget,
 } from 'twenty-ui/icon';
 import { MOBILE_VIEWPORT, themeCssVariables } from 'twenty-ui/theme-constants';
@@ -38,6 +37,7 @@ import {
   StyledParksPageStack,
   StyledParksTwoColumnGrid,
 } from '@/parks-industrial/components/ui/ParksSectionCard';
+import { PARKS_COMMERCIAL_DASHBOARD_TOUR_TARGETS } from '@/parks-industrial/constants/parks-commercial-dashboard-tour.constants';
 import { useParksDashboardAudience } from '@/parks-industrial/hooks/useParksDashboardAudience';
 import {
   buildParksVencimientosPorMes,
@@ -82,6 +82,10 @@ const StyledSectionLink = styled(Link)`
   &:hover {
     text-decoration: underline;
   }
+`;
+
+const StyledTourAnchor = styled.div`
+  min-width: 0;
 `;
 
 export const ParksDashboardContent = () => {
@@ -136,46 +140,75 @@ export const ParksCommercialDashboardContent = () => {
 
   return (
     <StyledParksPageStack>
-      <ParksDashboardHero
-        ocupacion={metrics.ocupacion}
-        ocupacionSlices={charts.ocupacionSlices}
-        parqueCount={metrics.parqueCount}
-        m2Totales={metrics.m2Totales}
-        pipelineValueUsd={metrics.pipelineValueUsd}
-        pipelineActiveDeals={metrics.pipelineActiveDeals}
-        ingresosMensuales={metrics.ingresosMensuales}
-      />
+      <StyledTourAnchor
+        data-parks-tour-target={PARKS_COMMERCIAL_DASHBOARD_TOUR_TARGETS.hero}
+      >
+        <ParksDashboardHero
+          ocupacion={metrics.ocupacion}
+          ocupacionSlices={charts.ocupacionSlices}
+          parqueCount={metrics.parqueCount}
+          m2Totales={metrics.m2Totales}
+          pipelineValueUsd={metrics.pipelineValueUsd}
+          pipelineActiveDeals={metrics.pipelineActiveDeals}
+          ingresosMensuales={metrics.ingresosMensuales}
+        />
+      </StyledTourAnchor>
 
-      <ParksDashboardFeaturedMetrics>
-        <ParksDashboardFeaturedMetric
-          label={t`Tasa de ocupación`}
-          value={`${metrics.ocupacion}%`}
-          hint={t`Consolidado del grupo`}
-          icon={IconChartBar}
-          accent={getParksOcupacionMetricAccent(metrics.ocupacion)}
-        />
-        <ParksDashboardFeaturedMetric
-          label={t`Ingresos mensuales`}
-          value={formatParksUsd(metrics.ingresosMensuales)}
-          hint={t`Estimado de cartera activa`}
-          icon={IconCurrencyDollar}
-          accent="green"
-        />
-        <ParksDashboardFeaturedMetric
-          label={t`Valor pipeline`}
-          value={formatParksUsd(metrics.pipelineValueUsd)}
-          hint={t`${metrics.pipelineActiveDeals} oportunidades activas`}
-          icon={IconTarget}
-          accent="blue"
-        />
-      </ParksDashboardFeaturedMetrics>
+      <StyledTourAnchor
+        data-parks-tour-target={
+          PARKS_COMMERCIAL_DASHBOARD_TOUR_TARGETS.metrics
+        }
+      >
+        <ParksDashboardFeaturedMetrics>
+          <ParksDashboardFeaturedMetric
+            label={t`Tasa de ocupación`}
+            value={`${metrics.ocupacion}%`}
+            hint={t`Consolidado del grupo`}
+            icon={IconChartBar}
+            accent={getParksOcupacionMetricAccent(metrics.ocupacion)}
+          />
+          <ParksDashboardFeaturedMetric
+            label={t`Naves disponibles`}
+            value={String(metrics.navesDisponibles)}
+            hint={`${formatParksNumber(metrics.m2CatalogoDisponible)} m² ${t`libres`}`}
+            icon={IconBox}
+            accent="green"
+          />
+          <ParksDashboardFeaturedMetric
+            label={t`Valor pipeline`}
+            value={formatParksUsd(metrics.pipelineValueUsd)}
+            hint={t`${metrics.pipelineActiveDeals} oportunidades activas`}
+            icon={IconTarget}
+            accent="blue"
+          />
+        </ParksDashboardFeaturedMetrics>
+      </StyledTourAnchor>
 
       <ParksAiQuickActions actions={buildParksDashboardQuickActions()} />
 
-      <ParksPortfolioByParkSection />
+      <StyledTourAnchor
+        data-parks-tour-target={
+          PARKS_COMMERCIAL_DASHBOARD_TOUR_TARGETS.portfolio
+        }
+      >
+        <ParksPortfolioByParkSection />
+      </StyledTourAnchor>
 
-      <ParksCemQueueSection />
-      <ParksCemDirectorDashboard />
+      <StyledTourAnchor
+        data-parks-tour-target={
+          PARKS_COMMERCIAL_DASHBOARD_TOUR_TARGETS.cemQueue
+        }
+      >
+        <ParksCemQueueSection />
+      </StyledTourAnchor>
+
+      <StyledTourAnchor
+        data-parks-tour-target={
+          PARKS_COMMERCIAL_DASHBOARD_TOUR_TARGETS.teamPulse
+        }
+      >
+        <ParksCemDirectorDashboard />
+      </StyledTourAnchor>
 
       <StyledMetricsGrid>
         <ParksMetricCard

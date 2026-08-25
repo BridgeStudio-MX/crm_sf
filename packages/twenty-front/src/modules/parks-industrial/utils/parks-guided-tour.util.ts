@@ -7,6 +7,16 @@ import {
   PARKS_INVENTORY_TOUR_TARGETS,
 } from '@/parks-industrial/constants/parks-guided-tour.constants';
 import {
+  PARKS_COMMERCIAL_DASHBOARD_TOUR_PAGE_COPY,
+  PARKS_COMMERCIAL_DASHBOARD_TOUR_PATH,
+  PARKS_COMMERCIAL_DASHBOARD_TOUR_TARGETS,
+} from '@/parks-industrial/constants/parks-commercial-dashboard-tour.constants';
+import {
+  PARKS_MARKETING_DASHBOARD_TOUR_PAGE_COPY,
+  PARKS_MARKETING_DASHBOARD_TOUR_PATH,
+  PARKS_MARKETING_DASHBOARD_TOUR_TARGETS,
+} from '@/parks-industrial/constants/parks-marketing-dashboard-tour.constants';
+import {
   PARKS_INVENTORY_TOUR_PAGE_COPY,
   PARKS_INVENTORY_TOUR_PATH,
 } from '@/parks-industrial/constants/parks-inventory-tour.constants';
@@ -86,13 +96,60 @@ export const buildParksGuidedTourSteps = ({
     return {
       id: inventoryFocus,
       target: inventoryFocus,
-      kind: 'page',
+      kind: 'page' as const,
       groupKey: inventoryGroupKey,
-      itemKey: 'stackingPlan',
+      itemKey: 'stackingPlan' as const,
       title: copy.title,
       body: copy.body,
       path: PARKS_INVENTORY_TOUR_PATH,
       inventoryFocus,
+    };
+  });
+
+  const commercialDashboardGroupKey = resolveParksTourGroupKey(
+    'dashboardComercial',
+  );
+  const commercialDashboardPageSteps: ParksGuidedTourStep[] = [
+    PARKS_COMMERCIAL_DASHBOARD_TOUR_TARGETS.hero,
+    PARKS_COMMERCIAL_DASHBOARD_TOUR_TARGETS.metrics,
+    PARKS_COMMERCIAL_DASHBOARD_TOUR_TARGETS.portfolio,
+    PARKS_COMMERCIAL_DASHBOARD_TOUR_TARGETS.cemQueue,
+    PARKS_COMMERCIAL_DASHBOARD_TOUR_TARGETS.teamPulse,
+  ].map((dashboardFocus) => {
+    const copy = PARKS_COMMERCIAL_DASHBOARD_TOUR_PAGE_COPY[dashboardFocus];
+
+    return {
+      id: dashboardFocus,
+      target: dashboardFocus,
+      kind: 'page' as const,
+      groupKey: commercialDashboardGroupKey,
+      itemKey: 'dashboardComercial' as const,
+      title: copy.title,
+      body: copy.body,
+      path: PARKS_COMMERCIAL_DASHBOARD_TOUR_PATH,
+    };
+  });
+
+  const marketingDashboardGroupKey = resolveParksTourGroupKey(
+    'dashboardMarketing',
+  );
+  const marketingDashboardPageSteps: ParksGuidedTourStep[] = [
+    PARKS_MARKETING_DASHBOARD_TOUR_TARGETS.metrics,
+    PARKS_MARKETING_DASHBOARD_TOUR_TARGETS.channels,
+    PARKS_MARKETING_DASHBOARD_TOUR_TARGETS.campaigns,
+    PARKS_MARKETING_DASHBOARD_TOUR_TARGETS.leads,
+  ].map((dashboardFocus) => {
+    const copy = PARKS_MARKETING_DASHBOARD_TOUR_PAGE_COPY[dashboardFocus];
+
+    return {
+      id: dashboardFocus,
+      target: dashboardFocus,
+      kind: 'page' as const,
+      groupKey: marketingDashboardGroupKey,
+      itemKey: 'dashboardMarketing' as const,
+      title: copy.title,
+      body: copy.body,
+      path: PARKS_MARKETING_DASHBOARD_TOUR_PATH,
     };
   });
 
@@ -108,11 +165,19 @@ export const buildParksGuidedTourSteps = ({
       body: copy.body,
     };
 
-    if (itemKey !== 'stackingPlan') {
-      return [toolStep];
+    if (itemKey === 'stackingPlan') {
+      return [toolStep, ...inventoryPageSteps];
     }
 
-    return [toolStep, ...inventoryPageSteps];
+    if (itemKey === 'dashboardComercial') {
+      return [toolStep, ...commercialDashboardPageSteps];
+    }
+
+    if (itemKey === 'dashboardMarketing') {
+      return [toolStep, ...marketingDashboardPageSteps];
+    }
+
+    return [toolStep];
   });
 
   return [welcomeStep, ...toolSteps];

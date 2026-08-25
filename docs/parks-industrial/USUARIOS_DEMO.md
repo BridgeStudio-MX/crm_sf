@@ -51,6 +51,7 @@ En Continuar con email: pega el correo del puesto → **Iniciar sesión** (no Re
 | Operación | `contratos@prk.com.mx` | Parks — Contratos y Facturación |
 | Sistema | `adminsistema@prk.com.mx` | Parks — Admin Sistema |
 | Parque | `adminparque@prk.com.mx` | Parks — Admin Parque |
+| Marketing | `marketing@prk.com.mx` | Parks — Marketing |
 
 ## Accesos rápidos para el pitch
 
@@ -59,6 +60,7 @@ En Continuar con email: pega el correo del puesto → **Iniciar sesión** (no Re
 | Dashboard CEO / Asistente IA / Mis pendientes | `ceo@prk.com.mx` |
 | Comité — voto CEO (empate Samsung) | `ceo@prk.com.mx` |
 | Asignación IA / cola comercial | `directorcomercial@prk.com.mx` |
+| Marketing — campañas, leads, nutrición | `marketing@prk.com.mx` |
 | Voto CFO en comité | `cfo@prk.com.mx` |
 | Pipeline comercial (Leasing Officer) | `leasingofficeraaa@prk.com.mx` |
 | Legal (casos, checklist, cotejo IA) | `adminlegal@prk.com.mx` |

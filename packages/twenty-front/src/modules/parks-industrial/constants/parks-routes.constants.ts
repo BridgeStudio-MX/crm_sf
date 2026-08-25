@@ -85,6 +85,21 @@ export const PARKS_DASHBOARD_COMERCIAL_PATH = resolveParksPath(
   '/parks/dashboard-comercial',
 );
 
+export const PARKS_DASHBOARD_MARKETING_PATH = resolveParksPath(
+  AppPath.ParksDashboardMarketing,
+  '/parks/dashboard-marketing',
+);
+
+export const PARKS_CAMPANAS_PATH = resolveParksPath(
+  AppPath.ParksCampanas,
+  '/parks/campanas',
+);
+
+export const PARKS_SECUENCIAS_PATH = resolveParksPath(
+  AppPath.ParksSecuencias,
+  '/parks/secuencias',
+);
+
 export const PARKS_BROKERS_PATH = resolveParksPath(
   AppPath.ParksBrokers,
   '/parks/brokers',

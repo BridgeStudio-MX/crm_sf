@@ -9,6 +9,7 @@ import {
   IconLayoutGrid,
   IconLayoutKanban,
   IconListCheck,
+  IconMail,
   IconMap,
   IconNotes,
   IconRefresh,
@@ -26,19 +27,25 @@ import { type ParksRouteAccessKey } from '@/parks-industrial/constants/parks-rol
 import {
   PARKS_ASIGNACION_PATH,
   PARKS_BROKERS_PATH,
+  PARKS_CAMPANAS_PATH,
   PARKS_COMITE_PATH,
   PARKS_CXC_CARTERA_PATH,
   PARKS_CXC_PATH,
   PARKS_DASHBOARD_COMERCIAL_PATH,
+  PARKS_DASHBOARD_MARKETING_PATH,
   PARKS_LEGAL_DASHBOARD_PATH,
   PARKS_LEGAL_PIPELINE_PATH,
   PARKS_LO_CAMPO_PATH,
   PARKS_MIS_PENDIENTES_PATH,
+  PARKS_SECUENCIAS_PATH,
 } from '@/parks-industrial/constants/parks-routes.constants';
 
 export type ParksNavigationItemKey =
   | 'dashboard'
   | 'dashboardComercial'
+  | 'dashboardMarketing'
+  | 'campanas'
+  | 'secuencias'
   | 'stackingPlan'
   | 'pipeline'
   | 'leadsCem'
@@ -63,6 +70,7 @@ export type ParksNavigationItemKey =
 export type ParksNavigationGroupKey =
   | 'overview'
   | 'commercial'
+  | 'marketing'
   | 'legal'
   | 'operations';
 
@@ -94,6 +102,24 @@ export const PARKS_NAVIGATION_ITEMS: Record<
     to: PARKS_DASHBOARD_COMERCIAL_PATH,
     Icon: IconLayoutKanban,
     iconColor: 'blue',
+  },
+  dashboardMarketing: {
+    accessKey: 'dashboardMarketing',
+    to: PARKS_DASHBOARD_MARKETING_PATH,
+    Icon: IconChartBar,
+    iconColor: 'purple',
+  },
+  campanas: {
+    accessKey: 'campanas',
+    to: PARKS_CAMPANAS_PATH,
+    Icon: IconTarget,
+    iconColor: 'orange',
+  },
+  secuencias: {
+    accessKey: 'secuencias',
+    to: PARKS_SECUENCIAS_PATH,
+    Icon: IconMail,
+    iconColor: 'sky',
   },
   stackingPlan: {
     accessKey: 'stackingPlanIndex',
@@ -225,8 +251,14 @@ export const PARKS_NAVIGATION_GROUPS: ParksNavigationGroupDefinition[] = [
       'dashboard',
       'misPendientes',
       'dashboardComercial',
+      'dashboardMarketing',
       'legalDashboard',
     ],
+  },
+  {
+    id: 'marketing',
+    groupKey: 'marketing',
+    itemKeys: ['campanas', 'secuencias'],
   },
   {
     id: 'commercial',

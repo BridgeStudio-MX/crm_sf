@@ -63,6 +63,46 @@ const StyledEmbeddedActions = styled.div`
   justify-content: flex-end;
 `;
 
+const StyledFitScoreBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${themeCssVariables.spacing[2]};
+`;
+
+const StyledAiChipRow = styled.div`
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${themeCssVariables.spacing[2]};
+`;
+
+const StyledAiChip = styled.span`
+  align-items: center;
+  background: ${themeCssVariables.color.purple1};
+  border: 1px solid ${themeCssVariables.color.purple4};
+  border-radius: ${themeCssVariables.border.radius.pill};
+  color: ${themeCssVariables.color.purple11};
+  display: inline-flex;
+  font-size: ${themeCssVariables.font.size.xs};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  gap: 6px;
+  padding: 3px 10px;
+`;
+
+const StyledFitScoreValue = styled.span`
+  align-items: center;
+  color: ${themeCssVariables.font.color.primary};
+  display: inline-flex;
+  font-size: ${themeCssVariables.font.size.md};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  gap: 6px;
+`;
+
+const StyledAiHint = styled.span`
+  color: ${themeCssVariables.font.color.tertiary};
+  font-size: ${themeCssVariables.font.size.xs};
+`;
+
 type ParksProspectEnrichmentPanelProps = {
   opportunityId: string;
   companyName: string;
@@ -124,13 +164,29 @@ export const ParksProspectEnrichmentPanel = ({
 
           <ParksDetailField
             label={t`Fit score`}
+            icon={IconSparkles}
             accent="purple"
             value={
-              <ParksProgressBar
-                label={t`Fit score`}
-                valueLabel={`${enrichment.fitScore}/100`}
-                percentage={enrichment.fitScore}
-              />
+              <StyledFitScoreBlock>
+                <StyledAiChipRow>
+                  <StyledAiChip>
+                    <IconSparkles size={14} />
+                    {t`IA`}
+                  </StyledAiChip>
+                  <StyledFitScoreValue>
+                    <IconSparkles size={16} />
+                    {`${enrichment.fitScore}/100`}
+                  </StyledFitScoreValue>
+                </StyledAiChipRow>
+                <ParksProgressBar
+                  label={t`Fit score IA`}
+                  valueLabel={`${enrichment.fitScore}/100`}
+                  percentage={enrichment.fitScore}
+                />
+                <StyledAiHint>
+                  {t`Calificación generada por análisis de IA del prospecto, mercado y empresa.`}
+                </StyledAiHint>
+              </StyledFitScoreBlock>
             }
           />
 
@@ -180,6 +236,28 @@ export const ParksProspectEnrichmentPanel = ({
               ))}
             </StyledList>
           </StyledActionsBlock>
+
+          {enrichment.investmentSignals.length > 0 ? (
+            <StyledActionsBlock>
+              <StyledSectionLabel>{t`Señales de mercado / inversión`}</StyledSectionLabel>
+              <StyledList>
+                {enrichment.investmentSignals.map((signal) => (
+                  <li key={signal}>{signal}</li>
+                ))}
+              </StyledList>
+            </StyledActionsBlock>
+          ) : null}
+
+          {enrichment.linkedInSignals.length > 0 ? (
+            <StyledActionsBlock>
+              <StyledSectionLabel>{t`Señales de la empresa`}</StyledSectionLabel>
+              <StyledList>
+                {enrichment.linkedInSignals.map((signal) => (
+                  <li key={signal}>{signal}</li>
+                ))}
+              </StyledList>
+            </StyledActionsBlock>
+          ) : null}
 
           {enrichment.usedLlm ? (
             <ParksStatusBadge color="green" label={t`OpenAI`} />

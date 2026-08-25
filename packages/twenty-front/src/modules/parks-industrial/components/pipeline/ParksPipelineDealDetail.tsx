@@ -686,6 +686,15 @@ export const ParksPipelineDealDetail = ({
         >
           {activeTab === 'contexto' ? (
             <StyledTabStack>
+              {deal.stage === 'LEAD_RECIBIDO' ||
+              deal.stage === 'CALIFICADO' ? (
+                <ParksProspectEnrichmentPanel
+                  opportunityId={deal.id}
+                  companyName={companyName}
+                  m2Requeridos={deal.m2Requeridos}
+                  embedded
+                />
+              ) : null}
               <StyledResumenCard>
                 <StyledContextGrid>
                   <ParksDetailField
@@ -746,6 +755,12 @@ export const ParksPipelineDealDetail = ({
 
           {activeTab === 'calificar' ? (
             <StyledTabStack>
+              <ParksProspectEnrichmentPanel
+                opportunityId={deal.id}
+                companyName={companyName}
+                m2Requeridos={deal.m2Requeridos}
+                embedded
+              />
               <ParksAssignLeasingOfficerPanel
                 deal={deal}
                 onAssigned={onDealUpdated}
@@ -765,12 +780,6 @@ export const ParksPipelineDealDetail = ({
                   }}
                 />
               ) : null}
-              <ParksProspectEnrichmentPanel
-                opportunityId={deal.id}
-                companyName={companyName}
-                m2Requeridos={deal.m2Requeridos}
-                embedded
-              />
               <ParksEmailSequencePanel
                 opportunityId={deal.id}
                 companyName={companyName}

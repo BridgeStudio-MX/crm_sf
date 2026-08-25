@@ -252,12 +252,17 @@ export const ParksGuidedTourOverlay = () => {
   const toolIndex = resolveParksGuidedTourToolIndex(steps, stepIndex);
   const groupLabels: Record<string, string> = {
     commercial: t`Comercial`,
+    marketing: t`Marketing`,
     legal: t`Legal`,
     operations: t`Operaciones`,
   };
   const groupLabel =
     currentStep.kind === 'page'
-      ? t`Inventario`
+      ? currentStep.itemKey === 'dashboardComercial'
+        ? t`Dashboard comercial`
+        : currentStep.itemKey === 'dashboardMarketing'
+          ? t`Dashboard marketing`
+          : t`Inventario`
       : currentStep.kind === 'tool'
         ? currentStep.groupKey
           ? groupLabels[currentStep.groupKey]

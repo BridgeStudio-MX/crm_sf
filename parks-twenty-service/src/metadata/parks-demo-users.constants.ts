@@ -36,6 +36,7 @@ export const PARKS_DEMO_EMAIL = {
   contratosFacturacion: `contratos@${PARKS_DEMO_LOGIN_DOMAIN}`,
   adminSistema: `adminsistema@${PARKS_DEMO_LOGIN_DOMAIN}`,
   adminParque: `adminparque@${PARKS_DEMO_LOGIN_DOMAIN}`,
+  marketing: `marketing@${PARKS_DEMO_LOGIN_DOMAIN}`,
 } as const;
 
 export const PARKS_DEMO_EMAIL_ALIASES: Record<string, string> = {
@@ -278,5 +279,12 @@ export const PARKS_DEMO_USERS: ParksDemoUser[] = [
     roleLabel: `${PARKS_ROLE_LABEL_PREFIX}Admin Parque`,
     persona: 'Admin Parque',
     legacyEmails: ['admin.parque.gdl@parksindustrial.com'],
+  }),
+  parksDemoUser({
+    email: PARKS_DEMO_EMAIL.marketing,
+    firstName: 'Marketing',
+    lastName: 'Parks',
+    roleLabel: `${PARKS_ROLE_LABEL_PREFIX}Marketing`,
+    persona: 'Marketing',
   }),
 ];

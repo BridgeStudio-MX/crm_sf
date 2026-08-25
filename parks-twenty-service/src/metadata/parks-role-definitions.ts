@@ -228,6 +228,20 @@ export const PARKS_ROLE_DEFINITIONS: ParksRoleDefinition[] = [
     },
   },
   {
+    label: `${PARKS_ROLE_LABEL_PREFIX}Marketing`,
+    systemCode: 'Marketing',
+    description:
+      'Marketing — campañas, leads por canal, nutrición y KPIs comerciales de demanda',
+    icon: 'IconSpeakerphone',
+    objectPermissionsByObjectName: {
+      opportunity: READ_ONLY,
+      inquilino: READ_ONLY,
+      nave: READ_ONLY,
+      parque: READ_ONLY,
+      broker: READ_ONLY,
+    },
+  },
+  {
     label: `${PARKS_ROLE_LABEL_PREFIX}Miembro del Comité`,
     systemCode: 'Miembro_Comite',
     description:

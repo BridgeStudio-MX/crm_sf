@@ -11,6 +11,9 @@ import {
   PARKS_CXC_CARTERA_PATH,
   PARKS_CXC_PATH,
   PARKS_DASHBOARD_COMERCIAL_PATH,
+  PARKS_DASHBOARD_MARKETING_PATH,
+  PARKS_CAMPANAS_PATH,
+  PARKS_SECUENCIAS_PATH,
   PARKS_LEGAL_DASHBOARD_PATH,
   PARKS_LEGAL_PIPELINE_PATH,
   PARKS_LO_CAMPO_PATH,
@@ -38,11 +41,15 @@ export const ParksRoleLabel = {
   ContratosFacturacion: `${PARKS_ROLE_LABEL_PREFIX}Contratos y Facturación`,
   AdminSistema: `${PARKS_ROLE_LABEL_PREFIX}Admin Sistema`,
   AdminParque: `${PARKS_ROLE_LABEL_PREFIX}Admin Parque`,
+  Marketing: `${PARKS_ROLE_LABEL_PREFIX}Marketing`,
 } as const;
 
 export type ParksRouteAccessKey =
   | 'dashboard'
   | 'dashboardComercial'
+  | 'dashboardMarketing'
+  | 'campanas'
+  | 'secuencias'
   | 'stackingPlanIndex'
   | 'stackingPlan'
   | 'pipeline'
@@ -117,6 +124,9 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
     ParksRoleLabel.CEO,
     ParksRoleLabel.DirectorComercial,
   ]),
+  dashboardMarketing: withAdminSistema([ParksRoleLabel.Marketing]),
+  campanas: withAdminSistema([ParksRoleLabel.Marketing]),
+  secuencias: withAdminSistema([ParksRoleLabel.Marketing]),
   stackingPlanIndex: withAdminSistema([
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
     ParksRoleLabel.DirectorComercial,
@@ -132,6 +142,7 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
   pipeline: withAdminSistema([
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
     ParksRoleLabel.DirectorComercial,
+    ParksRoleLabel.Marketing,
   ]),
   leadsCem: withAdminSistema([ParksRoleLabel.DirectorComercial]),
   prospectos: withAdminSistema([]),
@@ -228,6 +239,9 @@ export const PARKS_NAV_ACCESS_BY_KEY: Record<
 > = {
   dashboard: withAdminSistema([ParksRoleLabel.CEO, ParksRoleLabel.Cfo]),
   dashboardComercial: withAdminSistema([ParksRoleLabel.DirectorComercial]),
+  dashboardMarketing: withAdminSistema([ParksRoleLabel.Marketing]),
+  campanas: withAdminSistema([ParksRoleLabel.Marketing]),
+  secuencias: withAdminSistema([ParksRoleLabel.Marketing]),
   stackingPlanIndex: withAdminSistema([
     ...PARKS_LEASING_OFFICER_ROLE_LABELS,
     ParksRoleLabel.DirectorComercial,
@@ -317,6 +331,12 @@ export const PARKS_NAV_ROUTE_ACCESS: Array<{
     accessKey: 'dashboardComercial',
     to: PARKS_DASHBOARD_COMERCIAL_PATH,
   },
+  {
+    accessKey: 'dashboardMarketing',
+    to: PARKS_DASHBOARD_MARKETING_PATH,
+  },
+  { accessKey: 'campanas', to: PARKS_CAMPANAS_PATH },
+  { accessKey: 'secuencias', to: PARKS_SECUENCIAS_PATH },
   { accessKey: 'stackingPlanIndex', to: AppPath.ParksStackingPlanIndex },
   { accessKey: 'pipeline', to: AppPath.ParksPipeline },
   { accessKey: 'leadsCem', to: AppPath.ParksLeadsCem },
@@ -344,6 +364,7 @@ export const PARKS_NAV_ROUTE_ACCESS: Array<{
 export const PARKS_ROLE_HOME_PATH: Partial<Record<string, string>> = {
   [ParksRoleLabel.CEO]: AppPath.ParksDashboard,
   [ParksRoleLabel.DirectorComercial]: PARKS_DASHBOARD_COMERCIAL_PATH,
+  [ParksRoleLabel.Marketing]: PARKS_DASHBOARD_MARKETING_PATH,
   [ParksRoleLabel.EjecutivoComercial]: AppPath.ParksPipeline,
   [ParksRoleLabel.LoAaaSenior]: AppPath.ParksPipeline,
   [ParksRoleLabel.LoEstandar]: AppPath.ParksPipeline,
@@ -381,6 +402,7 @@ const PARKS_DEMO_CANONICAL_EMAIL_TO_ROLE_LABEL: Record<string, string> = {
   [PARKS_DEMO_EMAIL.contratosFacturacion]: ParksRoleLabel.ContratosFacturacion,
   [PARKS_DEMO_EMAIL.adminSistema]: ParksRoleLabel.AdminSistema,
   [PARKS_DEMO_EMAIL.adminParque]: ParksRoleLabel.AdminParque,
+  [PARKS_DEMO_EMAIL.marketing]: ParksRoleLabel.Marketing,
 };
 
 export const PARKS_DEMO_EMAIL_TO_ROLE_LABEL: Record<string, string> = {
