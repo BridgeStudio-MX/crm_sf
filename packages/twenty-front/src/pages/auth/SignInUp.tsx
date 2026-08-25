@@ -98,7 +98,7 @@ const StandardContent = ({
             onClick={onClickOnLogo}
             aria-label={PARKS_INDUSTRIAL_TENANT_NAME}
           >
-            <ParksBrandLogo variant="onDark" height={40} />
+            <ParksBrandLogo variant="color" height={40} />
           </StyledParksLogoButton>
         ) : (
           <Logo
