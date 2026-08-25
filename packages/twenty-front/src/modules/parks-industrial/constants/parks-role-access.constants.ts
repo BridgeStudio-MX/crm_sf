@@ -192,6 +192,7 @@ export const PARKS_ROUTE_ACCESS_BY_KEY: Record<
   cxcCartera: withAdminSistema([
     ...PARKS_CXC_ROLE_LABELS,
     ParksRoleLabel.Cfo,
+    ParksRoleLabel.CEO,
   ]),
   comite: withAdminSistema([
     ParksRoleLabel.MiembroComite,
@@ -457,6 +458,14 @@ export const resolveParksRouteAccessKey = (
     normalizedPath.startsWith(`${PARKS_LEGAL_DASHBOARD_PATH}/`)
   ) {
     return 'legalDashboard';
+  }
+
+  // Cartera is nested under /parks/cxc/… — match it before the CxC dashboard prefix.
+  if (
+    normalizedPath === PARKS_CXC_CARTERA_PATH ||
+    normalizedPath.startsWith(`${PARKS_CXC_CARTERA_PATH}/`)
+  ) {
+    return 'cxcCartera';
   }
 
   if (
