@@ -113,7 +113,16 @@ jobs:
           source .env
           set +a
           echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GH_ACTOR" --password-stdin
-          sed -i "s/^TAG=.*/TAG=${IMAGE_TAG}/" .env
+          # Persist TAG and re-export: `source .env` leaves the previous TAG in the
+          # shell, and docker compose prefers shell env over the .env file — so
+          # without export we kept deploying the prior commit's image.
+          if grep -q '^TAG=' .env; then
+            sed -i "s|^TAG=.*|TAG=${IMAGE_TAG}|" .env
+          else
+            echo "TAG=${IMAGE_TAG}" >> .env
+          fi
+          export TAG="${IMAGE_TAG}"
+          echo "Deploying TAG=${TAG}"
           if ! grep -q '^TWENTY_API_KEY=' .env 2>/dev/null; then
             echo "TWENTY_API_KEY=${TWENTY_API_KEY}" >> .env
           elif [ -n "${TWENTY_API_KEY}" ]; then
@@ -132,10 +141,12 @@ jobs:
             fi
           fi
           docker compose pull
-          docker compose up -d
+          docker compose up -d --force-recreate
           docker compose restart caddy
           docker image prune -f
           sleep 10
+          docker compose ps
+          docker compose images
           # Display name only — Charlie Meta → Charles El Mann Metta
           docker compose exec -T db \
             psql -U "${PG_DATABASE_USER:-postgres}" -d default \
