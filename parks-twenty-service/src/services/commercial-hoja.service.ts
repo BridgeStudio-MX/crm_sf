@@ -228,7 +228,7 @@ export const commercialHojaService = {
 
     if (!opportunity.inquilinoVinculadoId || !opportunity.naveVinculadaId) {
       throw new Error(
-        'Opportunity must have inquilino and nave linked before creating Hoja de Acuerdos',
+        'Falta inquilino o nave vinculados. Ve al tab Visita, vincula una nave y confirma la cuenta; luego genera la Hoja de nuevo.',
       );
     }
 
@@ -240,7 +240,7 @@ export const commercialHojaService = {
         .includes('aprobada')
     ) {
       throw new Error(
-        'Pending special-condition approval must be resolved before creating Hoja',
+        'Hay una aprobación de condiciones especiales pendiente. Resuélvela en Negociar → Aprobaciones antes de generar la Hoja.',
       );
     }
 

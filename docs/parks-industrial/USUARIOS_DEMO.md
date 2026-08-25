@@ -2,7 +2,21 @@
 
 Credenciales para que cada área entre a **su** vista del demo.
 
-Fuente: `parks-twenty-service/src/metadata/parks-demo-users.constants.ts`.
+## Fuente de verdad (no es la DB)
+
+**No copies la base de datos local ↔ producción.** Son instancias distintas
+(datos de deals, IDs, etc.). Lo que debe coincidir en ambos entornos son los
+**logins demo**, y esos viven en código:
+
+`parks-twenty-service/src/metadata/parks-demo-users.constants.ts`
+
+| Entorno | Cómo se aplican |
+| --- | --- |
+| **Local** | Con Twenty corriendo (`yarn start`): `cd parks-twenty-service && npm run bootstrap:local` |
+| **Producción** | Automático en cada deploy (job `parks-bootstrap`) |
+
+Ese comando renombra/crea los `@prk.com.mx` y asigna roles Parks. Puedes
+correrlo las veces que quieras (idempotente).
 
 ## Contraseña (la misma para todos)
 

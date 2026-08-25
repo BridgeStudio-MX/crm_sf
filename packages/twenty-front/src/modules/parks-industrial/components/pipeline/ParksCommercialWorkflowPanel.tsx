@@ -25,9 +25,14 @@ import { ParksComiteGateLegend } from '@/parks-industrial/components/comite/Park
 import { ParksStatusBadge } from '@/parks-industrial/components/ui/ParksStatusBadge';
 import { ParksToolSection } from '@/parks-industrial/components/ui/ParksToolSection';
 import { ParksRoleLabel } from '@/parks-industrial/constants/parks-role-access.constants';
+import { PARKS_DEMO_EMAIL } from '@/parks-industrial/constants/parks-demo-logins.constants';
 import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
 import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRecords';
 import { isParksLeasingOfficerRole } from '@/parks-industrial/utils/parks-role-access.util';
+import {
+  formatParksHojaErrorGuidance,
+  getParksHojaBlockingPrerequisites,
+} from '@/parks-industrial/utils/parks-hoja-guidance.util';
 import {
   createParksHojaAcuerdos,
   fetchParksBrokers,
@@ -219,7 +224,50 @@ const StyledResultBanner = styled.div<{ isError?: boolean }>`
       ? themeCssVariables.color.red
       : themeCssVariables.font.color.primary};
   font-size: ${themeCssVariables.font.size.sm};
+  line-height: 1.45;
   padding: ${themeCssVariables.spacing[2]} ${themeCssVariables.spacing[3]};
+  white-space: pre-line;
+`;
+
+const StyledPrerequisiteList = styled.ul`
+  display: flex;
+  flex-direction: column;
+  gap: ${themeCssVariables.spacing[2]};
+  list-style: none;
+  margin: 0;
+  padding: 0;
+`;
+
+const StyledPrerequisiteItem = styled.li<{ isDone: boolean }>`
+  background: ${({ isDone }) =>
+    isDone
+      ? themeCssVariables.color.green1
+      : themeCssVariables.background.secondary};
+  border: 1px solid
+    ${({ isDone }) =>
+      isDone
+        ? themeCssVariables.color.green3
+        : themeCssVariables.border.color.medium};
+  border-radius: ${themeCssVariables.border.radius.sm};
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: ${themeCssVariables.spacing[2]} ${themeCssVariables.spacing[3]};
+`;
+
+const StyledPrerequisiteLabel = styled.span<{ isDone: boolean }>`
+  color: ${({ isDone }) =>
+    isDone
+      ? themeCssVariables.color.green
+      : themeCssVariables.font.color.primary};
+  font-size: ${themeCssVariables.font.size.sm};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+`;
+
+const StyledPrerequisiteFix = styled.span`
+  color: ${themeCssVariables.font.color.secondary};
+  font-size: ${themeCssVariables.font.size.xs};
+  line-height: 1.4;
 `;
 
 const StyledPreviewValue = styled.div`
@@ -432,6 +480,8 @@ export const ParksCommercialWorkflowPanel = ({
   const canSignAsCem =
     hasFullParksAccess ||
     parksRoleLabels.includes(ParksRoleLabel.DirectorComercial) ||
+    parksRoleLabels.includes(ParksRoleLabel.CEO) ||
+    parksRoleLabels.includes(ParksRoleLabel.AdminSistema) ||
     parksRoleLabels.length === 0;
   const canRegisterClientSignature =
     hasFullParksAccess ||
@@ -814,6 +864,12 @@ export const ParksCommercialWorkflowPanel = ({
     });
   };
 
+  const hojaBlockingPrerequisites = useMemo(
+    () => getParksHojaBlockingPrerequisites(opportunity),
+    [opportunity],
+  );
+  const canGenerateHoja = hojaBlockingPrerequisites.length === 0;
+
   const runAction = async (action: () => Promise<void>, success: string) => {
     setIsBusy(true);
     setErrorMessage(null);
@@ -824,9 +880,9 @@ export const ParksCommercialWorkflowPanel = ({
       setStatusMessage(success);
       onUpdated?.();
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : t`Error en la acción`,
-      );
+      const rawMessage =
+        error instanceof Error ? error.message : t`Error en la acción`;
+      setErrorMessage(formatParksHojaErrorGuidance(rawMessage));
     } finally {
       setIsBusy(false);
     }
@@ -1298,12 +1354,46 @@ export const ParksCommercialWorkflowPanel = ({
               <StyledHint>
                 {t`Genera el borrador con los datos de la cotización. Luego puedes previsualizarlo, editar condiciones y firmar.`}
               </StyledHint>
+              {hojaBlockingPrerequisites.length > 0 ? (
+                <StyledResultBanner isError>
+                  {t`Antes de generar la Hoja, completa estos pasos:`}
+                  <StyledPrerequisiteList>
+                    {hojaBlockingPrerequisites.map((prerequisite) => (
+                      <StyledPrerequisiteItem
+                        key={prerequisite.id}
+                        isDone={false}
+                      >
+                        <StyledPrerequisiteLabel isDone={false}>
+                          {prerequisite.label}
+                        </StyledPrerequisiteLabel>
+                        <StyledPrerequisiteFix>
+                          {prerequisite.howToFix}
+                        </StyledPrerequisiteFix>
+                      </StyledPrerequisiteItem>
+                    ))}
+                  </StyledPrerequisiteList>
+                </StyledResultBanner>
+              ) : null}
               <StyledActionsRow>
                 <ParksActionButton
                   title={t`Generar Hoja`}
                   size="sm"
-                  disabled={isBusy}
+                  disabled={isBusy || !canGenerateHoja}
                   onClick={() => {
+                    if (!canGenerateHoja) {
+                      setErrorMessage(
+                        formatParksHojaErrorGuidance(
+                          hojaBlockingPrerequisites
+                            .map(
+                              (prerequisite) =>
+                                `${prerequisite.label}: ${prerequisite.howToFix}`,
+                            )
+                            .join('\n'),
+                        ),
+                      );
+                      return;
+                    }
+
                     void runAction(
                       async () => {
                         const result = await createParksHojaAcuerdos({
@@ -1782,6 +1872,18 @@ export const ParksCommercialWorkflowPanel = ({
                   <StyledSignatureMeta>
                     {t`Director Comercial revisa y aprueba la Hoja de Acuerdos.`}
                   </StyledSignatureMeta>
+                  {!hojaFirmadaPorCem && !canSignAsCem ? (
+                    <StyledResultBanner isError>
+                      {t`Tu usuario no puede firmar como Director Comercial.
+
+Para avanzar en la demo:
+1. Cierra sesión
+2. Entra con ${PARKS_DEMO_EMAIL.directorComercial}
+3. Abre este deal → Cerrar → Firmar como Director Comercial
+
+Password: parksindustrial2026!`}
+                    </StyledResultBanner>
+                  ) : null}
                   {!hojaFirmadaPorCem ? (
                     <ParksActionButton
                       title={t`Firmar como Director Comercial`}
@@ -1789,6 +1891,13 @@ export const ParksCommercialWorkflowPanel = ({
                       disabled={isBusy || !hojaId || !canSignAsCem}
                       onClick={() => {
                         if (!hojaId) {
+                          return;
+                        }
+
+                        if (!canSignAsCem) {
+                          setErrorMessage(
+                            t`Solo Director Comercial (o Admin/CEO) puede firmar. Entra con ${PARKS_DEMO_EMAIL.directorComercial}`,
+                          );
                           return;
                         }
 
@@ -1820,6 +1929,11 @@ export const ParksCommercialWorkflowPanel = ({
                   <StyledSignatureMeta>
                     {t`El LO registra cuando el cliente ya firmó el documento.`}
                   </StyledSignatureMeta>
+                  {!hojaFirmadaPorCliente && !canRegisterClientSignature ? (
+                    <StyledResultBanner isError>
+                      {t`Tu rol no registra la firma del cliente. Entra como Leasing Officer (p. ej. ${PARKS_DEMO_EMAIL.loAaaIsrael}) o Director Comercial.`}
+                    </StyledResultBanner>
+                  ) : null}
                   {!hojaFirmadaPorCliente ? (
                     <ParksActionButton
                       title={t`Registrar firma cliente`}

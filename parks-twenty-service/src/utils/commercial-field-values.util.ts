@@ -1,11 +1,13 @@
 import { toSelectValue } from './select-value.util';
 
-// Maps US-001 channel labels to values accepted by legacy workspace metadata
+// Maps UI / catalog channel labels to values accepted by live workspace metadata.
+// Live SELECT currently allows: DIRECTO, BROKER, DIGITAL, REFERIDO.
 const LEGACY_CANAL_LABEL_BY_INPUT: Record<string, string> = {
   'Página web': 'Digital',
   LinkedIn: 'Digital',
   'Call Center': 'Directo',
   CEM: 'Directo',
+  'Director Comercial': 'Directo',
   Recomendación: 'Referido',
   Evento: 'Directo',
   Otro: 'Directo',
@@ -13,6 +15,23 @@ const LEGACY_CANAL_LABEL_BY_INPUT: Record<string, string> = {
   'Cliente existente': 'Directo',
   Digital: 'Digital',
   Referido: 'Referido',
+  Broker: 'Broker',
+};
+
+const LEGACY_CANAL_BY_STORAGE_VALUE: Record<string, string> = {
+  PAGINA_WEB: 'Digital',
+  LINKEDIN: 'Digital',
+  CALL_CENTER: 'Directo',
+  CEM: 'Directo',
+  DIRECTOR_COMERCIAL: 'Directo',
+  RECOMENDACION: 'Referido',
+  EVENTO: 'Directo',
+  OTRO: 'Directo',
+  CLIENTE_EXISTENTE: 'Directo',
+  DIRECTO: 'Directo',
+  DIGITAL: 'Digital',
+  REFERIDO: 'Referido',
+  BROKER: 'Broker',
 };
 
 // Inquilino.sector is a coarse SELECT; opportunity.giroEmpresa is the detailed catalog.
@@ -136,9 +155,26 @@ const resolveKnownInquilinoSectorLabel = (giroEmpresa: string): string => {
 
 export const resolveCanalOrigenStorageValue = (canalOrigen: string): string => {
   const trimmedCanal = canalOrigen.trim();
-  const legacyLabel = LEGACY_CANAL_LABEL_BY_INPUT[trimmedCanal] ?? trimmedCanal;
 
-  return toSelectValue(legacyLabel);
+  if (!trimmedCanal) {
+    return toSelectValue('Directo');
+  }
+
+  const fromLabel = LEGACY_CANAL_LABEL_BY_INPUT[trimmedCanal];
+
+  if (fromLabel) {
+    return toSelectValue(fromLabel);
+  }
+
+  const storageKey = toSelectValue(trimmedCanal);
+  const fromStorage = LEGACY_CANAL_BY_STORAGE_VALUE[storageKey];
+
+  if (fromStorage) {
+    return toSelectValue(fromStorage);
+  }
+
+  // Unknown UI label → Directo so createOpportunity never rejects the SELECT
+  return toSelectValue('Directo');
 };
 
 export const resolveInquilinoSectorStorageValue = (

@@ -10,11 +10,11 @@ export const parksGuidedTourStepIndexState = createAtomState<number>({
   defaultValue: 0,
 });
 
-export const parksGuidedTourCompletedEmailsState = createAtomState<
-  Record<string, boolean>
+// Session-scoped: which email already got the auto-start tour.
+// Survives Parks page remounts; clears on logout so the next login restarts it.
+export const parksGuidedTourAutoStartedEmailState = createAtomState<
+  string | null
 >({
-  key: 'parksGuidedTourCompletedEmailsState',
-  defaultValue: {},
-  useLocalStorage: true,
-  localStorageOptions: { getOnInit: true },
+  key: 'parksGuidedTourAutoStartedEmailState',
+  defaultValue: null,
 });

@@ -689,6 +689,7 @@ export const ParksPipelineBoard = ({
             onClose={clearDealDeepLink}
             focusId="parks-pipeline-deal-detail"
             ariaLabelledBy="parks-deal-detail-title"
+            size="wide"
           >
             {selectedDeal ? (
               <ParksPipelineDealDetail

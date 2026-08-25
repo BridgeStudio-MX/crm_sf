@@ -3,7 +3,7 @@ import { type ReactNode } from 'react';
 import { type IconComponent } from 'twenty-ui/icon';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
-import { PARKS_BRAND } from '@/parks-industrial/constants/parks-theme.constants';
+import { PARKS_BRAND, PARKS_VIBE } from '@/parks-industrial/constants/parks-theme.constants';
 
 export type ParksActionButtonVariant = 'primary' | 'secondary' | 'ghost';
 export type ParksActionButtonSize = 'sm' | 'md';
@@ -22,13 +22,13 @@ type ParksActionButtonProps = {
 
 const StyledButton = styled.button`
   align-items: center;
-  border-radius: ${themeCssVariables.border.radius.sm};
+  border-radius: ${PARKS_VIBE.radiusSm};
   border-style: solid;
   border-width: 1px;
   cursor: pointer;
   display: inline-flex;
-  font-family: inherit;
-  font-weight: ${themeCssVariables.font.weight.medium};
+  font-family: ${PARKS_VIBE.fontFamily};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
   gap: ${themeCssVariables.spacing[2]};
   justify-content: center;
   line-height: 1.2;
@@ -36,7 +36,8 @@ const StyledButton = styled.button`
     background 120ms ease,
     border-color 120ms ease,
     color 120ms ease,
-    box-shadow 120ms ease;
+    box-shadow 120ms ease,
+    transform 120ms ease;
   white-space: nowrap;
 
   &[data-size='sm'] {
@@ -58,42 +59,44 @@ const StyledButton = styled.button`
   &[data-variant='primary'] {
     background: ${PARKS_BRAND.primary};
     border-color: ${PARKS_BRAND.primary};
-    box-shadow: ${themeCssVariables.boxShadow.light};
+    box-shadow: 0 6px 14px rgba(0, 104, 55, 0.22);
     color: #ffffff;
   }
 
   &[data-variant='primary']:hover:not(:disabled) {
     background: #005a2f;
     border-color: #005a2f;
+    transform: translateY(-1px);
   }
 
   &[data-variant='secondary'] {
-    background: ${themeCssVariables.background.primary};
-    border-color: ${themeCssVariables.border.color.medium};
-    box-shadow: ${themeCssVariables.boxShadow.light};
-    color: ${themeCssVariables.font.color.primary};
+    background: ${PARKS_VIBE.surface};
+    border-color: ${PARKS_VIBE.borderStrong};
+    box-shadow: ${PARKS_VIBE.shadowSoft};
+    color: ${PARKS_VIBE.textPrimary};
   }
 
   &[data-variant='secondary']:hover:not(:disabled) {
-    background: ${themeCssVariables.background.secondary};
-    border-color: ${PARKS_BRAND.primary};
+    background: ${PARKS_BRAND.primarySoft};
+    border-color: ${PARKS_BRAND.borderSoft};
     color: ${PARKS_BRAND.primary};
   }
 
   &[data-variant='ghost'] {
-    background: ${themeCssVariables.background.transparent.light};
-    border-color: ${themeCssVariables.border.color.light};
-    color: ${themeCssVariables.font.color.secondary};
+    background: transparent;
+    border-color: transparent;
+    color: ${PARKS_VIBE.textSecondary};
   }
 
   &[data-variant='ghost']:hover:not(:disabled) {
-    background: ${themeCssVariables.background.secondary};
-    color: ${themeCssVariables.font.color.primary};
+    background: rgba(50, 51, 56, 0.06);
+    color: ${PARKS_VIBE.textPrimary};
   }
 
   &:disabled {
     cursor: not-allowed;
     opacity: 0.45;
+    transform: none;
   }
 
   &:focus-visible {
@@ -148,8 +151,12 @@ type ParksActionBarProps = {
 
 const StyledActionBar = styled.div`
   align-items: center;
-  background: ${themeCssVariables.background.primary};
-  border-top: 1px solid ${themeCssVariables.border.color.medium};
+  background: linear-gradient(
+    180deg,
+    ${PARKS_VIBE.surface} 0%,
+    ${PARKS_VIBE.surfaceMuted} 100%
+  );
+  border-top: 1px solid ${PARKS_VIBE.border};
   display: flex;
   flex-wrap: wrap;
   gap: ${themeCssVariables.spacing[3]};
@@ -158,8 +165,9 @@ const StyledActionBar = styled.div`
 `;
 
 const StyledActionBarHint = styled.p`
-  color: ${themeCssVariables.font.color.tertiary};
+  color: ${PARKS_VIBE.textMuted};
   flex: 1;
+  font-family: ${PARKS_VIBE.fontFamily};
   font-size: ${themeCssVariables.font.size.sm};
   line-height: 1.4;
   margin: 0;

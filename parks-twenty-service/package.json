@@ -27,6 +27,7 @@
     "seed:checklists": "tsx scripts/seed-checklists.ts",
     "patch:images": "tsx scripts/patch-property-images.ts",
     "bootstrap:production": "tsx scripts/bootstrap-production.ts",
+    "bootstrap:local": "tsx scripts/bootstrap-local.ts",
     "pdf:test": "tsx scripts/pdf-test.ts",
     "services:test": "tsx scripts/services-test.ts",
     "webhook:test": "tsx scripts/webhook-test.ts",

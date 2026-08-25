@@ -2,63 +2,66 @@ import { styled } from '@linaria/react';
 import { t } from '@lingui/core/macro';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   IconArrowRight,
   IconBox,
   IconCalendar,
   IconCalendarEvent,
-  IconCheck,
   IconClock,
   IconExternalLink,
   IconFileText,
   IconLayoutDashboard,
   IconMail,
-  IconMessage,
   IconSend,
   IconSparkles,
   IconUser,
-  IconUsers,
   IconX,
   type IconComponent,
 } from 'twenty-ui/icon';
-import {
-  ParksActionBar,
-  ParksActionButton,
-} from '@/parks-industrial/components/ui/ParksActionButton';
 import { MOBILE_VIEWPORT, themeCssVariables } from 'twenty-ui/theme-constants';
-import { Tag } from 'twenty-ui/data-display';
 
-import {
-  getParksPipelineStageColor,
-  getParksPipelineStageLabel,
-  getNextParksPipelineStage,
-} from '@/parks-industrial/constants/parks-industrial.constants';
-import { getParksInquilino360Path } from '@/parks-industrial/constants/parks-routes.constants';
-import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRecords';
 import { ParksActivityTimelinePanel } from '@/parks-industrial/components/pipeline/ParksActivityTimelinePanel';
-import { ParksFirstContactPanel } from '@/parks-industrial/components/pipeline/ParksFirstContactPanel';
 import { ParksAssignLeasingOfficerPanel } from '@/parks-industrial/components/pipeline/ParksAssignLeasingOfficerPanel';
 import { ParksCommercialProposalSection } from '@/parks-industrial/components/pipeline/ParksCommercialProposalSection';
 import { ParksCommercialWorkflowPanel } from '@/parks-industrial/components/pipeline/ParksCommercialWorkflowPanel';
-import { ParksDealStageGuidePanel } from '@/parks-industrial/components/pipeline/ParksDealStageGuidePanel';
+import {
+  ParksDealStageGuideChecklist,
+  ParksDealStageGuidePanel,
+} from '@/parks-industrial/components/pipeline/ParksDealStageGuidePanel';
 import { ParksDecisoresPanel } from '@/parks-industrial/components/pipeline/ParksDecisoresPanel';
 import { ParksEmailSequencePanel } from '@/parks-industrial/components/pipeline/ParksEmailSequencePanel';
+import { ParksFirstContactPanel } from '@/parks-industrial/components/pipeline/ParksFirstContactPanel';
 import { ParksPipelineDealStageStepper } from '@/parks-industrial/components/pipeline/ParksPipelineDealStageStepper';
 import { ParksProspectEnrichmentPanel } from '@/parks-industrial/components/pipeline/ParksProspectEnrichmentPanel';
 import { ParksSalesScriptPanel } from '@/parks-industrial/components/pipeline/ParksSalesScriptPanel';
 import {
-  ParksDetailField,
-  ParksKpiTile,
-} from '@/parks-industrial/components/ui/ParksDetailField';
+  ParksActionBar,
+  ParksActionButton,
+} from '@/parks-industrial/components/ui/ParksActionButton';
+import { ParksDetailField } from '@/parks-industrial/components/ui/ParksDetailField';
 import { ParksModalTabs } from '@/parks-industrial/components/ui/ParksModalTabs';
 import { ParksStatusBadge } from '@/parks-industrial/components/ui/ParksStatusBadge';
+import {
+  getNextParksPipelineStage,
+  getParksPipelineStageColor,
+  getParksPipelineStageLabel,
+} from '@/parks-industrial/constants/parks-industrial.constants';
+import { getParksInquilino360Path } from '@/parks-industrial/constants/parks-routes.constants';
+import {
+  PARKS_BRAND,
+  PARKS_VIBE,
+  PARKS_VISUAL_THEME,
+  type ParksVisualAccent,
+} from '@/parks-industrial/constants/parks-theme.constants';
+import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRecords';
 import {
   formatParksDate,
   formatParksNumber,
   formatParksUsd,
   getParksAmountFromMicros,
+  getParksAssignedLeasingOfficerName,
   getParksDaysInStage,
   getParksDaysInStageColor,
   getParksOwnerInitials,
@@ -76,31 +79,47 @@ import {
 import { useOpenRecordInSidePanel } from '@/side-panel/hooks/useOpenRecordInSidePanel';
 
 const StyledPanel = styled.div`
+  background: ${PARKS_VIBE.surface};
   display: flex;
   flex: 1;
   flex-direction: column;
+  font-family: ${PARKS_VIBE.fontFamily};
   min-height: 0;
   overflow: hidden;
 `;
 
 const StyledHeroBand = styled.div<{ accentColor: string }>`
   background: linear-gradient(
-    160deg,
-    ${({ accentColor }) => accentColor}22 0%,
-    ${themeCssVariables.background.primary} 72%
+    145deg,
+    #ffffff 0%,
+    ${PARKS_VIBE.surfaceMuted} 48%,
+    ${({ accentColor }) => `${accentColor}12`} 100%
   );
-  border-bottom: 1px solid ${themeCssVariables.border.color.light};
-  padding: ${themeCssVariables.spacing[4]};
+  border-bottom: 1px solid ${PARKS_VIBE.border};
+  padding: ${PARKS_VIBE.space.md} ${PARKS_VIBE.space.lg}
+    ${PARKS_VIBE.space.md} calc(${PARKS_VIBE.space.lg} + 3px);
+  position: relative;
+
+  &::before {
+    background: ${({ accentColor }) => accentColor};
+    bottom: 0;
+    content: '';
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 3px;
+  }
 
   @media (max-width: ${MOBILE_VIEWPORT}px) {
-    padding: ${themeCssVariables.spacing[3]};
+    padding: ${PARKS_VIBE.space.sm} ${PARKS_VIBE.space.md}
+      ${PARKS_VIBE.space.sm} calc(${PARKS_VIBE.space.md} + 3px);
   }
 `;
 
 const StyledHeroTop = styled.div`
   align-items: flex-start;
   display: flex;
-  gap: ${themeCssVariables.spacing[3]};
+  gap: ${PARKS_VIBE.space.md};
   justify-content: space-between;
 `;
 
@@ -108,34 +127,67 @@ const StyledHeroMain = styled.div`
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[2]};
+  gap: 8px;
   min-width: 0;
 `;
 
-const StyledPanelTitle = styled.h3`
-  font-size: ${themeCssVariables.font.size.lg};
-  font-weight: ${themeCssVariables.font.weight.semiBold};
-  letter-spacing: -0.01em;
-  line-height: 1.25;
-  margin: 0;
-`;
-
-const StyledCompanyRow = styled.div`
+const StyledBadgeRow = styled.div`
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: ${themeCssVariables.spacing[2]};
+  gap: 6px;
+`;
+
+const StyledFolioBadge = styled.span`
+  background: rgba(50, 51, 56, 0.06);
+  border: 1px solid ${PARKS_VIBE.border};
+  border-radius: ${PARKS_VIBE.chipRadius};
+  color: ${PARKS_VIBE.textSecondary};
+  font-family: ${PARKS_VIBE.fontFamily};
+  font-size: 11px;
+  font-weight: ${themeCssVariables.font.weight.medium};
+  letter-spacing: 0.02em;
+  padding: 3px 7px;
+`;
+
+const StyledStageBadge = styled.span<{ accentColor: string }>`
+  background: ${({ accentColor }) => `${accentColor}18`};
+  border: 1px solid ${({ accentColor }) => `${accentColor}40`};
+  border-radius: ${PARKS_VIBE.chipRadius};
+  color: ${({ accentColor }) => accentColor};
+  font-family: ${PARKS_VIBE.fontFamily};
+  font-size: 11px;
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  padding: 3px 8px;
+`;
+
+const StyledPanelTitle = styled.h3`
+  color: ${PARKS_VIBE.textPrimary};
+  font-family: ${PARKS_VIBE.fontFamily};
+  font-size: 1.25rem;
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  margin: 0;
+`;
+
+const StyledSubtitleRow = styled.div`
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${PARKS_VIBE.space.sm};
 `;
 
 const StyledCompanyName = styled.span`
-  color: ${themeCssVariables.font.color.secondary};
+  color: ${PARKS_VIBE.textSecondary};
   font-size: ${themeCssVariables.font.size.sm};
+  font-weight: ${themeCssVariables.font.weight.medium};
 `;
 
 const StyledAccountLink = styled(Link)`
-  color: ${themeCssVariables.color.blue};
+  color: ${PARKS_BRAND.primary};
   font-size: ${themeCssVariables.font.size.xs};
-  font-weight: ${themeCssVariables.font.weight.medium};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
   text-decoration: none;
 
   &:hover {
@@ -143,15 +195,71 @@ const StyledAccountLink = styled(Link)`
   }
 `;
 
-const StyledKpiStrip = styled.div`
+const StyledStatsBar = styled.div`
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid ${PARKS_VIBE.border};
+  border-radius: ${PARKS_VIBE.radiusMd};
+  box-shadow: ${PARKS_VIBE.shadowSoft};
   display: grid;
-  gap: ${themeCssVariables.spacing[2]};
+  gap: 0;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-top: ${themeCssVariables.spacing[4]};
+  margin-top: ${PARKS_VIBE.space.sm};
+  overflow: hidden;
 
   @media (max-width: ${MOBILE_VIEWPORT}px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+`;
+
+const StyledStatCell = styled.div<{ tone?: ParksVisualAccent }>`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 10px 12px;
+  position: relative;
+
+  &:not(:last-child)::after {
+    background: ${PARKS_VIBE.border};
+    bottom: 10px;
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 10px;
+    width: 1px;
+  }
+
+  @media (max-width: ${MOBILE_VIEWPORT}px) {
+    &:nth-child(2n)::after {
+      display: none;
+    }
+
+    &:nth-child(-n + 2) {
+      border-bottom: 1px solid ${PARKS_VIBE.border};
+    }
+  }
+`;
+
+const StyledStatLabel = styled.span`
+  color: ${PARKS_VIBE.textMuted};
+  font-family: ${PARKS_VIBE.fontFamily};
+  font-size: 10px;
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+`;
+
+const StyledStatValue = styled.span<{ tone?: ParksVisualAccent }>`
+  color: ${({ tone }) =>
+    tone
+      ? PARKS_VISUAL_THEME.accents[tone].accent
+      : PARKS_VIBE.textPrimary};
+  font-family: ${PARKS_VIBE.fontFamily};
+  font-size: ${themeCssVariables.font.size.sm};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 const StyledDealBody = styled.div`
@@ -163,49 +271,68 @@ const StyledDealBody = styled.div`
 `;
 
 const StyledGuideWrapper = styled.div`
+  background: ${PARKS_VIBE.surfaceMuted};
+  border-bottom: 1px solid ${PARKS_VIBE.border};
   flex-shrink: 0;
+  padding: ${PARKS_VIBE.space.sm} ${PARKS_VIBE.space.lg};
 `;
 
 const StyledTabStack = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[3]};
+  gap: ${PARKS_VIBE.space.md};
+`;
+
+const StyledSectionTitle = styled.h4`
+  color: ${PARKS_VIBE.textMuted};
+  font-family: ${PARKS_VIBE.fontFamily};
+  font-size: 11px;
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  letter-spacing: 0.06em;
+  margin: ${PARKS_VIBE.space.sm} 0 0;
+  text-transform: uppercase;
 `;
 
 const StyledResumenCard = styled.div`
   background: linear-gradient(
     160deg,
-    ${themeCssVariables.background.secondary} 0%,
-    ${themeCssVariables.background.primary} 100%
+    ${PARKS_VIBE.surface} 0%,
+    ${PARKS_VIBE.surfaceMuted} 100%
   );
-  border: 1px solid ${themeCssVariables.border.color.light};
-  border-radius: ${themeCssVariables.border.radius.md};
+  border: 1px solid ${PARKS_VIBE.border};
+  border-radius: ${PARKS_VIBE.radiusMd};
+  box-shadow: ${PARKS_VIBE.shadowSoft};
   display: flex;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[3]};
-  padding: ${themeCssVariables.spacing[1]};
+  gap: ${PARKS_VIBE.space.md};
+  padding: ${PARKS_VIBE.space.sm};
 `;
 
 type DealDetailTab =
-  | 'resumen'
-  | 'prospecto'
-  | 'propuesta'
-  | 'actividad'
-  | 'decisores'
-  | 'guion'
-  | 'cotizacion'
-  | 'aprobacion'
-  | 'hoja';
+  | 'contexto'
+  | 'calificar'
+  | 'visita'
+  | 'negociar'
+  | 'cerrar'
+  | 'actividad';
 
-const SCROLLABLE_DEAL_TABS: DealDetailTab[] = [
-  'cotizacion',
-  'aprobacion',
-  'hoja',
-];
+const GUIDE_TAB_TO_DETAIL_TAB: Record<ParksDealGuideTab, DealDetailTab> = {
+  resumen: 'contexto',
+  prospecto: 'calificar',
+  actividad: 'actividad',
+  propuesta: 'visita',
+  decisores: 'visita',
+  guion: 'visita',
+  cotizacion: 'negociar',
+  aprobacion: 'negociar',
+  hoja: 'cerrar',
+};
+
+const SCROLLABLE_DEAL_TABS: DealDetailTab[] = ['negociar', 'cerrar'];
 
 const StyledContextGrid = styled.div`
   display: grid;
-  gap: ${themeCssVariables.spacing[2]};
+  gap: ${PARKS_VIBE.space.sm};
   grid-template-columns: repeat(2, minmax(0, 1fr));
 
   @media (max-width: ${MOBILE_VIEWPORT}px) {
@@ -217,23 +344,23 @@ const StyledOwnerRow = styled.div`
   align-items: center;
   background: linear-gradient(
     135deg,
-    ${themeCssVariables.background.secondary} 0%,
-    ${themeCssVariables.background.primary} 100%
+    ${PARKS_VIBE.surface} 0%,
+    ${PARKS_VIBE.surfaceMuted} 100%
   );
-  border: 1px solid ${themeCssVariables.border.color.light};
-  border-radius: ${themeCssVariables.border.radius.md};
-  box-shadow: ${themeCssVariables.boxShadow.light};
+  border: 1px solid ${PARKS_VIBE.border};
+  border-radius: ${PARKS_VIBE.radiusMd};
+  box-shadow: ${PARKS_VIBE.shadowSoft};
   display: flex;
-  gap: ${themeCssVariables.spacing[3]};
-  padding: ${themeCssVariables.spacing[3]};
+  gap: ${PARKS_VIBE.space.md};
+  padding: ${PARKS_VIBE.space.md};
 `;
 
 const StyledOwnerAvatar = styled.div<{ avatarColor: string }>`
   align-items: center;
   background: ${({ avatarColor }) => avatarColor};
   border-radius: 50%;
-  box-shadow: 0 0 0 3px ${({ avatarColor }) => `${avatarColor}33`};
-  color: ${themeCssVariables.font.color.inverted};
+  box-shadow: 0 0 0 3px ${({ avatarColor }) => `${avatarColor}28`};
+  color: #ffffff;
   display: flex;
   flex-shrink: 0;
   font-size: ${themeCssVariables.font.size.sm};
@@ -252,31 +379,38 @@ const StyledOwnerText = styled.div`
 `;
 
 const StyledOwnerName = styled.span`
+  color: ${PARKS_VIBE.textPrimary};
   font-size: ${themeCssVariables.font.size.sm};
   font-weight: ${themeCssVariables.font.weight.semiBold};
 `;
 
 const StyledOwnerRole = styled.span`
-  color: ${themeCssVariables.font.color.tertiary};
+  color: ${PARKS_VIBE.textMuted};
   font-size: ${themeCssVariables.font.size.xs};
 `;
 
 const StyledCloseButton = styled.button`
   align-items: center;
-  background: ${themeCssVariables.background.transparent.light};
-  border: 1px solid ${themeCssVariables.border.color.light};
-  border-radius: ${themeCssVariables.border.radius.sm};
-  color: ${themeCssVariables.font.color.secondary};
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid ${PARKS_VIBE.border};
+  border-radius: 50%;
+  box-shadow: ${PARKS_VIBE.shadowSoft};
+  color: ${PARKS_VIBE.textSecondary};
   cursor: pointer;
   display: flex;
   flex-shrink: 0;
   height: 32px;
   justify-content: center;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
   width: 32px;
 
   &:hover {
-    background: ${themeCssVariables.background.transparent.medium};
-    color: ${themeCssVariables.font.color.primary};
+    background: ${PARKS_BRAND.primarySoft};
+    border-color: ${PARKS_BRAND.borderSoft};
+    color: ${PARKS_BRAND.primary};
   }
 `;
 
@@ -301,99 +435,112 @@ export const ParksPipelineDealDetail = ({
   initialScrollTarget,
 }: ParksPipelineDealDetailProps) => {
   const { openRecordInSidePanel } = useOpenRecordInSidePanel();
-  const stageColor = getParksPipelineStageColor(deal.stage);
-  const stageTheme = getParksPipelineStageTheme(stageColor);
+  const stageTheme = getParksPipelineStageTheme(
+    getParksPipelineStageColor(deal.stage),
+  );
   const nextStage = getNextParksPipelineStage(deal.stage);
   const daysInStage = getParksDaysInStage(deal.updatedAt);
   const daysColor = getParksDaysInStageColor(deal.updatedAt);
   const ownerName = getParksOwnerName(deal);
+  const leasingOfficerName = getParksAssignedLeasingOfficerName(deal);
   const companyName =
     deal.inquilinoVinculado?.empresa ?? deal.name ?? t`Nuevo prospecto`;
+  const amountLabel = formatParksUsd(
+    getParksAmountFromMicros(deal.amount?.amountMicros),
+  );
+  const spaceLabel = `${formatParksNumber(deal.m2Requeridos)} m²`;
+  const daysLabel = t`${daysInStage} días`;
+  const responsibleLabel = leasingOfficerName ?? ownerName;
   const [selectedTourDecisorIds, setSelectedTourDecisorIds] = useState<
     string[]
   >([]);
-  const [activeTab, setActiveTab] = useState<DealDetailTab>('resumen');
+  const [activeTab, setActiveTab] = useState<DealDetailTab>('contexto');
   const [pendingScrollTarget, setPendingScrollTarget] = useState<string | null>(
     null,
   );
 
   const stageGuide = useMemo(() => buildParksDealStageGuide(deal), [deal]);
+  const checklistBelongsInCalificar =
+    GUIDE_TAB_TO_DETAIL_TAB[stageGuide.recommendedTab] === 'calificar';
 
   const dealTabs = useMemo(() => {
+    const recommendedDetailTab =
+      GUIDE_TAB_TO_DETAIL_TAB[stageGuide.recommendedTab];
+    const workflowOrder: DealDetailTab[] = [
+      'contexto',
+      'calificar',
+      'visita',
+      'negociar',
+      'cerrar',
+    ];
+
     const tabs: Array<{
       id: DealDetailTab;
       label: string;
       icon: IconComponent;
-      description: string;
+      stepIndex?: number;
+      isComplete?: boolean;
     }> = [
       {
-        id: 'resumen',
-        label: t`Resumen`,
+        id: 'contexto',
+        label: t`Contexto`,
         icon: IconLayoutDashboard,
-        description: t`Contexto operativo del deal, nave vinculada y responsable comercial.`,
+        stepIndex: 1,
       },
-      // Kept visible across every stage (not just Lead recibido) so the AI
-      // read on this prospect can always be revisited, not just at intake.
       {
-        id: 'prospecto',
-        label: t`Análisis IA`,
+        id: 'calificar',
+        label: t`Calificar`,
         icon: IconSparkles,
-        description: t`Análisis inteligente de prospecto: enriquecimiento IA y secuencia de correos para calificar al lead. Disponible en cualquier etapa.`,
+        stepIndex: 2,
+      },
+      {
+        id: 'visita',
+        label: t`Visita`,
+        icon: IconFileText,
+        stepIndex: 3,
+      },
+      {
+        id: 'negociar',
+        label: t`Negociar`,
+        icon: IconSend,
+        stepIndex: 4,
+      },
+      {
+        id: 'cerrar',
+        label: t`Cerrar`,
+        icon: IconCalendarEvent,
+        stepIndex: 5,
       },
       {
         id: 'actividad',
-        label: t`Actividad`,
+        label: t`Historial`,
         icon: IconMail,
-        description: t`Registra el primer contacto (llamada, videollamada o reunión) y consulta el timeline unificado de emails, llamadas y tareas (Gmail + CRM).`,
-      },
-      {
-        id: 'propuesta',
-        label: t`Propuesta`,
-        icon: IconFileText,
-        description: t`Elegir naves y agendar la visita.`,
-      },
-      {
-        id: 'decisores',
-        label: t`Decisores`,
-        icon: IconUsers,
-        description: t`Contactos clave del cliente que participan en la decisión de arrendamiento.`,
-      },
-      {
-        id: 'guion',
-        label: t`Guion`,
-        icon: IconMessage,
-        description: t`Guion de visita alineado a la nave y al perfil del prospecto.`,
-      },
-      {
-        id: 'cotizacion',
-        label: t`Cotización`,
-        icon: IconSend,
-        description: t`Feedback del tour, precios y envío de cotización.`,
-      },
-      {
-        id: 'aprobacion',
-        label: t`Aprobación`,
-        icon: IconCheck,
-        description: t`Solicitud y resolución de condiciones especiales.`,
-      },
-      {
-        id: 'hoja',
-        label: t`Hoja`,
-        icon: IconCalendarEvent,
-        description: t`Hoja de Acuerdos (LOI), firmas y cierre comercial.`,
       },
     ];
 
-    return tabs;
-  }, []);
+    return tabs.map((tab) => {
+      const recommendedIndex = workflowOrder.indexOf(recommendedDetailTab);
+      const tabIndex = workflowOrder.indexOf(tab.id);
+
+      return {
+        ...tab,
+        isComplete:
+          tab.stepIndex !== undefined &&
+          recommendedIndex > -1 &&
+          tabIndex > -1 &&
+          tabIndex < recommendedIndex,
+      };
+    });
+  }, [stageGuide.recommendedTab]);
 
   useEffect(() => {
     setSelectedTourDecisorIds([]);
 
-    const recommendedTab = initialTab ?? stageGuide.recommendedTab;
+    const recommendedTab =
+      GUIDE_TAB_TO_DETAIL_TAB[initialTab ?? stageGuide.recommendedTab];
     const hasRecommendedTab = dealTabs.some((tab) => tab.id === recommendedTab);
 
-    setActiveTab(hasRecommendedTab ? recommendedTab : 'resumen');
+    setActiveTab(hasRecommendedTab ? recommendedTab : 'contexto');
 
     if (initialScrollTarget) {
       setPendingScrollTarget(initialScrollTarget);
@@ -409,7 +556,7 @@ export const ParksPipelineDealDetail = ({
 
   useEffect(() => {
     if (!dealTabs.some((tab) => tab.id === activeTab)) {
-      setActiveTab('resumen');
+      setActiveTab('contexto');
     }
   }, [activeTab, dealTabs]);
 
@@ -453,24 +600,18 @@ export const ParksPipelineDealDetail = ({
       <StyledHeroBand accentColor={stageTheme.accent}>
         <StyledHeroTop>
           <StyledHeroMain>
+            <StyledBadgeRow>
+              {deal.folio ? (
+                <StyledFolioBadge>{deal.folio}</StyledFolioBadge>
+              ) : null}
+              <StyledStageBadge accentColor={stageTheme.accent}>
+                {getParksPipelineStageLabel(deal.stage)}
+              </StyledStageBadge>
+            </StyledBadgeRow>
             <StyledPanelTitle id="parks-deal-detail-title">
               {deal.name}
             </StyledPanelTitle>
-            <StyledCompanyRow>
-              {deal.folio ? (
-                <Tag
-                  color="gray"
-                  text={deal.folio}
-                  variant="solid"
-                  weight="medium"
-                />
-              ) : null}
-              <Tag
-                color={stageColor}
-                text={getParksPipelineStageLabel(deal.stage)}
-                variant="solid"
-                weight="medium"
-              />
+            <StyledSubtitleRow>
               <StyledCompanyName>{companyName}</StyledCompanyName>
               {deal.inquilinoVinculado?.id ? (
                 <StyledAccountLink
@@ -479,7 +620,7 @@ export const ParksPipelineDealDetail = ({
                   {t`Ver cuenta 360 →`}
                 </StyledAccountLink>
               ) : null}
-            </StyledCompanyRow>
+            </StyledSubtitleRow>
           </StyledHeroMain>
           <StyledCloseButton
             type="button"
@@ -490,30 +631,26 @@ export const ParksPipelineDealDetail = ({
           </StyledCloseButton>
         </StyledHeroTop>
 
-        <StyledKpiStrip>
-          <ParksKpiTile
-            label={t`Valor`}
-            value={formatParksUsd(
-              getParksAmountFromMicros(deal.amount?.amountMicros),
-            )}
-            accent="blue"
-          />
-          <ParksKpiTile
-            label={t`Espacio`}
-            value={`${formatParksNumber(deal.m2Requeridos)} m²`}
-            accent="purple"
-          />
-          <ParksKpiTile
-            label={t`En etapa`}
-            value={t`${daysInStage} días`}
-            accent="yellow"
-          />
-          <ParksKpiTile
-            label={t`Responsable`}
-            value={ownerName}
-            accent="default"
-          />
-        </StyledKpiStrip>
+        <StyledStatsBar>
+          <StyledStatCell>
+            <StyledStatLabel>{t`Valor`}</StyledStatLabel>
+            <StyledStatValue>{amountLabel}</StyledStatValue>
+          </StyledStatCell>
+          <StyledStatCell>
+            <StyledStatLabel>{t`Espacio`}</StyledStatLabel>
+            <StyledStatValue>{spaceLabel}</StyledStatValue>
+          </StyledStatCell>
+          <StyledStatCell tone={daysColor}>
+            <StyledStatLabel>{t`En etapa`}</StyledStatLabel>
+            <StyledStatValue tone={daysColor}>{daysLabel}</StyledStatValue>
+          </StyledStatCell>
+          <StyledStatCell>
+            <StyledStatLabel>
+              {leasingOfficerName ? t`LO` : t`Responsable`}
+            </StyledStatLabel>
+            <StyledStatValue>{responsibleLabel}</StyledStatValue>
+          </StyledStatCell>
+        </StyledStatsBar>
       </StyledHeroBand>
 
       <ParksPipelineDealStageStepper
@@ -521,23 +658,15 @@ export const ParksPipelineDealDetail = ({
         onSelectStage={(stageId) => onMoveToStage?.(deal.id, stageId)}
       />
 
-      <div
-        style={{
-          margin: '12px 16px 0',
-        }}
-      >
-        <ParksAssignLeasingOfficerPanel
-          deal={deal}
-          onAssigned={onDealUpdated}
-        />
-      </div>
-
       <StyledDealBody>
         <StyledGuideWrapper>
           <ParksDealStageGuidePanel
             guide={stageGuide}
+            hideChecklistBody={
+              activeTab === 'calificar' && checklistBelongsInCalificar
+            }
             onOpenTab={(tab: ParksDealGuideTab, scrollTarget?: string) => {
-              setActiveTab(tab as DealDetailTab);
+              setActiveTab(GUIDE_TAB_TO_DETAIL_TAB[tab]);
 
               if (scrollTarget) {
                 setPendingScrollTarget(scrollTarget);
@@ -550,191 +679,234 @@ export const ParksPipelineDealDetail = ({
         </StyledGuideWrapper>
 
         <ParksModalTabs
-        tabs={dealTabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        ariaLabel={t`Secciones del deal`}
-      >
-        {activeTab === 'resumen' ? (
-          <StyledTabStack>
-            <StyledResumenCard>
-              <StyledContextGrid>
-              <ParksDetailField
-                label={t`Nave`}
-                icon={IconBox}
-                accent="blue"
-                value={
-                  deal.tourNavesMostradas
-                    ? formatParksTourNavesLabel(
-                        parseParksTourNavesMostradas(deal.tourNavesMostradas),
-                      ) ||
-                      (deal.naveVinculada?.identificador ??
-                        t`Sin nave asignada`)
-                    : (deal.naveVinculada?.identificador ??
-                      t`Sin nave asignada`)
-                }
-              />
-              <ParksDetailField
-                label={t`Seguimiento`}
-                icon={IconClock}
-                accent="yellow"
-                value={
-                  <ParksStatusBadge
-                    color={daysColor}
-                    label={t`${daysInStage} días en etapa`}
+          tabs={dealTabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          ariaLabel={t`Flujo del deal`}
+        >
+          {activeTab === 'contexto' ? (
+            <StyledTabStack>
+              <StyledResumenCard>
+                <StyledContextGrid>
+                  <ParksDetailField
+                    label={t`Nave`}
+                    icon={IconBox}
+                    accent="blue"
+                    value={
+                      deal.tourNavesMostradas
+                        ? formatParksTourNavesLabel(
+                            parseParksTourNavesMostradas(
+                              deal.tourNavesMostradas,
+                            ),
+                          ) ||
+                          (deal.naveVinculada?.identificador ??
+                            t`Sin nave asignada`)
+                        : (deal.naveVinculada?.identificador ??
+                          t`Sin nave asignada`)
+                    }
                   />
+                  <ParksDetailField
+                    label={t`Seguimiento`}
+                    icon={IconClock}
+                    accent="yellow"
+                    value={
+                      <ParksStatusBadge
+                        color={daysColor}
+                        label={t`${daysInStage} días en etapa`}
+                      />
+                    }
+                  />
+                  {updatedAgo ? (
+                    <ParksDetailField
+                      label={t`Última actividad`}
+                      icon={IconCalendar}
+                      value={updatedAgo}
+                    />
+                  ) : null}
+                  {deal.createdAt ? (
+                    <ParksDetailField
+                      label={t`Creado`}
+                      icon={IconUser}
+                      value={formatParksDate(deal.createdAt)}
+                    />
+                  ) : null}
+                </StyledContextGrid>
+              </StyledResumenCard>
+              <StyledOwnerRow>
+                <StyledOwnerAvatar avatarColor={stageTheme.accent}>
+                  {getParksOwnerInitials(deal)}
+                </StyledOwnerAvatar>
+                <StyledOwnerText>
+                  <StyledOwnerName>{ownerName}</StyledOwnerName>
+                  <StyledOwnerRole>{t`Responsable comercial`}</StyledOwnerRole>
+                </StyledOwnerText>
+              </StyledOwnerRow>
+            </StyledTabStack>
+          ) : null}
+
+          {activeTab === 'calificar' ? (
+            <StyledTabStack>
+              <ParksAssignLeasingOfficerPanel
+                deal={deal}
+                onAssigned={onDealUpdated}
+              />
+              {checklistBelongsInCalificar ? (
+                <ParksDealStageGuideChecklist
+                  guide={stageGuide}
+                  onOpenTab={(
+                    tab: ParksDealGuideTab,
+                    scrollTarget?: string,
+                  ) => {
+                    setActiveTab(GUIDE_TAB_TO_DETAIL_TAB[tab]);
+
+                    if (scrollTarget) {
+                      setPendingScrollTarget(scrollTarget);
+                    }
+                  }}
+                />
+              ) : null}
+              <ParksProspectEnrichmentPanel
+                opportunityId={deal.id}
+                companyName={companyName}
+                m2Requeridos={deal.m2Requeridos}
+                embedded
+              />
+              <ParksEmailSequencePanel
+                opportunityId={deal.id}
+                companyName={companyName}
+              />
+            </StyledTabStack>
+          ) : null}
+
+          {activeTab === 'visita' ? (
+            <StyledTabStack>
+              <StyledSectionTitle>{t`Naves y agenda`}</StyledSectionTitle>
+              <ParksCommercialProposalSection
+                opportunityId={deal.id}
+                companyName={companyName}
+                m2Requeridos={deal.m2Requeridos}
+                inquilinoId={deal.inquilinoVinculado?.id}
+                linkedNaveId={deal.naveVinculada?.id ?? deal.naveVinculadaId}
+                linkedNaveIdentificador={deal.naveVinculada?.identificador}
+                tourNavesMostradas={deal.tourNavesMostradas}
+                tourFecha={deal.tourFecha}
+                onNaveLinked={(update) => onDealUpdated?.(deal.id, update)}
+                onTourScheduled={(update) => onDealUpdated?.(deal.id, update)}
+              />
+              <StyledSectionTitle>{t`Decisores`}</StyledSectionTitle>
+              <ParksDecisoresPanel
+                opportunityId={deal.id}
+                inquilinoId={deal.inquilinoVinculado?.id}
+                showTourAttendance
+                selectedTourDecisorIds={selectedTourDecisorIds}
+                onTourSelectionChange={setSelectedTourDecisorIds}
+                embedded
+              />
+              <StyledSectionTitle>{t`Guion de visita`}</StyledSectionTitle>
+              <ParksSalesScriptPanel
+                opportunityId={deal.id}
+                companyName={companyName}
+                m2Requeridos={deal.m2Requeridos}
+                naveDestacada={deal.naveVinculada?.identificador}
+                embedded
+              />
+            </StyledTabStack>
+          ) : null}
+
+          {activeTab === 'negociar' ? (
+            <StyledTabStack>
+              <ParksCommercialWorkflowPanel
+                opportunity={deal}
+                attendedDecisorIds={selectedTourDecisorIds}
+                embedded
+                sections={['tour', 'cotizacion', 'aprobacion']}
+                title={t`Negociación`}
+                hint={t`Tour, cotización y condiciones especiales en un solo lugar.`}
+                onDealUpdated={(update) => onDealUpdated?.(deal.id, update)}
+              />
+            </StyledTabStack>
+          ) : null}
+
+          {activeTab === 'cerrar' ? (
+            <StyledTabStack>
+              <ParksCommercialWorkflowPanel
+                opportunity={deal}
+                embedded
+                sections={['hoja', 'perdida']}
+                title={t`Hoja de Acuerdos`}
+                hint={t`Genera el borrador, firma con Director Comercial y cliente, o marca el deal como perdido.`}
+                onDealUpdated={(update) => onDealUpdated?.(deal.id, update)}
+              />
+            </StyledTabStack>
+          ) : null}
+
+          {activeTab === 'actividad' ? (
+            <StyledTabStack>
+              <ParksFirstContactPanel
+                opportunityId={deal.id}
+                companyName={companyName}
+                deal={deal}
+                onContactRegistered={(update) =>
+                  onDealUpdated?.(deal.id, update)
                 }
               />
-              {updatedAgo ? (
-                <ParksDetailField
-                  label={t`Última actividad`}
-                  icon={IconCalendar}
-                  value={updatedAgo}
-                />
-              ) : null}
-              {deal.createdAt ? (
-                <ParksDetailField
-                  label={t`Creado`}
-                  icon={IconUser}
-                  value={formatParksDate(deal.createdAt)}
-                />
-              ) : null}
-            </StyledContextGrid>
-            </StyledResumenCard>
-            <StyledOwnerRow>
-              <StyledOwnerAvatar avatarColor={stageTheme.accent}>
-                {getParksOwnerInitials(deal)}
-              </StyledOwnerAvatar>
-              <StyledOwnerText>
-                <StyledOwnerName>{ownerName}</StyledOwnerName>
-                <StyledOwnerRole>{t`Responsable comercial`}</StyledOwnerRole>
-              </StyledOwnerText>
-            </StyledOwnerRow>
-          </StyledTabStack>
-        ) : null}
-
-        {activeTab === 'prospecto' ? (
-          <StyledTabStack>
-            <ParksProspectEnrichmentPanel
-              opportunityId={deal.id}
-              companyName={companyName}
-              m2Requeridos={deal.m2Requeridos}
-              embedded
-            />
-            <ParksEmailSequencePanel
-              opportunityId={deal.id}
-              companyName={companyName}
-            />
-          </StyledTabStack>
-        ) : null}
-
-        {activeTab === 'propuesta' ? (
-          <ParksCommercialProposalSection
-            opportunityId={deal.id}
-            companyName={companyName}
-            m2Requeridos={deal.m2Requeridos}
-            inquilinoId={deal.inquilinoVinculado?.id}
-            linkedNaveId={deal.naveVinculada?.id ?? deal.naveVinculadaId}
-            linkedNaveIdentificador={deal.naveVinculada?.identificador}
-            tourNavesMostradas={deal.tourNavesMostradas}
-            tourFecha={deal.tourFecha}
-            onNaveLinked={(update) => onDealUpdated?.(deal.id, update)}
-            onTourScheduled={(update) => onDealUpdated?.(deal.id, update)}
-          />
-        ) : null}
-
-        {activeTab === 'actividad' ? (
-          <StyledTabStack>
-            <ParksFirstContactPanel
-              opportunityId={deal.id}
-              companyName={companyName}
-              deal={deal}
-              onContactRegistered={(update) => onDealUpdated?.(deal.id, update)}
-            />
-            <ParksActivityTimelinePanel opportunityId={deal.id} embedded />
-          </StyledTabStack>
-        ) : null}
-
-        {activeTab === 'decisores' ? (
-          <ParksDecisoresPanel
-            opportunityId={deal.id}
-            inquilinoId={deal.inquilinoVinculado?.id}
-            showTourAttendance
-            selectedTourDecisorIds={selectedTourDecisorIds}
-            onTourSelectionChange={setSelectedTourDecisorIds}
-            embedded
-          />
-        ) : null}
-
-        {activeTab === 'guion' ? (
-          <ParksSalesScriptPanel
-            opportunityId={deal.id}
-            companyName={companyName}
-            m2Requeridos={deal.m2Requeridos}
-            naveDestacada={deal.naveVinculada?.identificador}
-            embedded
-          />
-        ) : null}
-
-        {activeTab === 'cotizacion' ? (
-          <ParksCommercialWorkflowPanel
-            opportunity={deal}
-            attendedDecisorIds={selectedTourDecisorIds}
-            embedded
-            sections={['tour', 'cotizacion']}
-            title={t`Cotización`}
-            hint={t`Registra el tour y arma o envía la cotización formal.`}
-            onDealUpdated={(update) => onDealUpdated?.(deal.id, update)}
-          />
-        ) : null}
-
-        {activeTab === 'aprobacion' ? (
-          <ParksCommercialWorkflowPanel
-            opportunity={deal}
-            embedded
-            sections={['aprobacion']}
-            title={t`Aprobación`}
-            hint={t`Solicita o resuelve condiciones especiales que requieren OK de Director Comercial/CEO.`}
-            onDealUpdated={(update) => onDealUpdated?.(deal.id, update)}
-          />
-        ) : null}
-
-        {activeTab === 'hoja' ? (
-          <ParksCommercialWorkflowPanel
-            opportunity={deal}
-            embedded
-            sections={['hoja', 'perdida']}
-            title={t`Hoja de Acuerdos`}
-            hint={t`Genera el borrador, firma con Director Comercial y cliente, o marca el deal como perdido.`}
-            onDealUpdated={(update) => onDealUpdated?.(deal.id, update)}
-          />
-        ) : null}
-      </ParksModalTabs>
+              <ParksActivityTimelinePanel opportunityId={deal.id} embedded />
+            </StyledTabStack>
+          ) : null}
+        </ParksModalTabs>
       </StyledDealBody>
 
       <ParksActionBar
         hint={
-          nextStage
-            ? t`Siguiente etapa recomendada: ${getParksPipelineStageLabel(nextStage)}`
-            : t`Revisa Hoja para cerrar el acuerdo comercial`
+          stageGuide.nextStageLabel
+            ? t`Siguiente etapa: ${stageGuide.nextStageLabel}`
+            : t`Revisa Cerrar para firmar la Hoja de Acuerdos`
         }
       >
-        {nextStage && onMoveToStage ? (
+        <ParksActionButton
+          variant="ghost"
+          title={t`Abrir registro`}
+          Icon={IconExternalLink}
+          iconPosition="right"
+          onClick={handleOpenFullRecord}
+        />
+        {stageGuide.primaryActionKind === 'advance-stage' &&
+        stageGuide.nextStageId &&
+        onMoveToStage ? (
           <ParksActionButton
-            variant="secondary"
+            variant="primary"
+            title={stageGuide.primaryActionLabel}
+            Icon={IconArrowRight}
+            iconPosition="right"
+            onClick={() => {
+              if (!stageGuide.nextStageId) {
+                return;
+              }
+
+              onMoveToStage(deal.id, stageGuide.nextStageId);
+            }}
+          />
+        ) : stageGuide.primaryActionKind === 'open-tab' ? (
+          <ParksActionButton
+            variant="primary"
+            title={stageGuide.primaryActionLabel}
+            Icon={IconArrowRight}
+            iconPosition="right"
+            onClick={() =>
+              setActiveTab(
+                GUIDE_TAB_TO_DETAIL_TAB[stageGuide.recommendedTab],
+              )
+            }
+          />
+        ) : nextStage && onMoveToStage ? (
+          <ParksActionButton
+            variant="primary"
             title={t`Avanzar etapa`}
             Icon={IconArrowRight}
             iconPosition="right"
             onClick={() => onMoveToStage(deal.id, nextStage)}
           />
         ) : null}
-        <ParksActionButton
-          variant="primary"
-          title={t`Abrir registro`}
-          Icon={IconExternalLink}
-          iconPosition="right"
-          onClick={handleOpenFullRecord}
-        />
       </ParksActionBar>
     </StyledPanel>
   );

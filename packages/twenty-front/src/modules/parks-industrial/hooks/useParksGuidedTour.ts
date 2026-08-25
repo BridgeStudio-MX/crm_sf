@@ -1,11 +1,11 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { PARKS_GUIDED_TOUR_NAV_SECTION_ID } from '@/parks-industrial/constants/parks-guided-tour.constants';
 import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
 import {
   parksGuidedTourActiveState,
-  parksGuidedTourCompletedEmailsState,
+  parksGuidedTourAutoStartedEmailState,
   parksGuidedTourStepIndexState,
 } from '@/parks-industrial/states/parks-guided-tour.state';
 import { parksNavigationInfoOpenIdState } from '@/parks-industrial/states/parks-navigation-info-open-id.state';
@@ -24,8 +24,8 @@ export const useParksGuidedTour = () => {
   } = useParksAccess();
   const [isActive, setIsActive] = useAtomState(parksGuidedTourActiveState);
   const [stepIndex, setStepIndex] = useAtomState(parksGuidedTourStepIndexState);
-  const [completedEmails, setCompletedEmails] = useAtomState(
-    parksGuidedTourCompletedEmailsState,
+  const [autoStartedEmail, setAutoStartedEmail] = useAtomState(
+    parksGuidedTourAutoStartedEmailState,
   );
   const setIsNavigationDrawerExpanded = useSetAtomState(
     isNavigationDrawerExpandedState,
@@ -49,26 +49,25 @@ export const useParksGuidedTour = () => {
   );
   const isLastStep = stepIndex >= steps.length - 1;
   const normalizedEmail = userEmail?.trim().toLowerCase() ?? '';
-  const hasCompletedTour =
-    normalizedEmail.length > 0 &&
-    completedEmails[normalizedEmail] === true;
+
+  // Logout / session clear → allow auto-start again on next login
+  useEffect(() => {
+    if (!normalizedEmail && autoStartedEmail !== null) {
+      setAutoStartedEmail(null);
+    }
+  }, [autoStartedEmail, normalizedEmail, setAutoStartedEmail]);
+
+  const markAutoStartedForCurrentUser = useCallback(() => {
+    if (normalizedEmail) {
+      setAutoStartedEmail(normalizedEmail);
+    }
+  }, [normalizedEmail, setAutoStartedEmail]);
 
   const prepareWorkspaceForTour = useCallback(() => {
     setIsNavigationDrawerExpanded(true);
     openNavigationSection();
     setOpenInfoId(null);
   }, [openNavigationSection, setIsNavigationDrawerExpanded, setOpenInfoId]);
-
-  const markTourCompleted = useCallback(() => {
-    if (!normalizedEmail) {
-      return;
-    }
-
-    setCompletedEmails((current) => ({
-      ...current,
-      [normalizedEmail]: true,
-    }));
-  }, [normalizedEmail, setCompletedEmails]);
 
   const startTour = useCallback(() => {
     if (!hasAnyParksNavAccess || steps.length === 0) {
@@ -78,32 +77,28 @@ export const useParksGuidedTour = () => {
     prepareWorkspaceForTour();
     setStepIndex(0);
     setIsActive(true);
+    markAutoStartedForCurrentUser();
   }, [
     hasAnyParksNavAccess,
+    markAutoStartedForCurrentUser,
     prepareWorkspaceForTour,
     setIsActive,
     setStepIndex,
     steps.length,
   ]);
 
-  const stopTour = useCallback(
-    (options?: { persistCompletion?: boolean }) => {
-      setIsActive(false);
-      setStepIndex(0);
-
-      if (options?.persistCompletion) {
-        markTourCompleted();
-      }
-    },
-    [markTourCompleted, setIsActive, setStepIndex],
-  );
+  const stopTour = useCallback(() => {
+    setIsActive(false);
+    setStepIndex(0);
+    markAutoStartedForCurrentUser();
+  }, [markAutoStartedForCurrentUser, setIsActive, setStepIndex]);
 
   const skipTour = useCallback(() => {
-    stopTour({ persistCompletion: true });
+    stopTour();
   }, [stopTour]);
 
   const completeTour = useCallback(() => {
-    stopTour({ persistCompletion: true });
+    stopTour();
   }, [stopTour]);
 
   const goToStep = useCallback(
@@ -134,7 +129,12 @@ export const useParksGuidedTour = () => {
     goToStep(Math.max(stepIndex - 1, 0));
   }, [goToStep, stepIndex]);
 
-  const shouldAutoStart = false;
+  const shouldAutoStart =
+    hasAnyParksNavAccess &&
+    normalizedEmail.length > 0 &&
+    steps.length > 0 &&
+    !isActive &&
+    autoStartedEmail !== normalizedEmail;
 
   return {
     isActive,
@@ -142,7 +142,7 @@ export const useParksGuidedTour = () => {
     steps,
     currentStep,
     isLastStep,
-    hasCompletedTour,
+    hasCompletedTour: false,
     shouldAutoStart,
     startTour,
     skipTour,

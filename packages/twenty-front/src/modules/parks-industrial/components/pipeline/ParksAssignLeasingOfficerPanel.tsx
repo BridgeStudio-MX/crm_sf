@@ -6,6 +6,10 @@ import { themeCssVariables } from 'twenty-ui/theme-constants';
 
 import { ParksSectionCard } from '@/parks-industrial/components/ui/ParksSectionCard';
 import { StyledParksSelect } from '@/parks-industrial/components/ui/parks-form-control.styles';
+import {
+  PARKS_BRAND,
+  PARKS_VIBE,
+} from '@/parks-industrial/constants/parks-theme.constants';
 import { useParksAccess } from '@/parks-industrial/hooks/useParksAccess';
 import { useParksLeasingOfficerOptions } from '@/parks-industrial/hooks/useParksLeasingOfficerOptions';
 import { type ParksOpportunityRecord } from '@/parks-industrial/hooks/useParksRecords';
@@ -13,38 +17,52 @@ import { assignParksLead } from '@/parks-industrial/services/parks-commercial.cl
 import { getParksAssignedLeasingOfficerName } from '@/parks-industrial/utils/parks-format.util';
 import { normalizeParksPipelineStageId } from '@/parks-industrial/utils/parksStageGateUtil';
 
+const StyledHint = styled.p`
+  color: ${PARKS_VIBE.textSecondary};
+  font-family: ${PARKS_VIBE.fontFamily};
+  font-size: ${themeCssVariables.font.size.sm};
+  line-height: 1.45;
+  margin: 0 0 ${PARKS_VIBE.space.md};
+`;
+
 const StyledRow = styled.div`
   align-items: end;
   display: flex;
   flex-wrap: wrap;
-  gap: ${themeCssVariables.spacing[2]};
+  gap: ${PARKS_VIBE.space.sm};
 `;
 
 const StyledSelectWrap = styled.div`
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[1]};
+  gap: 4px;
   min-width: 180px;
 `;
 
 const StyledLabel = styled.label`
-  color: ${themeCssVariables.font.color.secondary};
-  font-size: ${themeCssVariables.font.size.xs};
-  font-weight: ${themeCssVariables.font.weight.medium};
-`;
-
-const StyledHint = styled.p`
-  color: ${themeCssVariables.font.color.secondary};
-  font-size: ${themeCssVariables.font.size.sm};
-  line-height: 1.4;
-  margin: 0 0 ${themeCssVariables.spacing[2]};
+  color: ${PARKS_VIBE.textMuted};
+  font-family: ${PARKS_VIBE.fontFamily};
+  font-size: 11px;
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 `;
 
 const StyledError = styled.div`
   color: ${themeCssVariables.font.color.danger};
   font-size: ${themeCssVariables.font.size.sm};
-  margin-top: ${themeCssVariables.spacing[2]};
+  margin-top: ${PARKS_VIBE.space.sm};
+`;
+
+const StyledAssignShell = styled.div`
+  & > section {
+    background: linear-gradient(
+      145deg,
+      #ffffff 0%,
+      ${PARKS_BRAND.accentSoft} 100%
+    );
+  }
 `;
 
 type ParksAssignLeasingOfficerPanelProps = {
@@ -113,39 +131,41 @@ export const ParksAssignLeasingOfficerPanel = ({
   };
 
   return (
-    <ParksSectionCard title={t`Asignar a Leasing Officer`} accent="green">
-      <StyledHint>
-        {t`Este lead aún no tiene LO. Asígnarlo para que pueda avanzar en el pipeline y se cree la tarea de contacto en 24h.`}
-      </StyledHint>
-      <StyledRow>
-        <StyledSelectWrap>
-          <StyledLabel htmlFor={`parks-assign-lo-${deal.id}`}>
-            {t`Leasing Officer`}
-          </StyledLabel>
-          <StyledParksSelect
-            id={`parks-assign-lo-${deal.id}`}
-            value={selectedLo}
-            disabled={isAssigning}
-            onChange={(event) => setSelectedLo(event.target.value)}
-          >
-            {leasingOfficerOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </StyledParksSelect>
-        </StyledSelectWrap>
-        <Button
-          title={isAssigning ? t`Asignando…` : t`Asignar a LO`}
-          variant="primary"
-          size="small"
-          disabled={isAssigning || !selectedLo}
-          onClick={() => {
-            void handleAssign();
-          }}
-        />
-      </StyledRow>
-      {errorMessage ? <StyledError>{errorMessage}</StyledError> : null}
-    </ParksSectionCard>
+    <StyledAssignShell>
+      <ParksSectionCard title={t`Asignar a Leasing Officer`} accent="green">
+        <StyledHint>
+          {t`Este lead aún no tiene LO. Asígnarlo para que pueda avanzar en el pipeline y se cree la tarea de contacto en 24h.`}
+        </StyledHint>
+        <StyledRow>
+          <StyledSelectWrap>
+            <StyledLabel htmlFor={`parks-assign-lo-${deal.id}`}>
+              {t`Leasing Officer`}
+            </StyledLabel>
+            <StyledParksSelect
+              id={`parks-assign-lo-${deal.id}`}
+              value={selectedLo}
+              disabled={isAssigning}
+              onChange={(event) => setSelectedLo(event.target.value)}
+            >
+              {leasingOfficerOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </StyledParksSelect>
+          </StyledSelectWrap>
+          <Button
+            title={isAssigning ? t`Asignando…` : t`Asignar a LO`}
+            variant="primary"
+            size="small"
+            disabled={isAssigning || !selectedLo}
+            onClick={() => {
+              void handleAssign();
+            }}
+          />
+        </StyledRow>
+        {errorMessage ? <StyledError>{errorMessage}</StyledError> : null}
+      </ParksSectionCard>
+    </StyledAssignShell>
   );
 };

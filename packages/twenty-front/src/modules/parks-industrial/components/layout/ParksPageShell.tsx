@@ -4,7 +4,10 @@ import { ParksAiPanel } from '@/parks-industrial/components/ai/ParksAiPanel';
 import { ParksUserWelcomeBar } from '@/parks-industrial/components/layout/ParksUserWelcomeBar';
 import { ParksGuidedTourOverlay } from '@/parks-industrial/components/tour/ParksGuidedTourOverlay';
 import { StyledParksPageSubtitle } from '@/parks-industrial/components/ui/ParksPageSubtitle';
-import { PARKS_VISUAL_THEME } from '@/parks-industrial/constants/parks-theme.constants';
+import {
+  PARKS_VIBE,
+  PARKS_VISUAL_THEME,
+} from '@/parks-industrial/constants/parks-theme.constants';
 import { ParksAiAssistantProvider } from '@/parks-industrial/hooks/useParksAiAssistant';
 import { PageCardHeader } from '@/ui/layout/page/components/PageCardHeader';
 import { PageCardLayout } from '@/ui/layout/page/components/PageCardLayout';
@@ -25,7 +28,7 @@ const StyledContent = styled.div`
   display: flex;
   flex: 1;
   flex-direction: column;
-  font-family: ${themeCssVariables.font.family};
+  font-family: ${PARKS_VIBE.fontFamily};
   gap: ${themeCssVariables.spacing[4]};
   min-height: 0;
   overflow-y: auto;

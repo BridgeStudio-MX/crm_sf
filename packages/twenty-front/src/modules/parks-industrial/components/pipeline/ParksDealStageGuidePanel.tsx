@@ -1,6 +1,6 @@
 import { styled } from '@linaria/react';
 import { t } from '@lingui/core/macro';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   IconArrowRight,
   IconCheck,
@@ -12,50 +12,74 @@ import {
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
 import { ParksActionButton } from '@/parks-industrial/components/ui/ParksActionButton';
-import { PARKS_VISUAL_THEME } from '@/parks-industrial/constants/parks-theme.constants';
+import {
+  PARKS_BRAND,
+  PARKS_VIBE,
+} from '@/parks-industrial/constants/parks-theme.constants';
 import {
   type ParksDealGuideChecklistItem,
   type ParksDealGuideTab,
   type ParksDealStageGuide,
 } from '@/parks-industrial/utils/parks-stage-guide.util';
 
-const StyledGuide = styled.div<{ isCollapsed: boolean }>`
-  background: ${themeCssVariables.background.primary};
-  border: 1px solid ${themeCssVariables.border.color.medium};
-  border-radius: ${themeCssVariables.border.radius.md};
-  box-shadow: ${themeCssVariables.boxShadow.light};
+const StyledGuide = styled.div<{ isDone: boolean }>`
+  background: ${({ isDone }) =>
+    isDone
+      ? `linear-gradient(135deg, #ffffff 0%, ${PARKS_BRAND.accentSoft} 100%)`
+      : `linear-gradient(135deg, #ffffff 0%, ${PARKS_BRAND.primarySoft} 100%)`};
+  border: 1px solid
+    ${({ isDone }) =>
+      isDone ? 'rgba(141, 198, 63, 0.35)' : PARKS_BRAND.borderSoft};
+  border-radius: ${PARKS_VIBE.radiusMd};
+  box-shadow: ${PARKS_VIBE.shadowSoft};
   display: flex;
   flex-direction: column;
-  margin: ${themeCssVariables.spacing[3]} ${themeCssVariables.spacing[4]} 0;
+  margin: 0;
   overflow: hidden;
-  transition: padding 0.15s ease;
+  position: relative;
+
+  &::before {
+    background: ${({ isDone }) =>
+      isDone ? PARKS_BRAND.accent : PARKS_BRAND.primary};
+    content: '';
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 3px;
+  }
 `;
 
 const StyledHeader = styled.div`
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: ${themeCssVariables.spacing[2]};
-  padding: ${themeCssVariables.spacing[2]} ${themeCssVariables.spacing[3]};
+  gap: ${PARKS_VIBE.space.sm};
+  padding: ${PARKS_VIBE.space.sm} ${PARKS_VIBE.space.sm}
+    ${PARKS_VIBE.space.sm} ${PARKS_VIBE.space.lg};
 `;
 
 const StyledHeaderToggle = styled.button`
   align-items: center;
   background: transparent;
   border: none;
-  border-radius: ${themeCssVariables.border.radius.sm};
+  border-radius: ${PARKS_VIBE.radiusSm};
   cursor: pointer;
   display: flex;
   flex: 1;
   font: inherit;
-  gap: ${themeCssVariables.spacing[2]};
+  gap: ${PARKS_VIBE.space.sm};
   margin: 0;
   min-width: 0;
-  padding: ${themeCssVariables.spacing[1]};
+  padding: ${PARKS_VIBE.space.xs};
   text-align: left;
 
-  &:hover {
-    background: ${themeCssVariables.background.transparent.light};
+  &:hover:not(:disabled) {
+    background: rgba(0, 104, 55, 0.06);
+  }
+
+  &:disabled {
+    cursor: default;
   }
 `;
 
@@ -63,29 +87,26 @@ const StyledCollapseButton = styled.button`
   align-items: center;
   background: transparent;
   border: none;
-  border-radius: ${themeCssVariables.border.radius.sm};
-  color: ${themeCssVariables.font.color.tertiary};
+  border-radius: ${PARKS_VIBE.radiusSm};
+  color: ${PARKS_VIBE.textMuted};
   cursor: pointer;
   display: flex;
   flex-shrink: 0;
-  padding: ${themeCssVariables.spacing[1]};
+  padding: ${PARKS_VIBE.space.xs};
 
   &:hover {
-    background: ${themeCssVariables.background.transparent.light};
+    background: rgba(0, 104, 55, 0.06);
+    color: ${PARKS_BRAND.primary};
   }
 `;
 
 const StyledIconChip = styled.div<{ isDone: boolean }>`
   align-items: center;
   background: ${({ isDone }) =>
-    isDone
-      ? PARKS_VISUAL_THEME.accents.green.iconBackground
-      : PARKS_VISUAL_THEME.accents.blue.iconBackground};
+    isDone ? PARKS_BRAND.accentSoft : PARKS_BRAND.primarySoft};
   border-radius: 50%;
   color: ${({ isDone }) =>
-    isDone
-      ? PARKS_VISUAL_THEME.accents.green.accent
-      : PARKS_VISUAL_THEME.accents.blue.accent};
+    isDone ? PARKS_BRAND.primary : PARKS_BRAND.primary};
   display: flex;
   flex-shrink: 0;
   height: 28px;
@@ -97,17 +118,32 @@ const StyledTitleBlock = styled.div`
   display: flex;
   flex: 1;
   flex-direction: column;
+  gap: 4px;
   min-width: 0;
 `;
 
 const StyledTitleRow = styled.div`
   align-items: center;
   display: flex;
-  gap: ${themeCssVariables.spacing[2]};
+  flex-wrap: wrap;
+  gap: ${PARKS_VIBE.space.sm};
+  min-width: 0;
+`;
+
+const StyledEyebrow = styled.span<{ isDone: boolean }>`
+  color: ${({ isDone }) =>
+    isDone ? PARKS_BRAND.primary : PARKS_VIBE.textMuted};
+  flex-shrink: 0;
+  font-family: ${PARKS_VIBE.fontFamily};
+  font-size: 10px;
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 `;
 
 const StyledTitle = styled.span`
-  color: ${themeCssVariables.font.color.primary};
+  color: ${PARKS_VIBE.textPrimary};
+  font-family: ${PARKS_VIBE.fontFamily};
   font-size: ${themeCssVariables.font.size.sm};
   font-weight: ${themeCssVariables.font.weight.semiBold};
   overflow: hidden;
@@ -117,53 +153,57 @@ const StyledTitle = styled.span`
 
 const StyledProgressPill = styled.span<{ isDone: boolean }>`
   background: ${({ isDone }) =>
-    isDone
-      ? PARKS_VISUAL_THEME.accents.green.iconBackground
-      : PARKS_VISUAL_THEME.accents.blue.iconBackground};
-  border-radius: ${themeCssVariables.border.radius.rounded};
-  color: ${({ isDone }) =>
-    isDone
-      ? PARKS_VISUAL_THEME.accents.green.accent
-      : PARKS_VISUAL_THEME.accents.blue.accent};
+    isDone ? PARKS_BRAND.accentSoft : PARKS_BRAND.primarySoft};
+  border-radius: ${PARKS_VIBE.radiusPill};
+  color: ${PARKS_BRAND.primary};
   flex-shrink: 0;
-  font-size: ${themeCssVariables.font.size.xs};
-  font-weight: ${themeCssVariables.font.weight.medium};
-  padding: 2px ${themeCssVariables.spacing[2]};
+  font-family: ${PARKS_VIBE.fontFamily};
+  font-size: 11px;
+  font-weight: ${themeCssVariables.font.weight.semiBold};
+  padding: 2px 8px;
   white-space: nowrap;
 `;
 
-const StyledDescription = styled.p`
-  color: ${themeCssVariables.font.color.secondary};
-  font-size: ${themeCssVariables.font.size.xs};
-  line-height: 1.4;
-  margin: 2px 0 0;
+const StyledProgressTrack = styled.div`
+  background: rgba(0, 104, 55, 0.1);
+  border-radius: ${PARKS_VIBE.radiusPill};
+  height: 3px;
+  max-width: 160px;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  width: 100%;
+`;
+
+const StyledProgressFill = styled.div<{ progress: number; isDone: boolean }>`
+  background: ${({ isDone }) =>
+    isDone ? PARKS_BRAND.accent : PARKS_BRAND.primary};
+  border-radius: ${PARKS_VIBE.radiusPill};
+  height: 100%;
+  transition: width 0.2s ease;
+  width: ${({ progress }) => `${Math.round(progress * 100)}%`};
 `;
 
 const StyledHeaderRight = styled.div`
   align-items: center;
   display: flex;
   flex-shrink: 0;
-  gap: ${themeCssVariables.spacing[2]};
+  gap: ${PARKS_VIBE.space.sm};
   margin-left: auto;
 `;
 
 const StyledBody = styled.div`
-  border-top: 1px solid ${themeCssVariables.border.color.light};
+  border-top: 1px solid ${PARKS_VIBE.border};
   display: flex;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[3]};
-  max-height: 220px;
+  gap: ${PARKS_VIBE.space.sm};
+  max-height: 200px;
   overflow-y: auto;
-  padding: ${themeCssVariables.spacing[3]};
+  padding: ${PARKS_VIBE.space.md} ${PARKS_VIBE.space.lg};
 `;
 
 const StyledChecklist = styled.ul`
   display: flex;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[1]};
+  gap: 4px;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -180,70 +220,176 @@ const StyledChecklistButton = styled.button<{
   isClickable: boolean;
 }>`
   align-items: center;
-  background: transparent;
-  border: none;
-  border-radius: ${themeCssVariables.border.radius.sm};
+  background: ${({ isDone }) =>
+    isDone ? 'rgba(141, 198, 63, 0.08)' : PARKS_VIBE.surface};
+  border: 1px solid
+    ${({ isDone }) => (isDone ? 'rgba(141, 198, 63, 0.22)' : PARKS_VIBE.border)};
+  border-radius: ${PARKS_VIBE.radiusSm};
   color: ${({ isDone }) =>
-    isDone
-      ? themeCssVariables.font.color.secondary
-      : themeCssVariables.font.color.primary};
+    isDone ? PARKS_VIBE.textSecondary : PARKS_VIBE.textPrimary};
   cursor: ${({ isClickable }) => (isClickable ? 'pointer' : 'default')};
   display: flex;
-  font: inherit;
+  font-family: ${PARKS_VIBE.fontFamily};
   font-size: ${themeCssVariables.font.size.sm};
-  gap: ${themeCssVariables.spacing[2]};
+  gap: ${PARKS_VIBE.space.sm};
   line-height: 1.35;
-  margin: 0 -${themeCssVariables.spacing[1]};
-  padding: ${themeCssVariables.spacing[1]};
+  padding: 8px 10px;
   text-align: left;
-  width: calc(100% + ${themeCssVariables.spacing[2]});
+  text-decoration: ${({ isDone }) => (isDone ? 'line-through' : 'none')};
+  text-decoration-color: rgba(50, 51, 56, 0.28);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+  width: 100%;
 
-  ${({ isClickable, isDone }) =>
+  ${({ isClickable }) =>
     isClickable
       ? `
     &:hover {
-      background: ${themeCssVariables.background.transparent.light};
-      color: ${
-        isDone
-          ? themeCssVariables.font.color.primary
-          : themeCssVariables.color.blue
-      };
+      background: ${PARKS_BRAND.primarySoft};
+      border-color: ${PARKS_BRAND.borderSoft};
+      color: ${PARKS_BRAND.primary};
+      text-decoration: none;
     }
   `
       : ''}
 `;
 
-const StyledFooter = styled.div`
+const StyledEmbeddedChecklist = styled.div`
+  background: linear-gradient(
+    160deg,
+    ${PARKS_VIBE.surface} 0%,
+    ${PARKS_VIBE.surfaceMuted} 100%
+  );
+  border: 1px solid ${PARKS_VIBE.border};
+  border-radius: ${PARKS_VIBE.radiusMd};
+  box-shadow: ${PARKS_VIBE.shadowSoft};
+  display: flex;
+  flex-direction: column;
+  gap: ${PARKS_VIBE.space.md};
+  overflow: hidden;
+  padding: ${PARKS_VIBE.space.lg};
+  position: relative;
+
+  &::before {
+    background: ${PARKS_BRAND.primary};
+    content: '';
+    height: ${PARKS_VIBE.accentBarHeight};
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+`;
+
+const StyledEmbeddedHeader = styled.div`
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: ${themeCssVariables.spacing[2]};
+  gap: ${PARKS_VIBE.space.sm};
   justify-content: space-between;
+  padding-top: ${PARKS_VIBE.space.xs};
 `;
 
-const StyledFooterHint = styled.span`
-  color: ${themeCssVariables.font.color.secondary};
-  font-size: ${themeCssVariables.font.size.xs};
+const StyledEmbeddedTitle = styled.span`
+  color: ${PARKS_VIBE.textPrimary};
+  font-family: ${PARKS_VIBE.fontFamily};
+  font-size: ${themeCssVariables.font.size.sm};
+  font-weight: ${themeCssVariables.font.weight.semiBold};
 `;
+
+const getGuideProgress = (guide: ParksDealStageGuide): number => {
+  if (guide.checklist.length === 0) {
+    return guide.canAdvance ? 1 : 0;
+  }
+
+  const doneCount = guide.checklist.filter((item) => item.done).length;
+
+  return doneCount / guide.checklist.length;
+};
+
+type ParksDealStageGuideChecklistProps = {
+  guide: ParksDealStageGuide;
+  onOpenTab: (tab: ParksDealGuideTab, scrollTarget?: string) => void;
+};
+
+export const ParksDealStageGuideChecklist = ({
+  guide,
+  onOpenTab,
+}: ParksDealStageGuideChecklistProps) => {
+  if (guide.checklist.length === 0) {
+    return null;
+  }
+
+  const progress = getGuideProgress(guide);
+
+  const handleChecklistItemClick = (item: ParksDealGuideChecklistItem) => {
+    if (!item.targetTab && !item.scrollTarget) {
+      return;
+    }
+
+    onOpenTab(item.targetTab ?? guide.recommendedTab, item.scrollTarget);
+  };
+
+  return (
+    <StyledEmbeddedChecklist>
+      <StyledEmbeddedHeader>
+        <StyledEmbeddedTitle>{guide.title}</StyledEmbeddedTitle>
+        <StyledProgressPill isDone={guide.canAdvance}>
+          {guide.progressLabel}
+        </StyledProgressPill>
+      </StyledEmbeddedHeader>
+      <StyledProgressTrack>
+        <StyledProgressFill
+          progress={progress}
+          isDone={guide.canAdvance}
+        />
+      </StyledProgressTrack>
+      <StyledChecklist>
+        {guide.checklist.map((item) => {
+          const isClickable = Boolean(item.targetTab || item.scrollTarget);
+
+          return (
+            <StyledChecklistItem key={item.id}>
+              <StyledChecklistButton
+                type="button"
+                isDone={item.done}
+                isClickable={isClickable}
+                disabled={!isClickable}
+                onClick={() => handleChecklistItemClick(item)}
+              >
+                {item.done ? (
+                  <IconCheck size={16} color={PARKS_BRAND.primary} />
+                ) : (
+                  <IconCircleDashed size={16} color={PARKS_VIBE.textMuted} />
+                )}
+                <span>{item.label}</span>
+              </StyledChecklistButton>
+            </StyledChecklistItem>
+          );
+        })}
+      </StyledChecklist>
+    </StyledEmbeddedChecklist>
+  );
+};
 
 type ParksDealStageGuidePanelProps = {
   guide: ParksDealStageGuide;
   onOpenTab: (tab: ParksDealGuideTab, scrollTarget?: string) => void;
   onAdvanceStage?: (nextStageId: string) => void;
+  // When true, hide the expandable checklist (shown inside the active tab instead)
+  hideChecklistBody?: boolean;
 };
 
 export const ParksDealStageGuidePanel = ({
   guide,
   onOpenTab,
   onAdvanceStage,
+  hideChecklistBody = false,
 }: ParksDealStageGuidePanelProps) => {
-  // Collapsed by default once the checklist for this stage is complete, so
-  // the guide doesn't push down the tabs where the actual work happens.
-  const [isCollapsed, setIsCollapsed] = useState(guide.canAdvance);
-
-  useEffect(() => {
-    setIsCollapsed(guide.canAdvance);
-  }, [guide.stageId, guide.canAdvance]);
+  // Strip stays collapsed by default so tabs remain visible on small viewports
+  const [isExpanded, setIsExpanded] = useState(false);
+  const progress = getGuideProgress(guide);
 
   const handlePrimaryAction = () => {
     if (guide.primaryActionKind === 'advance-stage' && guide.nextStageId) {
@@ -264,15 +410,20 @@ export const ParksDealStageGuidePanel = ({
     onOpenTab(item.targetTab ?? guide.recommendedTab, item.scrollTarget);
   };
 
-  const toggleCollapsed = () => setIsCollapsed((previous) => !previous);
+  const toggleExpanded = () => setIsExpanded((previous) => !previous);
+  const canExpand =
+    !hideChecklistBody &&
+    (guide.checklist.length > 0 || guide.primaryActionKind !== 'none');
+  const showBody = isExpanded && canExpand;
 
   return (
-    <StyledGuide isCollapsed={isCollapsed}>
+    <StyledGuide isDone={guide.canAdvance}>
       <StyledHeader>
         <StyledHeaderToggle
           type="button"
-          onClick={toggleCollapsed}
-          aria-expanded={!isCollapsed}
+          onClick={canExpand ? toggleExpanded : undefined}
+          aria-expanded={showBody}
+          disabled={!canExpand}
         >
           <StyledIconChip isDone={guide.canAdvance}>
             {guide.canAdvance ? (
@@ -283,18 +434,24 @@ export const ParksDealStageGuidePanel = ({
           </StyledIconChip>
           <StyledTitleBlock>
             <StyledTitleRow>
+              <StyledEyebrow isDone={guide.canAdvance}>
+                {guide.canAdvance ? t`Listo` : t`Siguiente`}
+              </StyledEyebrow>
               <StyledTitle>{guide.title}</StyledTitle>
               <StyledProgressPill isDone={guide.canAdvance}>
                 {guide.progressLabel}
               </StyledProgressPill>
             </StyledTitleRow>
-            {isCollapsed ? null : (
-              <StyledDescription>{guide.description}</StyledDescription>
-            )}
+            <StyledProgressTrack>
+              <StyledProgressFill
+                progress={progress}
+                isDone={guide.canAdvance}
+              />
+            </StyledProgressTrack>
           </StyledTitleBlock>
         </StyledHeaderToggle>
         <StyledHeaderRight>
-          {isCollapsed && guide.primaryActionKind !== 'none' ? (
+          {guide.primaryActionKind !== 'none' ? (
             <ParksActionButton
               variant="primary"
               size="sm"
@@ -304,22 +461,24 @@ export const ParksDealStageGuidePanel = ({
               onClick={handlePrimaryAction}
             />
           ) : null}
-          <StyledCollapseButton
-            type="button"
-            onClick={toggleCollapsed}
-            aria-expanded={!isCollapsed}
-            aria-label={isCollapsed ? t`Mostrar detalle` : t`Ocultar detalle`}
-          >
-            {isCollapsed ? (
-              <IconChevronDown size={16} />
-            ) : (
-              <IconChevronUp size={16} />
-            )}
-          </StyledCollapseButton>
+          {canExpand ? (
+            <StyledCollapseButton
+              type="button"
+              onClick={toggleExpanded}
+              aria-expanded={showBody}
+              aria-label={showBody ? t`Ocultar detalle` : t`Mostrar detalle`}
+            >
+              {showBody ? (
+                <IconChevronUp size={16} />
+              ) : (
+                <IconChevronDown size={16} />
+              )}
+            </StyledCollapseButton>
+          ) : null}
         </StyledHeaderRight>
       </StyledHeader>
 
-      {isCollapsed ? null : (
+      {showBody ? (
         <StyledBody>
           {guide.checklist.length > 0 ? (
             <StyledChecklist>
@@ -338,14 +497,11 @@ export const ParksDealStageGuidePanel = ({
                       onClick={() => handleChecklistItemClick(item)}
                     >
                       {item.done ? (
-                        <IconCheck
-                          size={16}
-                          color={themeCssVariables.color.green}
-                        />
+                        <IconCheck size={16} color={PARKS_BRAND.primary} />
                       ) : (
                         <IconCircleDashed
                           size={16}
-                          color={themeCssVariables.font.color.tertiary}
+                          color={PARKS_VIBE.textMuted}
                         />
                       )}
                       <span>{item.label}</span>
@@ -355,26 +511,8 @@ export const ParksDealStageGuidePanel = ({
               })}
             </StyledChecklist>
           ) : null}
-
-          <StyledFooter>
-            <StyledFooterHint>
-              {guide.nextStageLabel
-                ? t`Siguiente etapa: ${guide.nextStageLabel}`
-                : t`Sin más etapas comerciales`}
-            </StyledFooterHint>
-            {guide.primaryActionKind !== 'none' ? (
-              <ParksActionButton
-                variant="primary"
-                size="sm"
-                Icon={IconArrowRight}
-                iconPosition="right"
-                title={guide.primaryActionLabel}
-                onClick={handlePrimaryAction}
-              />
-            ) : null}
-          </StyledFooter>
         </StyledBody>
-      )}
+      ) : null}
     </StyledGuide>
   );
 };

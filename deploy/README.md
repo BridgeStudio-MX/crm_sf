@@ -157,6 +157,19 @@ Cada vez que guardas un archivo, Vite (frontend) y NestJS (backend) recompilan
 y reflejan el cambio solos. Para detener: Ctrl+C, y apagar la infra con
 `bash packages/twenty-utils/setup-dev-env.sh --down`.
 
+### Usuarios demo en local (= mismos que producción)
+
+Local y producción **no comparten Postgres**. Los logins `@prk.com.mx` se
+definen en código (`parks-demo-users.constants.ts`) y se aplican así:
+
+```bash
+# Con yarn start ya arriba (API en :3000)
+cd parks-twenty-service && npm run bootstrap:local
+```
+
+En producción lo hace el job `parks-bootstrap` tras cada deploy. Lista y
+password: `docs/parks-industrial/USUARIOS_DEMO.md`.
+
 > Atajo: dile a Claude **"Carga los cambios en local"** y ejecuta estos pasos
 > por ti (definido en `CLAUDE.md`).
 

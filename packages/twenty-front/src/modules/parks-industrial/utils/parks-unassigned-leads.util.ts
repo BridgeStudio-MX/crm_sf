@@ -16,6 +16,7 @@ const CANAL_LABEL_BY_VALUE: Record<string, string> = {
   RECOMENDACION: 'Recomendación',
   CALL_CENTER: 'Call Center',
   CEM: 'Director Comercial',
+  DIRECTOR_COMERCIAL: 'Director Comercial',
   LINKEDIN: 'LinkedIn',
   PAGINA_WEB: 'Página web',
   BROKER: 'Broker',
