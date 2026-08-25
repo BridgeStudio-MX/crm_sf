@@ -96,7 +96,7 @@ export const PARKS_GUIDED_TOUR_ITEM_COPY: Record<
   },
   comite: {
     title: 'Comité',
-    body: 'Autorización de condiciones especiales. En Dirección Comercial y miembros es consulta; el CEO proyecta la sesión en vivo y resuelve en sala.',
+    body: 'Autorización de condiciones especiales. Solo miembros del comité, CFO y CEO (empate).',
   },
   asignacion: {
     title: 'Asignación',
@@ -149,7 +149,7 @@ export const PARKS_GUIDED_TOUR_ROLE_INTRO: Partial<
   },
   [ParksRoleLabel.EjecutivoComercial]: {
     title: 'Tu escritorio comercial',
-    body: 'Pipeline, parques, campo, reservas y tu desempeño. Tomas el lead asignado y lo llevas hasta hoja de acuerdos. Si un deal escala a comité, lo consultas aquí.',
+    body: 'Pipeline, parques, campo, reservas y tu desempeño. Tomas el lead asignado y lo llevas hasta hoja de acuerdos.',
   },
   [ParksRoleLabel.LoAaaSenior]: {
     title: 'Tu escritorio de Leasing Officer AAA',
@@ -157,7 +157,7 @@ export const PARKS_GUIDED_TOUR_ROLE_INTRO: Partial<
   },
   [ParksRoleLabel.LoEstandar]: {
     title: 'Tu escritorio de Leasing Officer',
-    body: 'Pipeline, parques, campo y reservas. Calificas, visitas, cotizas y generas la hoja. Si un deal escala a comité, lo consultas — no votas.',
+    body: 'Pipeline, parques, campo y reservas. Calificas, visitas, cotizas y generas la hoja.',
   },
   [ParksRoleLabel.AdminLegal]: {
     title: 'Tu mesa de Legal (admin)',

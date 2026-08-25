@@ -37,7 +37,7 @@ export const PARKS_NAVIGATION_ITEM_HELP: Record<
   cxcCartera:
     'Pipeline Legal → Cobranza: del contrato firmado al seguimiento de pagos, expediente y calendario.',
   comite:
-    'Sesión o consulta de autorización comercial. Los deals entran por monto, descuento o tipo de cliente.',
+    'Sesión o consulta de autorización comercial. Solo miembros del comité, CFO y CEO.',
   asignacion:
     'Asignación inteligente de leads a LOs con scoring IA / reglas y regeneración de escenarios demo.',
   loCampo:
